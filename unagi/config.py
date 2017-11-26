@@ -291,12 +291,12 @@ class HscDasConfig(object):
                                        'tracts_patches_W-AEGIS.txt')
                     }
 
-                self.field = [_PDR_UD_COSMOS, _PDR_UD_SXDS,
-                              _PDR_D_COSMOS, _PDR_D_DEEP2, _PDR_D_ELAIS,
-                              _PDR_D_XMM,
-                              _PDR_W_XMM, _PDR_W_GAMA09, _PDR_W_GAMA15,
-                              _PDR_W_WIDE12, _PDR_W_HECTOMAP,
-                              _PDR_W_VVDS, _PDR_AEGIS]
+                self.fields = [_PDR_UD_COSMOS, _PDR_UD_SXDS,
+                               _PDR_D_COSMOS, _PDR_D_DEEP2, _PDR_D_ELAIS,
+                               _PDR_D_XMM,
+                               _PDR_W_XMM, _PDR_W_GAMA09, _PDR_W_GAMA15,
+                               _PDR_W_WIDE12, _PDR_W_HECTOMAP,
+                               _PDR_W_VVDS, _PDR_AEGIS]
 
             else:
                 raise DrException("!! Wrong information about data release !!")
@@ -555,16 +555,12 @@ class HscDasConfig(object):
                                        'tracts_patches_W-AEGIS.txt')
                     }
 
-                self.field = [_IDR_UD_COSMOS, _IDR_UD_SXDS,
-                              _IDR_D_COSMOS, _IDR_D_DEEP2, _IDR_D_ELAIS,
-                              _IDR_D_XMM, _IDR_W_WIDE01,
-                              _IDR_W_XMM, _IDR_W_GAMA09, _IDR_W_GAMA15,
-                              _IDR_W_WIDE12, _IDR_W_HECTOMAP,
-                              _IDR_W_VVDS, _IDR_AEGIS]
-
-                self.field_table = Table(rows=self.fields)
-
-                self.field_name = self.field_table['name'].data.astype('str')
+                self.fields = [_IDR_UD_COSMOS, _IDR_UD_SXDS,
+                               _IDR_D_COSMOS, _IDR_D_DEEP2, _IDR_D_ELAIS,
+                               _IDR_D_XMM, _IDR_W_WIDE01,
+                               _IDR_W_XMM, _IDR_W_GAMA09, _IDR_W_GAMA15,
+                               _IDR_W_WIDE12, _IDR_W_HECTOMAP,
+                               _IDR_W_VVDS, _IDR_AEGIS]
 
             elif dr is 'dr2':
                 # Useful URLs
@@ -762,11 +758,11 @@ class HscDasConfig(object):
                                        'tracts_patches_W-AEGIS.txt')
                     }
 
-                self.field = [_IDR_DUD_COSMOS, _IDR_DUD_DEEP2,
-                              _IDR_DUD_ELAIS, _IDR_DUD_XMM,
-                              _IDR_W_WIDE01, _IDR_W_WIDE02, _IDR_W_WIDE03,
-                              _IDR_W_WIDE04, _IDR_W_WIDE05, _IDR_W_WIDE06,
-                              _IDR_W_WIDE07]
+                self.fields = [_IDR_DUD_COSMOS, _IDR_DUD_DEEP2,
+                               _IDR_DUD_ELAIS, _IDR_DUD_XMM,
+                               _IDR_W_WIDE01, _IDR_W_WIDE02, _IDR_W_WIDE03,
+                               _IDR_W_WIDE04, _IDR_W_WIDE05, _IDR_W_WIDE06,
+                               _IDR_W_WIDE07]
 
             else:
                 raise DrException("!! Wrong information about data release !!")
@@ -800,3 +796,33 @@ class HscDasConfig(object):
                     get_input = raw_input
                 self._username = get_input("Public Data Release Username : ")
                 self._password = getpass.getpass("Password : ")
+
+
+class HscRerun(HscDasConfig):
+    """Class for rerun in HSC data release.
+
+    Examples
+    --------
+
+    The examples below illustrate common usage of the `HscRerun` object.
+
+        >>> from unagi.config import HscRerun
+        >>> s16a_wide2 = HscRerun('s16a_wide2')
+
+    Parameters
+    ----------
+
+    rerun_name : string
+        Name of the rerun
+    """
+    def __init__(self, rerun_name, **kwargs):
+        HscDasConfig.__init__(self, **kwargs)
+        if str(rerun_name).strip() not in self.rerun_list:
+            raise DrException("!! Wrong rerun !!")
+        else:
+            self.rerun_name = rerun_name
+            delattr(self, 'rerun_list')
+            delattr(self, 'rerun_default')
+            delattr(self, 'udeep_default')
+            delattr(self, 'deep_default')
+            delattr(self, 'wide_default')
