@@ -4,9 +4,13 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
+from astropy.table import Table, Column
+
 import os
 import sys
 import warnings
+
+__all__ = ['HscField', 'HscDasConfig']
 
 
 # Update: 2017-11-22
@@ -18,6 +22,25 @@ class DrException(Exception):
     """Class for error related to data release information.
     """
     pass
+
+
+class HscField(object):
+    """Class for individual HSC SSP field.
+
+    Examples
+    --------
+
+    The examples below illustrate common usage of the `HscField` object.
+
+        >>>
+
+    Parameters
+    ----------
+    name : string
+        Name of the field
+    """
+    def __init__(self, name):
+        self.name = str(name).strip()
 
 
 class HscDasConfig(object):
@@ -62,6 +85,8 @@ class HscDasConfig(object):
                 # Useful URLs
                 self.das_url = PDR_URL + "/das_quarry/cgi-bin/"
                 self.psf_url = PDR_URL + "/psf/pdr1/cgi/"
+                self.map_url = PDR_URL + '/das_search/pdr1/images/pdr1/'
+                self.txt_url = PDR_URL + '/rsrc/patch_info/'
 
                 # Available filters
                 """
@@ -84,9 +109,17 @@ class HscDasConfig(object):
                 -------
                     SSP_AEGIS   : Single Tract for calibration purpose.
                 """
-                https://hsc-release.mtk.nao.ac.jp/rsrc/patch_info/tracts_patches_UD-COSMOS.txt
-                self.map_url = PDR_URL + '/das_search/pdr1/images/pdr1/'
-                self.infor_url = PDR_URL + '/rsrc/patch_info/'
+                self.field_table = Table(names=('field',
+                                                'field_short',
+                                                'filter_available',
+                                                'field_map',
+                                                'field_patches')
+                                         )
+
+                self.field_table.add_row(('UD_COSMOS',
+                                          'ud_cosmos',
+                                          ['g', 'r', 'i', 'z', 'y',
+                                           'nb0921', 'nb0816']))
 
                 self.field_list = ['UD_COSMOS', 'UD_SXDS',
                                    'D_COSMOS', 'D_DEEP2-3', 'D_XMM-LSS',
@@ -113,7 +146,7 @@ class HscDasConfig(object):
                                  'W-GAMA09H_i_area.png'),
                     'w_gama15': (self.map_url +
                                  'W-GAMA15H_i_area.png'),
-                    'w_hectomap': (self.map_url' +
+                    'w_hectomap': (self.map_url +
                                    'W-HECTOMAP_i_area.png'),
                     'w_vvds': (self.map_url +
                                'W-VVDS_i_area.png'),
