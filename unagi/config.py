@@ -6,24 +6,12 @@ from __future__ import (division, print_function, absolute_import,
 
 import os
 import sys
+import warnings
+
 
 # Update: 2017-11-22
-HSC_FILTERS = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
-               'NB0387', 'NB0816', 'NB0921']
-
-HSC_FSHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb0816', 'nb0921']
-
-HSC_IDR_RERUN = ['s15b_udeep', 's15b_deep', 's15b_wide',
-                 's16a_udeep', 's16a_deep', 's16a_wide', 's16a_wide2',
-                 's17a_dud', 's17a_wide', 'any']
-
-HSC_DR1_URL = "https://hscdata.mtk.nao.ac.jp/das_quarry/dr1/cgi-bin/"
-HSC_DR2_URL = "https://hscdata.mtk.nao.ac.jp/das_quarry/dr2/cgi-bin/"
-
-HSC_DR1_PSF = "https://hscdata.mtk.nao.ac.jp/psf/4/cgi"
-HSC_DR2_PSF = "https://hscdata.mtk.nao.ac.jp/psf/5/cgi"
-
 PDR_URL = "https://hsc-release.mtk.nao.ac.jp"
+IDR_URL = "https://hscdata.mtk.nao.ac.jp"
 
 
 class DrException(Exception):
@@ -40,7 +28,7 @@ class HscDasConfig(object):
     The examples below illustrate common usage of the `HscObject` object.
 
         >>> from unagi.config import HscDasConfig
-        >>> object_1 = HscObject(30.0, -2.0)
+        >>> pdr_config = HscDasConfig(pdr=True)
 
     Parameters
     ----------
@@ -66,15 +54,21 @@ class HscDasConfig(object):
             # Data release list
             self.dr_list = ['dr1']
 
+            # PDR = Public data release
+            self.database = 'PDR'
+
             if dr == 'dr1':
-                # PDR = Public data release
-                self.database = 'PDR'
 
                 # Useful URLs
                 self.das_url = PDR_URL + "/das_quarry/cgi-bin/"
                 self.psf_url = PDR_URL + "/psf/pdr1/cgi/"
 
                 # Available filters
+                """
+                Notice:
+                -------
+                    Only UDEEP+DEEP fields have narrow-band coverage.
+                """
                 self.filter_list = ['HSC-G', 'HSC-R', 'HSC-I',
                                     'HSC-Z', 'HSC-Y', 'NB0816', 'NB0921']
                 self.filter_list_short = ['g', 'r', 'i', 'z', 'y',
@@ -85,41 +79,48 @@ class HscDasConfig(object):
                                    'pdr1_wide']
 
                 # Available fields
-                self.field_list = ['UDEEP_COSMOS', 'UDEEP_SXDF',
-                                   'DEEP_COSMOS', 'DEEP_DEEP2', 'DEEP_XMM',
-                                   'DEEP_ELAIS', 'WIDE_AEGIS',
-                                   'WIDE_GAMA09', 'WIDE_GAMA15', 'WIDE_VVDS',
-                                   'WIDE_HECTOMAP']
+                """
+                Notice:
+                -------
+                    SSP_AEGIS   : Single Tract for calibration purpose.
+                """
+                https://hsc-release.mtk.nao.ac.jp/rsrc/patch_info/tracts_patches_UD-COSMOS.txt
+                self.map_url = PDR_URL + '/das_search/pdr1/images/pdr1/'
+                self.infor_url = PDR_URL + '/rsrc/patch_info/'
+
+                self.field_list = ['UD_COSMOS', 'UD_SXDS',
+                                   'D_COSMOS', 'D_DEEP2-3', 'D_XMM-LSS',
+                                   'D_ELAIS-N1', 'AEGIS',
+                                   'W_GAMA09H', 'W_GAMA15H', 'W_VVDS',
+                                   'W_HECTOMAP', 'W_WIDE12H', 'W_XMMLSS']
 
                 self.field_map = {
-                    'udeep_cosmos': (PDR_URL +
-                                     '/das_search/pdr1/images/pdr1/' +
-                                     'tracts_patches_UD_COSMOS_HSC-I.png'),
-                    'udeep_sxds': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                   'tracts_patches_UD_SXDS_HSC-I.png'),
-                    'deep_cosmos': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                    'tracts_patches_D_COSMOS_HSC-I.png'),
-                    'deep_deep2': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                   'tracts_patches_D_DEEP2-3_HSC-I.png'),
-                    'deep_xmm': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                 'tracts_patches_D_XMM-LSS_HSC-I.png'),
-                    'deep_elais': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                   'tracts_patches_D_XMM-ELAIS-N1-I.png'),
-                    'wide_aegis': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                   'AEGIS_i_area.png'),
-                    'wide_gama09': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                    'W-GAMA09H_i_area.png'),
-                    'wide_gama15': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                    'W-GAMA15H_i_area.png'),
-                    'wide_hectomap': (PDR_URL +
-                                      '/das_search/pdr1/images/pdr1/' +
-                                      'W-HECTOMAP_i_area.png'),
-                    'wide_vvds': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                  'W-VVDS_i_area.png'),
-                    'wide_wide12': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                    'W-WIDE12H_i_area.png'),
-                    'wide_xmm': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                 'W-XMMLSS_i_area.png')
+                    'ud_cosmos': (self.map_url +
+                                  'tracts_patches_UD_COSMOS_HSC-I.png'),
+                    'ud_sxds': (self.map_url +
+                                'tracts_patches_UD_SXDS_HSC-I.png'),
+                    'd_cosmos': (self.map_url +
+                                 'tracts_patches_D_COSMOS_HSC-I.png'),
+                    'd_deep2': (self.map_url +
+                                'tracts_patches_D_DEEP2-3_HSC-I.png'),
+                    'd_xmm': (self.map_url +
+                              'tracts_patches_D_XMM-LSS_HSC-I.png'),
+                    'd_elais': (self.map_url +
+                                'tracts_patches_D_ELAIS-N1-I.png'),
+                    'ssp_aegis': (self.map_url +
+                                  'AEGIS_i_area.png'),
+                    'w_gama09': (self.map_url +
+                                 'W-GAMA09H_i_area.png'),
+                    'w_gama15': (self.map_url +
+                                 'W-GAMA15H_i_area.png'),
+                    'w_hectomap': (self.map_url' +
+                                   'W-HECTOMAP_i_area.png'),
+                    'w_vvds': (self.map_url +
+                               'W-VVDS_i_area.png'),
+                    'w_wide12': (self.map_url +
+                                 'W-WIDE12H_i_area.png'),
+                    'w_xmm': (self.map_url +
+                              'W-XMMLSS_i_area.png')
                     }
             else:
                 raise DrException("!! Wrong information about data release !!")
@@ -131,71 +132,161 @@ class HscDasConfig(object):
                 https://hscdata.mtk.nao.ac.jp/das_quarry/dr1/manual.html
 
             So far, DR1 and DR2 are available
+
+            Information about S15b data release:
+
+                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr1/s15b/doc/S15B/products_status.html
+
+            Information about S16a data release:
+
+                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr1/s16a/doc/products_status.html
             """
             # Gather login information:
             self._get_credential(pdr=False)
 
             # Data release list
-            self.dr_list = ['dr1']
+            self.dr_list = ['dr1', 'dr2']
+
+            # PDR = Public data release
+            self.database = 'IDR'
 
             if dr is 'dr1':
-                # PDR = Public data release
-                self.database = 'PDR'
-
                 # Useful URLs
-                self.das_url = PDR_URL + "/das_quarry/cgi-bin/"
-                self.psf_url = PDR_URL + "/psf/pdr1/cgi/"
+                self.das_url = PDR_URL + "/das_quarry/dr1/cgi-bin/"
+                self.psf_url = PDR_URL + "/psf/4/cgi/"
 
                 # Available filters
+                """
+                Notice:
+                -------
+                    Only UDEEP+DEEP fields have narrow-band coverage.
+                """
                 self.filter_list = ['HSC-G', 'HSC-R', 'HSC-I',
                                     'HSC-Z', 'HSC-Y', 'NB0816', 'NB0921']
                 self.filter_list_short = ['g', 'r', 'i', 'z', 'y',
                                           'nb816', 'nb921']
 
                 # Available reruns
-                self.rerun_list = ['any', 'pdr1_udeep', 'pdr1_deep',
-                                   'pdr1_wide']
+                """
+                We ignore the early data release and the s15a release.
+                All their data are covered by s15b and s16a release, and
+                the data quality has been significantly improved
+                """
+                self.rerun_list = ['any',
+                                   's15b_udeep', 's15b_deep', 's15b_wide',
+                                   's16a_udeep', 's16a_deep', 's16a_wide',
+                                   's16a_wide2']
 
                 # Available fields
+                """
+                Notice:
+                -------
+                    SSP_AEGIS   : Single Tract for calibration purpose.
+                    WIDE_WIDE01 : Only has g and r-band data.
+                """
                 self.field_list = ['UDEEP_COSMOS', 'UDEEP_SXDF',
                                    'DEEP_COSMOS', 'DEEP_DEEP2', 'DEEP_XMM',
-                                   'DEEP_ELAIS', 'WIDE_AEGIS',
+                                   'DEEP_ELAIS', 'SSP_AEGIS', 'WIDE_WIDE01',
                                    'WIDE_GAMA09', 'WIDE_GAMA15', 'WIDE_VVDS',
                                    'WIDE_HECTOMAP']
 
                 self.field_map = {
-                    'udeep_cosmos': (PDR_URL +
-                                     '/das_search/pdr1/images/pdr1/' +
+                    'udeep_cosmos': (IDR_URL +
+                                     '/hsc_ssp/dr1/s16a/doc/fig/' +
                                      'tracts_patches_UD_COSMOS_HSC-I.png'),
-                    'udeep_sxds': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
+                    'udeep_sxds': (IDR_URL +
+                                   '/hsc_ssp/dr1/s16a/doc/fig/' +
                                    'tracts_patches_UD_SXDS_HSC-I.png'),
-                    'deep_cosmos': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
+                    'deep_cosmos': (IDR_URL +
+                                    '/hsc_ssp/dr1/s16a/doc/fig/' +
                                     'tracts_patches_D_COSMOS_HSC-I.png'),
-                    'deep_deep2': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
+                    'deep_deep2': (IDR_URL +
+                                   '/hsc_ssp/dr1/s16a/doc/fig/' +
                                    'tracts_patches_D_DEEP2-3_HSC-I.png'),
-                    'deep_xmm': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
+                    'deep_xmm': (IDR_URL +
+                                 '/hsc_ssp/dr1/s16a/doc/fig/' +
                                  'tracts_patches_D_XMM-LSS_HSC-I.png'),
-                    'deep_elais': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
+                    'deep_elais': (IDR_URL +
+                                   '/hsc_ssp/dr1/s16a/doc/fig/' +
                                    'tracts_patches_D_XMM-ELAIS-N1-I.png'),
-                    'wide_aegis': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                   'AEGIS_i_area.png'),
-                    'wide_gama09': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                    'W-GAMA09H_i_area.png'),
-                    'wide_gama15': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                    'W-GAMA15H_i_area.png'),
-                    'wide_hectomap': (PDR_URL +
-                                      '/das_search/pdr1/images/pdr1/' +
-                                      'W-HECTOMAP_i_area.png'),
-                    'wide_vvds': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                  'W-VVDS_i_area.png'),
-                    'wide_wide12': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                    'W-WIDE12H_i_area.png'),
-                    'wide_xmm': (PDR_URL + '/das_search/pdr1/images/pdr1/' +
-                                 'W-XMMLSS_i_area.png')
+                    'ssp_aegis': (IDR_URL +
+                                  '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                  'tracts_patches_W_AEGIS_HSC-I.png'),
+                    'wide_gama09': (IDR_URL +
+                                    '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                    'tracts_patches_W_GAMA09H_HSC-I.png'),
+                    'wide_gama15': (IDR_URL +
+                                    '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                    'tracts_patches_W_GAMA15H_HSC-I.png'),
+                    'wide_hectomap': (IDR_URL +
+                                      '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                      'tracts_patches_W_HECTOMAP_HSC-I.png'),
+                    'wide_vvds': (IDR_URL +
+                                  '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                  'tracts_patches_W_VVDS_HSC-I.png'),
+                    'wide_wide12': (IDR_URL +
+                                    '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                    'tracts_patches_W_WIDE12H_HSC-I.png'),
+                    'wide_xmm': (IDR_URL +
+                                 '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                 'tracts_patches_W_XMM_HSC-I.png'),
+                    'wide_wide01': (IDR_URL +
+                                    '/hsc_ssp/dr1/s16a/doc/fig/' +
+                                    'tracts_patches_W_WIDE01H_HSC-R.png')
                     }
 
             elif dr is 'dr2':
-                pass
+                # Useful URLs
+                self.das_url = PDR_URL + "/das_quarry/dr2/cgi-bin/"
+                self.psf_url = PDR_URL + "/psf/5/cgi/"
+
+                # DR2 is being prepared right now! Issue a warning
+                warnings.warn("DR2 is being prepared right now !")
+
+                # Available filters
+                """
+                Notice:
+                -------
+                    Only UDEEP+DEEP fields have narrow-band coverage.
+                """
+                self.filter_list = ['HSC-G', 'HSC-R', 'HSC-I',
+                                    'HSC-Z', 'HSC-Y',
+                                    'NB0387', 'NB0816', 'NB0921']
+                self.filter_list_short = ['g', 'r', 'i', 'z', 'y',
+                                          'nb0387', 'nb816', 'nb921']
+
+                # Available reruns
+                """
+                We ignore the early data release and the s15a release.
+                All their data are covered by s15b and s16a release, and
+                the data quality has been significantly improved
+                """
+                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr2/s17a/doc/fig/tracts_patches_DUD_COSMOS_HSC-I.png
+                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr2/s17a/doc/fig/tracts_patches_DUD_DEEP2-3_HSC-I.png
+
+                self.rerun_list = ['any',
+                                   's17a_dud', 's17a_wide']
+
+                # Available fields
+                """
+                Notice:
+                -------
+                    From S17A, the DEEP and UDEEP fields are released together.
+                """
+                self.field_list = ['DUD_COSMOS', 'UDEEP_SXDF',
+                                   'DEEP_COSMOS', 'DEEP_DEEP2', 'DEEP_XMM',
+                                   'DEEP_ELAIS', 'SSP_AEGIS', 'WIDE_WIDE01',
+                                   'WIDE_GAMA09', 'WIDE_GAMA15', 'WIDE_VVDS',
+                                   'WIDE_HECTOMAP']
+
+                self.field_map = {
+                    'dud_cosmos': (IDR_URL +
+                                   '/hsc_ssp/dr2/s17a/doc/fig/' +
+                                   'tracts_patches_DUD_COSMOS_HSC-I.png'),
+                    'dud_deep2': (IDR_URL +
+                                  '/hsc_ssp/dr2/s17a/doc/fig/' +
+                                  'tracts_patches_DUD_DEEP2-3_HSC-I.png'),
+                    }
             else:
                 raise DrException("!! Wrong information about data release !!")
 

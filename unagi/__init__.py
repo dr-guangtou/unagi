@@ -8,5 +8,7 @@ __version__ = '171121'
 
 from . import query
 from . import object
+from . import task
+from . import config
 
-__all__ = ["query", "object"]
+__all__ = ["query", "object", "task", "config"]
