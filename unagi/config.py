@@ -39,8 +39,15 @@ class HscField(object):
     name : string
         Name of the field
     """
-    def __init__(self, name):
+    def __init__(self, name, *initial_dict, **kwargs):
         self.name = str(name).strip()
+
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+        for dictionary in initial_dict:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
 
 
 class HscDasConfig(object):
@@ -109,6 +116,8 @@ class HscDasConfig(object):
                 -------
                     SSP_AEGIS   : Single Tract for calibration purpose.
                 """
+                _
+
                 self.field_table = Table(names=('field',
                                                 'field_short',
                                                 'filter_available',
@@ -294,9 +303,6 @@ class HscDasConfig(object):
                 All their data are covered by s15b and s16a release, and
                 the data quality has been significantly improved
                 """
-                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr2/s17a/doc/fig/tracts_patches_DUD_COSMOS_HSC-I.png
-                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr2/s17a/doc/fig/tracts_patches_DUD_DEEP2-3_HSC-I.png
-
                 self.rerun_list = ['any',
                                    's17a_dud', 's17a_wide']
 
