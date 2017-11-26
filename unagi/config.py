@@ -10,7 +10,8 @@ import os
 import sys
 import warnings
 
-__all__ = ['HscField', 'HscDasConfig']
+__all__ = ['HscField', 'HscDasConfig', 'HscRerun', 'DrException',
+           'PDR_URL', 'IDR_URL']
 
 
 # Update: 2017-11-22
@@ -816,7 +817,7 @@ class HscRerun(HscDasConfig):
         Name of the rerun
     """
     def __init__(self, rerun_name, **kwargs):
-        HscDasConfig.__init__(self, **kwargs)
+        super(HscRerun, self).__init__(self, **kwargs)
         if str(rerun_name).strip() not in self.rerun_list:
             raise DrException("!! Wrong rerun !!")
         else:
