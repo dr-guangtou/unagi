@@ -10,7 +10,7 @@ import os
 import sys
 import warnings
 
-__all__ = ('HscField', 'HscDasConfig', 'HscRerun', 'DrException',
+__all__ = ('SspField', 'SspDasConfig', 'SspRerun', 'DrException',
            'PDR_URL', 'IDR_URL',)
 
 
@@ -25,16 +25,16 @@ class DrException(Exception):
     pass
 
 
-class HscField(object):
+class SspField(object):
     """Class for individual HSC SSP field.
 
     Examples
     --------
 
-    The examples below illustrate common usage of the `HscField` object.
+    The examples below illustrate common usage of the `SspField` object.
 
-        >>> from unagi.config import HscField
-        >>> g09 = HscField('W_GAMA09H', short='g09',
+        >>> from unagi.config import SspField
+        >>> g09 = SspField('W_GAMA09H', short='g09',
                            {'filter_available: ['g', 'r']})
 
     Parameters
@@ -53,15 +53,15 @@ class HscField(object):
                 setattr(self, key, dictionary[key])
 
 
-class HscDasConfig(object):
+class SspDasConfig(object):
     """Class for configuration parameters for HSC database.
 
     Examples
     --------
-    The examples below illustrate common usage of the `HscObject` object.
+    The examples below illustrate common usage of the `SspObject` object.
 
-        >>> from unagi.config import HscDasConfig
-        >>> pdr_config = HscDasConfig(pdr=True)
+        >>> from unagi.config import SspDasConfig
+        >>> pdr_config = SspDasConfig(pdr=True)
 
     Parameters
     ----------
@@ -72,7 +72,7 @@ class HscDasConfig(object):
     """
     def __init__(self, dr='dr1', pdr=False):
         if pdr:
-            """Use the HSC public data release at:
+            """Use the HSC SSP public data release at:
                 http://hsc.mtk.nao.ac.jp/ssp/
 
             More information about the PDR/DAS query:
@@ -307,7 +307,7 @@ class HscDasConfig(object):
             self.field_name = self.field_table['name'].data.astype('str')
 
         else:
-            """Use the HSC internal data release at:
+            """Use the HSC SSP internal data release at:
 
             More information about the IDR/DAS query:
 
@@ -773,12 +773,12 @@ class HscDasConfig(object):
             self.field_name = self.field_table['name'].data.astype('str')
 
     def _get_credential(self, pdr=False):
-        """Get the username and password for HSC database.
+        """Get the username and password for HSC SSP database.
         """
         if not pdr:
             try:
-                self._username = os.environ['HSC_IDR_USR']
-                self._password = os.environ['HSC_IDR_PWD']
+                self._username = os.environ['SSP_IDR_USR']
+                self._password = os.environ['SSP_IDR_PWD']
             except KeyError:
                 import getpass
                 get_input = input
@@ -788,8 +788,8 @@ class HscDasConfig(object):
                 self._password = getpass.getpass("Password : ")
         else:
             try:
-                self._username = os.environ['HSC_PDR_USR']
-                self._password = os.environ['HSC_PDR_PWD']
+                self._username = os.environ['SSP_PDR_USR']
+                self._password = os.environ['SSP_PDR_PWD']
             except KeyError:
                 import getpass
                 get_input = input
@@ -799,16 +799,16 @@ class HscDasConfig(object):
                 self._password = getpass.getpass("Password : ")
 
 
-class HscRerun(HscDasConfig):
+class SspRerun(SspDasConfig):
     """Class for rerun in HSC data release.
 
     Examples
     --------
 
-    The examples below illustrate common usage of the `HscRerun` object.
+    The examples below illustrate common usage of the `SspRerun` object.
 
-        >>> from unagi.config import HscRerun
-        >>> s16a_wide2 = HscRerun('s16a_wide2')
+        >>> from unagi.config import SspRerun
+        >>> s16a_wide2 = SspRerun('s16a_wide2')
 
     Parameters
     ----------
@@ -817,7 +817,7 @@ class HscRerun(HscDasConfig):
         Name of the rerun
     """
     def __init__(self, rerun_name, **kwargs):
-        super(HscRerun, self).__init__(self, **kwargs)
+        super(SspRerun, self).__init__(self, **kwargs)
         if str(rerun_name).strip() not in self.rerun_list:
             raise DrException("!! Wrong rerun !!")
         else:

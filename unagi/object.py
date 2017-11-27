@@ -6,18 +6,18 @@ from __future__ import (division, print_function, absolute_import,
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
-__all__ = ('HscObject',)
+__all__ = ('SspObject',)
 
 
-class HscObject(object):
-    """Class for HSC object
+class SspObject(object):
+    """Class for HSC SSP object
 
     Examples
     --------
-    The examples below illustrate common usage of the `HscObject` object.
+    The examples below illustrate common usage of the `SspObject` object.
 
-        >>> from unagi.object import HscObject
-        >>> object_1 = HscObject(30.0, -2.0)
+        >>> from unagi.object import SspObject
+        >>> object_1 = SspObject(30.0, -2.0)
 
     Parameters
     ----------
@@ -55,8 +55,8 @@ class HscObject(object):
         Examples
         --------
 
-            >>> object_1 = HscObject(30.0, -2.0)
-            >>> object_2 = HscObject(31.0, -1.9)
+            >>> object_1 = SspObject(30.0, -2.0)
+            >>> object_2 = SspObject(31.0, -1.9)
             >>> ang_sep = object_1.distance_to(object_2)
 
         Or:
@@ -69,7 +69,7 @@ class HscObject(object):
 
         Parameters
         ----------
-            another_object : object (either HscObject or SkyCoord)
+            another_object : object (either SspObject or SkyCoord)
                 Another HSC object or a SkyCoord object.
             ra, dec : float (optional)
                 ICRS coordinate of an object.
@@ -77,13 +77,13 @@ class HscObject(object):
                 Galactic coordinate of another object.
         """
         if len(args) > 0:
-            if isinstance(args[0], HscObject):
+            if isinstance(args[0], SspObject):
                 return self.icrs.separation(args[0].icrs)
             elif isinstance(args[0], SkyCoord):
                 return self.icrs.separation(args[0])
             else:
                 raise TypeError("Wrong type of object ",
-                                "Should be HscObject or SkyCoord")
+                                "Should be SspObject or SkyCoord")
         elif ('ra' in kwargs) and ('dec' in kwargs):
             return self.icrs.separation(SkyCoord(kwargs['ra'],
                                                  kwargs['dec'],
@@ -101,7 +101,7 @@ class HscObject(object):
         Examples
         --------
 
-            >>> object_1 = HscObject(30.0, -2.0)
+            >>> object_1 = SspObject(30.0, -2.0)
             >>> object_1.in_region(Tract)
 
         Parameters
