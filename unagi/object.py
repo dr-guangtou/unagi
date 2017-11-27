@@ -6,7 +6,7 @@ from __future__ import (division, print_function, absolute_import,
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
-__all__ = ['HscObject']
+__all__ = ('HscObject',)
 
 
 class HscObject(object):
@@ -122,5 +122,6 @@ class HscObject(object):
 
     def download_coadd(self, size, filter):
         """
-
+        wget --no-check-certificate --http-user=huangs \
+             --http-password=clearskies86 --output-document=a.fits "https://hscdata.mtk.nao.ac.jp/das_quarry/dr1/cgi-bin/quarryImage?ra=150.06776248638207&dec=2.193594129134048&sw=10arcsec&sh=10arcsec&type=coadd&image=on&mask=on&variance=on&filter=HSC-I&tract=&rerun=s16a_udeep"
         """

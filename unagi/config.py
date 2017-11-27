@@ -10,8 +10,8 @@ import os
 import sys
 import warnings
 
-__all__ = ['HscField', 'HscDasConfig', 'HscRerun', 'DrException',
-           'PDR_URL', 'IDR_URL']
+__all__ = ('HscField', 'HscDasConfig', 'HscRerun', 'DrException',
+           'PDR_URL', 'IDR_URL',)
 
 
 # Update: 2017-11-22
