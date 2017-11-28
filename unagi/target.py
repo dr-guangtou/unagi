@@ -4,7 +4,6 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 from astropy.coordinates import SkyCoord
-import astropy.units as u
 
 __all__ = ('SspObject',)
 
