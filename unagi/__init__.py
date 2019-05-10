@@ -7,8 +7,8 @@ from __future__ import (division, print_function, absolute_import,
 __version__ = '171121'
 
 from . import query
-from . import object
+from . import target
 from . import task
 from . import config
 
-__all__ = ["query", "object", "task", "config"]
+__all__ = ["query", "target", "task", "config"]

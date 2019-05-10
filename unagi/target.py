@@ -3,6 +3,7 @@
 
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
+
 from astropy.coordinates import SkyCoord
 
 __all__ = ('SspObject',)
@@ -75,7 +76,7 @@ class SspObject(object):
             l, b : float (optional)
                 Galactic coordinate of another object.
         """
-        if len(args) > 0:
+        if args:
             if isinstance(args[0], SspObject):
                 return self.icrs.separation(args[0].icrs)
             elif isinstance(args[0], SkyCoord):
