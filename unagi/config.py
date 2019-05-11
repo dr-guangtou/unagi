@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -8,14 +7,12 @@ import warnings
 from astropy.table import Table
 
 __all__ = ('Field', 'Server', 'Rerun', 'DrException',
-           'PDR_URL', 'IDR_URL', 'HSC_PIXEL')
+           'PDR_URL', 'IDR_URL')
 
 
 # Update: 2019-05-09
 PDR_URL = "https://hsc-release.mtk.nao.ac.jp"
 IDR_URL = "https://hscdata.mtk.nao.ac.jp"
-
-HSC_PIXEL = 0.168
 
 
 class DrException(Exception):
