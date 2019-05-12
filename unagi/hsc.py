@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 """Core functions"""
 
-__all__ = ['HscServer']
+__all__ = ['Hsc']
+
+import astropy.units as u
+import astropy.coordinates as coord
 
 from . import config
 
@@ -11,6 +14,7 @@ class Hsc():
     HSC Server Class.
     """
     PIXEL_SIZE = 0.168   # arcsec / pixel
+    MAX_CUTOUT = 2116 * u.arcsec
     DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2']
     FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921']
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
@@ -31,8 +35,8 @@ class Hsc():
         config_file: str
             Name of the configuration file. Default: None
         """
-        assert dr in DATABASE
-        self.rerun = config.rerrun(dr=dr, rerun=rerun, pdr=pdr, config_fiel=config_file)
+        assert dr in Hsc.DATABASE
+        self.rerun = config.Rerun(dr=dr, rerun=rerun, pdr=pdr, config_file=config_file)
     
     def _login(self, username=None, password=None):
         """
@@ -100,3 +104,16 @@ class Hsc():
                 raise ValueError('Unknown filter: {}'.format(filt))
 
         return filt
+
+    def _parse_cutout_size_center(width, height):
+        """
+        Check the size of the cutout image using width and height.
+
+        Parameters:
+        -----------
+        width : float
+            Image width in unit of arcsec.
+        height : float
+            Image height in unit of arcsec.
+        """
+        pass
