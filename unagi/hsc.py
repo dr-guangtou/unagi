@@ -2,14 +2,28 @@
 # -*- coding: utf-8 -*-
 """Core functions"""
 
-__all__ = ['Hsc']
-
 import urllib
+import warnings
 
 import astropy.units as u
-import astropy.coordinates as coord
+from astropy.io import fits
 
 from . import config
+
+__all__ = ['Hsc']
+
+DEFAULT_CUTOUT_CENTER = {
+    'ra': '', 'dec': '', 'sw': '5arcsec', 'sh': '5arcsec',
+    'type': 'coadd', 'image': 'on', 'mask': 'off', 'variance': 'off',
+    'filter': 'HSC-I', 'rerun': ''
+}
+
+DEFAULT_CUTOUT_ORIGIN = {
+    'ra1': '', 'dec1': '', 'ra2': '', 'dec2': '',
+    'type': 'coadd', 'image': 'on', 'mask': 'off', 'variance': 'off',
+    'filter': 'HSC-I', 'rerun': ''
+}
+
 
 class Hsc():
     """
@@ -17,6 +31,7 @@ class Hsc():
     """
     PIXEL_SIZE = 0.168   # arcsec / pixel
     MAX_CUTOUT = 2116 * u.arcsec
+    DEFAULT_IMG_SIZE = 10.0 * u.arcsec
     DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2']
     FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921']
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
@@ -39,13 +54,18 @@ class Hsc():
         """
         # Initiate the Rerun object
         assert dr in self.DATABASE
-        self.rerun = config.Rerun(dr=dr, rerun=rerun, pdr=pdr, config_file=config_file)
+        self.rerun = rerun
+        self.dr = dr
+        self.pdr = pdr
+        self.archive = config.Rerun(
+            dr=dr, rerun=rerun, pdr=pdr, config_file=config_file)
 
         # Whether login to the server
         self.is_login = False
         self.opener = None
         # Try to login to the HSC archive
-        self.login()
+        if not self.is_login or self.opener is None:
+            self.login()
 
     def login(self, username=None, password=None):
         """
@@ -58,15 +78,15 @@ class Hsc():
         """
         # Get the user name and password
         if username is None:
-            username = self.rerun._username
+            username = self.archive._username
         if password is None:
-            password = self.rerun._password
+            password = self.archive._password
 
         # Create a password manager
         password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
 
         # Add the username and password.
-        password_mgr.add_password(None, self.rerun.base_url, username, password)
+        password_mgr.add_password(None, self.archive.base_url, username, password)
         handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
 
         # create "opener" (OpenerDirector instance)
@@ -74,7 +94,7 @@ class Hsc():
 
         try:
             # use the opener to fetch a URL
-            opener.open(self.rerun.base_url)
+            opener.open(self.archive.base_url)
             # Install the opener.
             urllib.request.install_opener(opener)
             self.is_login = True
@@ -83,7 +103,33 @@ class Hsc():
             print("! Can not login to HSC archive: %s" % str(e))
             self.opener = None
 
-    def _form_cutout_url(self, coordinate, ):
+    def get_cutout_image(self, coord, coord_2=None, w_half=None, h_half=None, filt='HSC-I',
+                         img_type='coadd', image=True, variance=False, mask=False):
+        """
+        Get HSC cutout image.
+
+        Parameters:
+        -----------
+        """
+        cutout_kwargs = {'filt': filt, 'img_type': img_type, 'image': image,
+                         'variance': variance, 'mask': mask}
+
+        cutout_url = self.form_cutout_url(
+            coord, coord_2=coord_2, w_half=w_half, h_half=h_half, **cutout_kwargs)
+
+        if img_type == 'warp':
+            warnings.warn("# Not a coadd cutout, will return the url")
+            return cutout_url
+
+        try:
+            cutout = fits.open(cutout_url)
+        except urllib.error.HTTPError as e:
+            print("# Error message: {}".format(e))
+            raise Exception("# Can not download cutout: {}".format(cutout_url))
+
+        return cutout
+
+    def form_cutout_url(self, coord, coord_2=None, w_half=None, h_half=None, **kwargs):
         """
         Form the URL to download HSC cutout images.
 
@@ -106,7 +152,20 @@ class Hsc():
             So the maximum size is 35 arcmin.
 
         """
-        pass
+        # Default image cutout size
+        if w_half is None:
+            w_half = self.DEFAULT_IMG_SIZE
+
+        if h_half is None:
+            h_half = self.DEFAULT_IMG_SIZE
+
+        if coord_2 is not None:
+            raise NotImplementedError("# Not ready yet!")
+        else:
+            cutout_dict = self._parse_cutout_center(coord, w_half, h_half, **kwargs)
+
+        return self.archive.img_url + '&'.join(
+            key + '=' + value for key, value in cutout_dict.items())
 
     def _form_image_url(self, coordinate, ):
         """
@@ -131,9 +190,9 @@ class Hsc():
         filt: str
             Name of the filter.
         """
-        if filt not in self.rerun.filter_list:
-            if filt in self.rerun.filter_list_short:
-                filt = self.rerun.filter_list[self.rerun.filter_list_short.index(filt)]
+        if filt not in self.FILTER_LIST:
+            if filt in self.FILTER_SHORT:
+                filt = self.FILTER_LIST[self.rerun.FILTER_SHORT.index(filt)]
             else:
                 raise ValueError('Unknown filter: {}'.format(filt))
 
@@ -145,15 +204,95 @@ class Hsc():
         """
         pass
 
-    def _parse_cutout_size_center(self, width, height):
+    def _parse_coordinate(self, coord, frame='icrs'):
         """
-        Check the size of the cutout image using width and height.
+        Convert the coordinate into string for RA & Dec.
 
         Parameters:
         -----------
-        width : float
-            Image width in unit of arcsec.
-        height : float
-            Image height in unit of arcsec.
+        coord: astropy.coordinates.SkyCoord object
+            Sky coordinate.
+        frame: str
+            Name of the coordinate frame. Default: 'icrs'
         """
-        pass
+        return coord.transform_to(frame).to_string('decimal').split(' ')
+
+    def _parse_size_center(self, w_half, h_half, correct=False):
+        """
+        Convert the image width and height into string.
+
+        Parameters:
+        -----------
+        w_half: float
+            Half of the image width.
+        h_half: float
+            Half of the image height.
+        correct: bool
+            Correct the bool
+        """
+        # Check the image width
+        if w_half * 2 > self.MAX_CUTOUT:
+            if correct:
+                print("# Image width is too large! Just use the maximum size!")
+                w_half = self.MAX_CUTOUT / 2.0
+            else:
+                raise Exception("# Image width is too large")
+
+        # Check the image height
+        if h_half * 2 > self.MAX_CUTOUT:
+            if correct:
+                print("# Image width is too large! Just use the maximum size!")
+                h_half = self.MAX_CUTOUT / 2.0
+            else:
+                raise Exception("# Image width is too large")
+
+        # Convert the sizes into string
+        w_str = "{:f}{}".format(w_half.value, w_half.unit)
+        h_str = "{:f}{}".format(h_half.value, h_half.unit)
+
+        return w_str, h_str
+
+    def _parse_cutout_center(self, coord, w_half, h_half, filt='HSC-I',
+                             img_type='coadd', image=True,
+                             variance=False, mask=False):
+        """
+        Organize the parameters to generate the cutout image.
+
+        Parameters:
+        -----------
+        coord: astropy.coordinates.SkyCoord object
+            Sky coordinate.
+        w_half: float
+            Half of the image width.
+        h_half: float
+            Half of the image height.
+        """
+        # Load the default dictionary
+        cutout_dict = DEFAULT_CUTOUT_CENTER
+
+        # Parse the coordinate
+        ra_str, dec_str = self._parse_coordinate(coord)
+        cutout_dict['ra'] = ra_str
+        cutout_dict['dec'] = dec_str
+
+        # Parse the image width and height
+        w_str, h_str = self._parse_size_center(w_half, h_half)
+        cutout_dict['sw'] = w_str
+        cutout_dict['sh'] = h_str
+
+        # Image filter
+        filt = self._check_filter(filt)
+        cutout_dict['filter'] = filt
+
+        # Image type
+        cutout_dict['type'] = img_type
+
+        # Content of the cutout
+        cutout_dict['image'] = 'on' if image else 'off'
+        cutout_dict['variance'] = 'on' if variance else 'off'
+        cutout_dict['mask'] = 'on' if mask else 'off'
+
+        # Rerun name
+        cutout_dict['rerun'] = self.rerun
+
+        return cutout_dict
