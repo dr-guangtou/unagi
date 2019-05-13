@@ -134,19 +134,19 @@ class Hsc():
                          'filt': filt, 'img_type': img_type, 'image': image,
                          'variance': variance, 'mask': mask}
 
-        cutout = self.get_cutout_image(coord, **cutout_kwargs)
-
         if img_type == 'coadd':
             # Download FITS file for coadd image.
+            cutout = self.get_cutout_image(coord, **cutout_kwargs)
             _ = cutout.writeto(output_file, overwrite=overwrite)
-        elif img_type == 'wrap':
-            # Download the tarball for wrapped images.
+        elif img_type == 'warp':
+            # Download the tarball for warpped images.
+            cutout_url = self.get_cutout_image(coord, **cutout_kwargs)
             if os.path.isfile(output_file) and not overwrite:
                 raise HscException("# File {} exists!".format(output_file))
             else:
-                _ = shutil.move(download_file(cutout, show_progress=False), output_file)
+                _ = shutil.move(download_file(cutout_url, show_progress=False), output_file)
         else:
-            raise HscException("# Wrong image type: coadd or wrap !")
+            raise HscException("# Wrong image type: coadd or warp !")
 
     def get_cutout_image(self, coord, coord_2=None, w_half=None, h_half=None, filt='HSC-I',
                          img_type='coadd', image=True, variance=False, mask=False, verbose=False):
@@ -193,7 +193,7 @@ class Hsc():
 
         About the image type:
             1. `coadd`: will return a FITS image.
-            2. `wrap`: will return a `.tar` compressed file that containts all the wrapped images.
+            2. `warp`: will return a `.tar` compressed file that containts all the warpped images.
 
         Limitation:
             Maximum cutout image size is 3 x 3 `Patches`. Each `Patch` is 4200 x 4200 pixels.
