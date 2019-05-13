@@ -103,6 +103,12 @@ class Hsc():
             print("! Can not login to HSC archive: %s" % str(e))
             self.opener = None
 
+    def download_cutout(self):
+        """
+        Download coadded or warped cutout image(s).
+        """
+        pass 
+
     def get_cutout_image(self, coord, coord_2=None, w_half=None, h_half=None, filt='HSC-I',
                          img_type='coadd', image=True, variance=False, mask=False):
         """
