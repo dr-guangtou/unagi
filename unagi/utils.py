@@ -54,9 +54,13 @@ def r_phy_to_ang(r_phy, redshift, cosmo=None, phy_unit='kpc', ang_unit='arcsec')
     """
     Convert physical radius into angular size.
     """
+    # Cosmology
     if cosmo is None:
         from astropy.cosmology import FlatLambdaCDM
         cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 
-    return (r_phy * u.Unit(phy_unit) /
-            cosmo.kpc_proper_per_arcmin(redshift)).to(u.Unit(ang_unit))
+    # Convert the physical size into an Astropy quantity
+    if not isinstance(r_phy, u.quantity.Quantity):
+        r_phy = r_phy * u.Unit(phy_unit)
+
+    return (r_phy / cosmo.kpc_proper_per_arcmin(redshift)).to(u.Unit(ang_unit))
