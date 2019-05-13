@@ -5,7 +5,7 @@ from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
 from .target import SspObject
-from .config import SspRerun
+from .config import Rerun
 
 __all__ = ('SspDasTask', 'SspCoaddImage',)
 
@@ -33,7 +33,7 @@ class SspDasTask(object):
         # Test whether the inputs are the right type
         if not isinstance(target, SspObject):
             raise TypeError("Not the right type of target.")
-        if not isinstance(rerun, SspRerun):
+        if not isinstance(rerun, Rerun):
             raise TypeError("Not the right type of target.")
 
 

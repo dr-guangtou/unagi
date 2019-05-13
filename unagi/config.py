@@ -89,6 +89,7 @@ class Server(object):
                 self.timeout = 300
 
                 # Useful URLs
+                self.base_url = PDR_URL
                 # SQL catalog log search search server
                 self.cat_url = PDR_URL + "/datasearch/api/catalog_jobs/"
                 # Coadd image cutout server
@@ -352,6 +353,7 @@ class Server(object):
                 self.data_release = 'dr1'
 
                 # Useful URLs
+                self.base_url = IDR_URL
                 # SQL catalog log search search server
                 self.cat_url = IDR_URL + "/datasearch/api/catalog_jobs/"
                 # Coadd image cutout server
@@ -594,6 +596,7 @@ class Server(object):
 
             elif dr == 'dr2':
                 # Useful URLs
+                self.base_url = IDR_URL
                 # SQL catalog log search search server
                 self.cat_url = IDR_URL + "/datasearch/api/catalog_jobs/"
                 # Coadd image cutout server
