@@ -36,15 +36,20 @@ class Hsc():
     """
     HSC Server Class.
     """
-    PIXEL_SIZE = 0.168   # arcsec / pixel
+    # HSC Pixel size in unit of arcsec / pixel
+    PIXEL_SIZE = 0.168
+    # The maximum allowed cutout size in unit of arcsec (~35 arcmin)
     MAX_CUTOUT = 2116 * u.arcsec
+    # Default cutout image size in unit of arcsec
     DEFAULT_IMG_SIZE = 10.0 * u.arcsec
+    # Available HSC database
     DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2']
-    FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921']
+    # List of HSC filters
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
                    'NB0387', 'NB0816', 'NB0921']
+    FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921']
 
-    def __init__(self, dr='dr2', rerun='s18a_wide', pdr=False, config_file=None):
+    def __init__(self, dr='dr2', rerun='s18a_wide', config_file=None):
         """
         Initialize a HSC rerun object.
 
@@ -61,11 +66,17 @@ class Hsc():
         """
         # Initiate the Rerun object
         assert dr in self.DATABASE
-        self.rerun = rerun
         self.dr = dr
-        self.pdr = pdr
+
+        # Check whether we are using public or internal data release.
+        if dr[0] == 'p':
+            self.pdr = True
+        else:
+            self.pdr = False
+
+        self.rerun = rerun
         self.archive = config.Rerun(
-            dr=dr, rerun=rerun, pdr=pdr, config_file=config_file)
+            dr=self.dr, rerun=self.rerun, pdr=self.pdr, config_file=config_file)
 
         # Whether login to the server
         self.is_login = False
@@ -240,7 +251,7 @@ class Hsc():
         """
         if filt not in self.FILTER_LIST:
             if filt in self.FILTER_SHORT:
-                filt = self.FILTER_LIST[self.rerun.FILTER_SHORT.index(filt)]
+                filt = self.FILTER_LIST[self.FILTER_SHORT.index(filt)]
             else:
                 raise ValueError('Unknown filter: {}'.format(filt))
 
