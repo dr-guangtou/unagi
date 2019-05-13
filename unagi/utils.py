@@ -4,7 +4,9 @@
 import string
 import random
 
-__all__ = ['same_string', 'random_string']
+import astropy.units as u
+
+__all__ = ['same_string', 'random_string', 'r_phy_to_ang']
 
 
 def _passively_decode_string(a):
@@ -46,3 +48,15 @@ def random_string(length=5, chars=string.ascii_uppercase + string.digits):
         Types of characters allowed in the random string. Default: ASCII_Uppercase + Digits.
     """
     return ''.join(random.choice(chars) for _ in range(length))
+
+
+def r_phy_to_ang(r_phy, redshift, cosmo=None, phy_unit='kpc', ang_unit='arcsec'):
+    """
+    Convert physical radius into angular size.
+    """
+    if cosmo is None:
+        from astropy.cosmology import FlatLambdaCDM
+        cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
+
+    return (r_phy * u.Unit(phy_unit) /
+            cosmo.kpc_proper_per_arcmin(redshift)).to(u.Unit(ang_unit))
