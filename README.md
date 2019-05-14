@@ -1,6 +1,6 @@
 # Unagi (ウナギ)
 
-![Alt Text](doc/unagi_logo.png = 250x250)
+![Unagi logo](doc/unagi_logo.png) <!-- .element height="30%" width="30%" -->
 
 ----
 
