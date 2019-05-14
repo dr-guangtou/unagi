@@ -20,18 +20,21 @@ PHY_UNITS = ['pc', 'kpc', 'Mpc']
 
 def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
                  dr='dr2', rerun='s18a_wide', redshift=None, cosmo=None,
-                 prefix=None, save=False, verbose=True, rgb_order=False, hdu=1,
-                 rgb_save=False, rgb_q=15, rgb_stretch=0.5, rgb_min=0):
+                 prefix=None, use_saved=False, save_img=False, verbose=True,
+                 rgb_order=False, hdu=1, archive=None,
+                 save_rgb=False, rgb_q=15, rgb_stretch=0.5, rgb_min=0):
     """
     Generate HSC 3-color picture using coadd image.
     """
     # Login to HSC archive
-    archive = Hsc(dr=dr, rerun=rerun)
+    if archive is None:
+        archive = Hsc(dr=dr, rerun=rerun)
 
     # List of three filters
     filter_list = list(filters)
     if len(filter_list) is not 3:
         raise ValueError("# Need and only need three filters!")
+
     # Check the choices of filters
     assert np.all(
         [(f in archive.FILTER_SHORT) or (f in archive.FILTER_LIST)
@@ -42,7 +45,8 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
     if not isinstance(cutout_size, u.quantity.Quantity):
         if verbose:
             print("# Assume the cutout size is in arcsec unit.")
-        ang_size = cutout_size * u.Unit('arcsec')
+        cutout_size = cutout_size * u.Unit('arcsec')
+        ang_size = cutout_size
     else:
         cutout_unit = cutout_size.unit
         if str(cutout_unit) in ANG_UNITS:
@@ -60,17 +64,25 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
     # Output file names
     if prefix is None:
         # TODO: More informed prefix
-        preifx = 'hsc_tricolor'
+        ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
+        size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
+        prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
 
     # List of fits file
     fits_list = ['_'.join([prefix, f]) + '.fits' for f in filter_list]
+
     # Availability of each file
     fits_save = [os.path.isfile(f) or os.path.islink(f) for f in fits_list]
 
     # Name of the output JPEG picture (if necessary)
-    if rgb_save:
-        # TODO: show filter names in the filename
-        rgb_jpg = prefix + '_color.jpg'
+    if save_rgb:
+        # Generate a string that represents the filter combination
+        color_str = ''.join(
+            [f if f in archive.FILTER_SHORT else archive.FILTER_SHORT[archive.FILTER_LIST.index(f)]
+             for f in filter_list])
+        rgb_jpg = prefix + '_{0}.jpg'.format(color_str)
+        if verbose:
+            print("# RGB picture will be saved as {}".format(rgb_jpg))
     else:
         rgb_jpg = None
 
@@ -79,12 +91,14 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
 
     # Load the cutout images in three bands
     for ii, filt in enumerate(filter_list):
-        if fits_save[ii]:
+        if fits_save[ii] and use_saved:
+            if verbose:
+                print("# Read in saved FITS file: {}".format(fits_save[ii]))
             cutout_hdu = fits.open(fits_list[ii])
         else:
             cutout_hdu = archive.get_cutout_image(
                 coord, w_half=ang_size, h_half=ang_size, filt=filt)
-            if save:
+            if save_img:
                 _ = cutout_hdu.writeto(fits_list[ii], overwrite=True)
 
         if ii == 0:
