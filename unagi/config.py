@@ -6,12 +6,14 @@ import warnings
 from astropy.table import Table
 
 __all__ = ('Field', 'Server', 'Rerun', 'DrException',
-           'PDR_URL', 'IDR_URL')
+           'PDR_URL', 'IDR_URL', 'AVAILABLE_DRS')
 
 
 # Update: 2019-05-09
 PDR_URL = "https://hsc-release.mtk.nao.ac.jp"
 IDR_URL = "https://hscdata.mtk.nao.ac.jp"
+
+AVAILABLE_DRS = ['pdr1', 'pdr2', 'dr1', 'dr2']
 
 
 class DrException(Exception):
@@ -363,7 +365,6 @@ class Server(object):
                 # DAS querry server
                 self.das_url = IDR_URL + "/das_console/dr1/"
                 # Direct file tree
-                self.file_url = IDR_URL + "/hsc_ssp/dr1/"
                 # Ancillary information
                 self.map_url = IDR_URL + "/hsc_ssp/dr1/s16a/doc/fig/"
                 self.txt_url = IDR_URL + "/hsc_ssp/dr1/s16a/doc/info/"
