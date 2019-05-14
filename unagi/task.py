@@ -96,6 +96,8 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
                 print("# Read in saved FITS file: {}".format(fits_save[ii]))
             cutout_hdu = fits.open(fits_list[ii])
         else:
+            if verbose:
+                print("# Retrieving cutout image in filter: {}".format(filt))
             cutout_hdu = archive.get_cutout_image(
                 coord, w_half=ang_size, h_half=ang_size, filt=filt)
             if save_img:

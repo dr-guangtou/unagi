@@ -13,7 +13,7 @@ from astropy.utils.data import download_file
 
 from . import config
 
-__all__ = ['Hsc']
+__all__ = ['Hsc', 'DEFAULT_CUTOUT_CENTER', 'DEFAULT_CUTOUT_ORIGIN']
 
 DEFAULT_CUTOUT_CENTER = {
     'ra': '', 'dec': '', 'sw': '5arcsec', 'sh': '5arcsec',
