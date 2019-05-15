@@ -76,7 +76,7 @@ class Hsc():
 
         self.rerun = rerun
         self.archive = config.Rerun(
-            dr=self.dr, rerun=self.rerun, pdr=self.pdr, config_file=config_file)
+            dr=self.dr, rerun=self.rerun, config_file=config_file)
 
         # Whether login to the server
         self.is_login = False

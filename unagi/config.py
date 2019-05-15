@@ -36,7 +36,7 @@ class Field(object):
 
     Parameters
     ----------
-    name : string
+    name : strin, 'AVAILABLE_DRS'g
         Name of the field
     """
     def __init__(self, name, *initial_dict, **kwargs):
@@ -57,18 +57,18 @@ class Server(object):
     --------
     The examples below illustrate common usage of the `SspObject` object.
 
-        >>> from unagi.config import SspDasConfig
-        >>> pdr_config = SspDasConfig(pdr=True)
+        >>> from unagi.config import Server
+        >>> pdr_config = Server(dr='pdr1')
 
     Parameters
     ----------
-    dr : string
-        Data release.
-    pdr : boolen, optional
-        Use public data release or not (Default = False).
+    dr: string
+        Data release ID
+    config_file: str
+        Name of the configuration file that contains the username and password.
     """
-    def __init__(self, dr='dr2', pdr=False, config_file=None):
-        if pdr:
+    def __init__(self, dr='dr2', config_file=None):
+        if dr.strip()[0] == 'p':
             """Use the HSC SSP public data release at:
                 http://hsc.mtk.nao.ac.jp/ssp/
 
@@ -314,7 +314,7 @@ class Server(object):
 
             self.field_table = Table(rows=self.fields)
 
-            self.field_name = self.field_table['name'].data.astype('str')
+            self.field_name = list(self.field_table['name'].data.astype('str'))
         else:
             """Use the HSC SSP internal data release at:
 
@@ -868,10 +868,8 @@ class Rerun(Server):
     rerun_name : string
         Name of the rerun
     """
-    def __init__(self, rerun='s18a_wide', dr='dr2',
-                 pdr=False, config_file=None):
-        super(Rerun, self).__init__(
-            dr=dr, pdr=pdr, config_file=config_file)
+    def __init__(self, rerun='s18a_wide', dr='dr2', config_file=None):
+        super(Rerun, self).__init__(dr=dr, config_file=config_file)
 
         if str(rerun).strip() not in self.rerun_list:
             raise DrException("!! Wrong rerun !!")
