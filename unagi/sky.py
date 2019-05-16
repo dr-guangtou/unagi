@@ -6,11 +6,9 @@
 from __future__ import annotations
 
 import os
-import copy
 import warnings
 
 import numpy as np
-from scipy.stats import sigmaclip
 
 from astropy.table import Table
 
@@ -32,12 +30,13 @@ class AperPhot():
         self.area_pix = np.pi * (rad ** 2.0)
         self.r_arcsec = rad * self.PIX
         self.area_arcsec = np.pi * (self.r_arcsec ** 2.0)
+        self.rerun = rerun
 
         # Name of the columns for flux and flux error
-        self.flux_col = self.flux(rerun=rerun)
-        self.err_col = self.err(rerun=rerun)
+        self.flux_col = self.flux(rerun=self.rerun)
+        self.err_col = self.err(rerun=self.rerun)
 
-    def flux(self, band=None, rerun=rerun):
+    def flux(self, band=None, rerun='s18a'):
         """Aperture flux column name in S18A."""
         if rerun == 's18a':
             if band is not None:
@@ -46,12 +45,12 @@ class AperPhot():
         else:
             raise NotImplementedError("# Only S18A data are available.")
 
-    def err(self, band=None, rerun=rerun):
+    def err(self, band=None, rerun='s18a'):
         """Aperture flux error column name in S18A."""
         if rerun == 's18a':
             if band is not None:
-                return "{0}_{1}sigma".format(band.strip(), self.s18a_flux())
-            return "{0}sigma".format(self.s18a_flux())
+                return "{0}_{1}sigma".format(band.strip(), self.flux(rerun=rerun))
+            return "{0}sigma".format(self.flux(rerun=rerun))
         else:
             raise NotImplementedError("# Only S18A data are available.")
 
@@ -217,6 +216,11 @@ class SkyObjs():
         return utils.stats_summary(mu, sigma=sigma, n_min=self.n_min,
                                    kde=kde, bw=bw)
 
-    def sum_all_filters(self, aper, rerun='s18a'):
+    def sum_all_filters(self, aper, rerun='s18a', **kwargs):
         """Provide a summary of sky objects in all five bands."""
+
+        flux_stats = self.flux_stats(aper, band, rerun=rerun, **kwargs)
+        snr_stats = self.flux_stats(aper, band, rerun=rerun, **kwargs)
+        mu_stats = self.flux_stats(aper, band, rerun=rerun, **kwargs)
+
         raise NotImplementedError("# Not yet")
