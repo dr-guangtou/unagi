@@ -33,33 +33,35 @@ class AperPhot():
         self.r_arcsec = rad * self.PIX
         self.area_arcsec = np.pi * (self.r_arcsec ** 2.0)
 
+        # Name of the columns for flux and flux error
+        self.flux_col = self.flux(rerun=rerun)
+        self.err_col = self.err(rerun=rerun)
+
+    def flux(self, band=None, rerun=rerun):
+        """Aperture flux column name in S18A."""
         if rerun == 's18a':
-            self.flux_col = self.s18a_flux()
-            self.err_col = self.s18a_err()
+            if band is not None:
+                return "{0}_apertureflux_{1}_flux".format(band.strip(), self.aper_id)
+            return "apertureflux_{0}_flux".format(self.aper_id)
         else:
             raise NotImplementedError("# Only S18A data are available.")
 
-    def s18a_flux(self, band=None):
-        """Aperture flux column name in S18A."""
-        if band is not None:
-            return "{0}_apertureflux_{1}_flux".format(band.strip(), self.aper_id)
-
-        return "apertureflux_{0}_flux".format(self.aper_id)
-
-    def s18a_err(self, band=None):
+    def err(self, band=None, rerun=rerun):
         """Aperture flux error column name in S18A."""
-        if band is not None:
-            return "{0}_{1}sigma".format(band.strip(), self.s18a_flux())
-
-        return "{0}sigma".format(self.s18a_flux())
+        if rerun == 's18a':
+            if band is not None:
+                return "{0}_{1}sigma".format(band.strip(), self.s18a_flux())
+            return "{0}sigma".format(self.s18a_flux())
+        else:
+            raise NotImplementedError("# Only S18A data are available.")
 
 # Aperture flux in S18A
 S18A_APER_ID = ['10', '15', '20', '30', '40', '57', '84',
                 '118', '168', '235']
 S18A_APER_RAD = [3.0, 4.5, 6.0, 9.0, 12.0, 17.0, 25.0, 35.0, 50.0, 70.0]
 S18A_APER = {}
-for ii, rad in zip(S18A_APER_ID, S18A_APER_RAD):
-    S18A_APER['aper{0}'.format(ii)] = AperPhot(ii, rad)
+for ii, rr in zip(S18A_APER_ID, S18A_APER_RAD):
+    S18A_APER['aper{0}'.format(ii)] = AperPhot(ii, rr)
 
 
 class SkyObjs():
@@ -150,9 +152,13 @@ class SkyObjs():
         """Select sky objects within a circle."""
         raise NotImplementedError("# Not yet")
 
-    def flux_stats(self, flux_col, sigma=3.5, kde=False, bw=None, to_mujy=True):
+    def flux_stats(self, aper, band, rerun='s18a', sigma=3.5,
+                   kde=False, bw=None, to_mujy=True):
         """Basic statistics of the flux."""
         u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
+        assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
+
+        flux_col = aper.flux(rerun='s18a', band=band)
 
         try:
             flux = self.skyobjs[flux_col] * u_factor
@@ -162,8 +168,13 @@ class SkyObjs():
         return utils.stats_summary(flux, sigma=sigma, n_min=self.n_min,
                                    kde=kde, bw=bw)
 
-    def snr_stats(self, flux_col, err_col, sigma=3.5, kde=False, bw=None):
+    def snr_stats(self, aper, band, rerun='s18a', sigma=3.5, kde=False, bw=None):
         """Basic statistics of the S/N."""
+        assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
+
+        flux_col = aper.flux(rerun='s18a', band=band)
+        err_col = aper.err(rerun='s18a', band=band)
+
         try:
             snr = self.skyobjs[flux_col] / self.skyobjs[err_col]
         except ValueError:
@@ -172,10 +183,22 @@ class SkyObjs():
         return utils.stats_summary(snr, sigma=sigma, n_min=self.n_min,
                                    kde=kde, bw=bw)
 
-    def mu_stats(self, aper):
+    def mu_stats(self, aper, band, to_mujy=True, rerun='s18a', sigma=3.5, n_min=5,
+                 kde=False, bw=None):
         """Basic statistics of the aperture flux density."""
-        raise NotImplementedError("# Not yet")
-    
-    def sum_all_filters(self, aper):
-        """Provide a summary of sky objects in all five bands.""" 
+        u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
+        assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
+
+        flux_col = aper.flux(rerun='s18a', band=band)
+
+        try:
+            mu = self.skyobjs[flux_col] * u_factor / aper.area_arcsec
+        except ValueError:
+            raise Exception("# Wrong flux column name: {0}".format(flux_col))
+
+        return utils.stats_summary(mu, sigma=sigma, n_min=self.n_min,
+                                   kde=kde, bw=bw)
+
+    def sum_all_filters(self, aper, rerun='s18a'):
+        """Provide a summary of sky objects in all five bands."""
         raise NotImplementedError("# Not yet")
