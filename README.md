@@ -12,7 +12,7 @@ Applications
 ------------
 
 - Generate cutout coadded or warped HSC images.
-- Generate 3-color RGB picture of a small HSC region.
+- [Generate 3-color RGB picture of a small HSC region.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_color_image.ipynb)
 - Query and download HSC PSF model.
 - Download HSC files (coadded `Patch` or source catalogs).
 
@@ -21,6 +21,12 @@ Installation
 ------------
 
 Right now, please just put `unagi` under your `PYTHONPATH` environment variable.
+
+Documents
+--------- 
+
+I <del>promise</del>hope that documents will be available soon...but right now, please take a look at the Jupyter Notebook [demos](https://github.com/dr-guangtou/unagi/tree/master/demo) for each functionality. 
+
 
 
 Reporting bugs
