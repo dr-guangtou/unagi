@@ -144,9 +144,27 @@ class SkyObjs():
 
         return SkyObjs(self.skyobjs[tract_mask])
 
-    def select_box(self):
+    def select_box(self, ra1, ra2, dec1, dec2, n_min=5) -> 'SkyObjs':
         """Select sky objects in a box region."""
-        raise NotImplementedError("# Not yet")
+        # Order of the coordinates
+        if ra1 >= ra2:
+            ra1, ra2 = ra2, ra1
+        if dec1 >= dec2:
+            dec1, dec2 = dec2, dec1
+
+        # Select sky objects in that region
+        box_mask = ((self.skyobjs[self.ra_col] >= ra1) & (self.skyobjs[self.ra_col] <= ra2) &
+                    (self.skyobjs[self.dec_col] >= dec1) & (self.skyobjs[self.dec_col] <= dec2))
+
+        if box_mask.sum() == 0:
+            warnings.warn(
+                "# No sky object in this region: {0}:{1}-{2}:{3}".format(ra1, ra2, dec1, dec2))
+            return None
+
+        if box_mask.sum() <= n_min:
+            warnings.warn("# Only find {0} sky object(s)".format(box_mask.sum()))
+
+        return SkyObjs(self.skyobjs[box_mask])
 
     def select_circle(self):
         """Select sky objects within a circle."""
@@ -158,7 +176,7 @@ class SkyObjs():
         u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
         assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
 
-        flux_col = aper.flux(rerun='s18a', band=band)
+        flux_col = aper.flux(rerun=rerun, band=band)
 
         try:
             flux = self.skyobjs[flux_col] * u_factor
@@ -172,8 +190,8 @@ class SkyObjs():
         """Basic statistics of the S/N."""
         assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
 
-        flux_col = aper.flux(rerun='s18a', band=band)
-        err_col = aper.err(rerun='s18a', band=band)
+        flux_col = aper.flux(rerun=rerun, band=band)
+        err_col = aper.err(rerun=rerun, band=band)
 
         try:
             snr = self.skyobjs[flux_col] / self.skyobjs[err_col]
@@ -183,13 +201,13 @@ class SkyObjs():
         return utils.stats_summary(snr, sigma=sigma, n_min=self.n_min,
                                    kde=kde, bw=bw)
 
-    def mu_stats(self, aper, band, to_mujy=True, rerun='s18a', sigma=3.5, n_min=5,
+    def mu_stats(self, aper, band, to_mujy=True, rerun='s18a', sigma=3.5,
                  kde=False, bw=None):
         """Basic statistics of the aperture flux density."""
         u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
         assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
 
-        flux_col = aper.flux(rerun='s18a', band=band)
+        flux_col = aper.flux(rerun=rerun, band=band)
 
         try:
             mu = self.skyobjs[flux_col] * u_factor / aper.area_arcsec
