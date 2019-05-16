@@ -68,6 +68,12 @@ class SkyObjs():
         self.tract_list = list(np.unique(self.skyobjs['tract']))
         self.n_tract = len(self.tract_list)
 
+        # List of Patches and Tracts
+        self.tract_patch = np.unique(
+            ["{0}_{1:03d}".format(t, p) for t, p in 
+             zip(self.skyobjs['tract'], self.skyobjs['patch'])])
+        self.n_tract_patch = len(self.tract_patch)
+
     def select_tract(self, tract, patch=None, n_min=10):
         """Select sky objects on one Tract (and Patch) from the catalog """
         tract_mask = self.skyobjs['tract'] == tract
@@ -107,7 +113,7 @@ class SkyObjs():
         # Sigma clipping
         if sigma is not None and sigma > 0:
             flux_use, flux_low, flux_upp = sigmaclip(flux_use, low=sigma, high=sigma)
-        if len(sigma) <= self.n_min:
+        if len(flux_use) <= self.n_min:
             warnings.warn("# Does not have enough sky object: {0}".format(len(sigma)))
 
         return np.mean(flux_use), np.median(flux_use), np.std(flux_use)
