@@ -114,8 +114,8 @@ def stats_summary(X, sigma=5.0, n_min=5, kde=True, bw=None,
 
     # Mean, median, and standard deviation
     summary[keys[2]] = np.mean(X_clipped)
-    summary[keys[3]] = np.std(X_clipped)
-    summary[keys[4]] = np.median(X_clipped)
+    summary[keys[3]] = np.median(X_clipped)
+    summary[keys[4]] = np.std(X_clipped)
 
     if kde:
         if bw is None:
