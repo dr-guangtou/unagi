@@ -335,7 +335,7 @@ class SkyObjs():
             elif tract is not None and patch is not None:
                 region = r'${0}:{1}$'.format(tract, patch)
 
-            aper_str = r"$\rm {0}$".format(aper.name.upper())
+            aper_str = r"$\rm {0}$".format(aper.name[0].upper() + aper.name[1:])
 
             hist = plotting.plot_skyobj_hist(
                 clipped, summary, band, prop, region=region, aper=aper_str, fontsize=20)
