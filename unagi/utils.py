@@ -12,7 +12,8 @@ import astropy.units as u
 from scipy.stats import sigmaclip
 from scipy.stats import gaussian_kde
 
-__all__ = ['same_string', 'random_string', 'r_phy_to_ang']
+__all__ = ['same_string', 'random_string', 'r_phy_to_ang', 
+           'save_to_dill', 'read_from_dill']
 
 
 def _passively_decode_string(a):
@@ -119,3 +120,25 @@ def stats_summary(X, sigma=5.0, n_min=10, kde=True, bw=None, prefix=None):
     summary[keys[6]] = sigma
 
     return summary
+
+def save_to_dill(obj, name):
+    """Save the Python object in a dill file."""
+    try:
+        import dill
+    except ImportError:
+        raise ImportError("# Need to install dill package to use.")
+
+    with open(name, "wb") as dill_file:
+        dill.dump(obj, dill_file)
+
+def read_from_dill(name):
+    """Read saved Python object from a dill file."""
+    try:
+        import dill
+    except ImportError:
+        raise ImportError("# Need to install dill package to use.")
+
+    with open(name, "rb") as dill_file:
+        content = dill.load(dill_file)
+
+    return content
