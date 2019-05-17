@@ -86,7 +86,7 @@ def stats_summary(X, sigma=5.0, n_min=10, kde=True, bw=None, prefix=None):
 
     # Only use the ones with a good flux
     flag = np.isfinite(X)
-    if flag.sum() <= n_min:
+    if len(X) <= n_min or flag.sum() <= n_min:
         warnings.warn("# Does not have enough elements: {0}".format(flag.sum()))
         return summary
 

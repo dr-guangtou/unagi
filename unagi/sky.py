@@ -26,6 +26,7 @@ class AperPhot():
     def __init__(self, name, rad, rerun='s18a'):
         """Start a aperture photometry object."""
         self.aper_id = name
+        self.name = "aper{0}".format(self.aper_id)
         self.r_pix = rad
         self.area_pix = np.pi * (rad ** 2.0)
         self.r_arcsec = rad * self.PIX
@@ -127,19 +128,24 @@ class SkyObjs():
         tract_mask = self.skyobjs['tract'] == tract
         if tract_mask.sum() == 0:
             warnings.warn("# Tract {0} is not available!".format(tract))
-            return None
+            return SkyObjs(self.skyobjs[self.skyobjs['tract'] < 0])
 
         if patch is not None:
             tract_mask = tract_mask & (self.skyobjs['patch'] == patch)
             if tract_mask.sum() == 0:
                 warnings.warn("# Tract {0}-Patch {1} is not available!".format(tract, patch))
-                return None
+                return SkyObjs(self.skyobjs[self.skyobjs['tract'] < 0])
 
         # Number of sky objects available
         n_skyobj = tract_mask.sum()
         if n_skyobj <= n_min:
-            warnings.warn("# Less than {0} skyobjs is available.")
-            return None
+            if patch is None:
+                warnings.warn("# Tract {0} has less than {1} skyobjs: {2}".format(
+                    tract, n_min, n_skyobj))
+            else:
+                warnings.warn("# Tract {0}-Patch {1} has < {2} skyobjs: {3}".format(
+                    tract, patch, n_min, n_skyobj))
+            return SkyObjs(self.skyobjs[self.skyobjs['tract'] < 0])
 
         return SkyObjs(self.skyobjs[tract_mask])
 
@@ -170,7 +176,7 @@ class SkyObjs():
         raise NotImplementedError("# Not yet")
 
     def flux_stats(self, aper, band, rerun='s18a', sigma=3.5,
-                   kde=False, bw=None, to_mujy=True):
+                   kde=False, bw=None, to_mujy=True, prefix=None):
         """Basic statistics of the flux."""
         u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
         assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
@@ -183,9 +189,10 @@ class SkyObjs():
             raise Exception("# Wrong flux column name: {0}".format(flux_col))
 
         return utils.stats_summary(flux, sigma=sigma, n_min=self.n_min,
-                                   kde=kde, bw=bw)
+                                   kde=kde, bw=bw, prefix=prefix)
 
-    def snr_stats(self, aper, band, rerun='s18a', sigma=3.5, kde=False, bw=None):
+    def snr_stats(self, aper, band, rerun='s18a', sigma=3.5,
+                  kde=False, bw=None, prefix=None):
         """Basic statistics of the S/N."""
         assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
 
@@ -198,10 +205,10 @@ class SkyObjs():
             raise Exception("# Wrong column names: {0}/{1}".format(flux_col, err_col))
 
         return utils.stats_summary(snr, sigma=sigma, n_min=self.n_min,
-                                   kde=kde, bw=bw)
+                                   kde=kde, bw=bw, prefix=prefix)
 
     def mu_stats(self, aper, band, to_mujy=True, rerun='s18a', sigma=3.5,
-                 kde=False, bw=None):
+                 kde=False, bw=None, prefix=None):
         """Basic statistics of the aperture flux density."""
         u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
         assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
@@ -214,13 +221,61 @@ class SkyObjs():
             raise Exception("# Wrong flux column name: {0}".format(flux_col))
 
         return utils.stats_summary(mu, sigma=sigma, n_min=self.n_min,
-                                   kde=kde, bw=bw)
+                                   kde=kde, bw=bw, prefix=prefix)
 
-    def sum_all_filters(self, aper, rerun='s18a', **kwargs):
+    def sum_all_filters(self, aper, **kwargs):
         """Provide a summary of sky objects in all five bands."""
+        aper_sum = {}
+        for band in self.FILTER_SHORT:
+            # Sky flux
+            flux_pre = "{0}_{1}_flux".format(aper.name, band)
+            flux_stats = self.flux_stats(aper, band, prefix=flux_pre, **kwargs)
+            # S/N of sky flux
+            snr_pre = "{0}_{1}_snr".format(aper.name, band)
+            snr_stats = self.flux_stats(aper, band, prefix=snr_pre, **kwargs)
+            # Surface flux density
+            mu_pre = "{0}_{1}_mu".format(aper.name, band)
+            mu_stats = self.flux_stats(aper, band, prefix=mu_pre, **kwargs)
+            aper_sum = {**aper_sum, **flux_stats, **snr_stats, **mu_stats}
 
-        flux_stats = self.flux_stats(aper, band, rerun=rerun, **kwargs)
-        snr_stats = self.flux_stats(aper, band, rerun=rerun, **kwargs)
-        mu_stats = self.flux_stats(aper, band, rerun=rerun, **kwargs)
+        return aper_sum
 
-        raise NotImplementedError("# Not yet")
+    def sum_aper_list(self, aper_list, **kwargs):
+        """Summary of sky objects in all five bands for a list of apertures."""
+        if isinstance(aper_list, list):
+            return {key: value for stats in [
+                self.sum_all_filters(aper, **kwargs) for aper in aper_list]
+                    for key, value in stats.items()}
+        else:
+            raise TypeError("# Need a list of AperPhot objects!")
+
+    def sum_all_tracts(self, aper_list, patch=False, **kwargs):
+        """Provide summary for all the Tracts-(Patches) in the catalog."""
+        result = []
+        if not patch:
+            for t in self.tract_list:
+                if isinstance(aper_list, list):
+                    t_sum = self.select_tract(t).sum_aper_list(aper_list, **kwargs)
+                    t_sum['tract'] = t
+                    result.append(t_sum)
+                elif isinstance(aper_list, AperPhot):
+                    t_sum = self.select_tract(t).sum_all_filters(aper_list, **kwargs)
+                    t_sum['tract'] = t
+                    result.append(t_sum)
+        else:
+            for t, p in [(int(tp.split('_')[0]), int(tp.split('_')[1]))
+                         for tp in self.tract_patch]:
+                if isinstance(aper_list, list):
+                    t_sum = self.select_tract(t, patch=p).sum_aper_list(
+                        aper_list, **kwargs)
+                    t_sum['tract'] = t
+                    t_sum['patch'] = p
+                    result.append(t_sum)
+                elif isinstance(aper_list, AperPhot):
+                    t_sum = self.select_tract(t, patch=p).sum_all_filters(
+                        aper_list, **kwargs)
+                    t_sum['tract'] = t
+                    t_sum['tract'] = p
+                    result.append(t_sum)
+
+        return result
