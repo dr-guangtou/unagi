@@ -44,7 +44,7 @@ def plot_skyobj_hist(X, summary, filt, prop, region=None, aper=None, fontsize=20
 
     # Start the figure
     fig = plt.figure(figsize=(6, 5))
-    fig.subplots_adjust(left=0.04, right=0.996, bottom=0.185, top=0.996)
+    fig.subplots_adjust(left=0.01, right=0.995, bottom=0.186, top=0.996)
     ax1 = fig.add_subplot(111)
 
     # Grid
