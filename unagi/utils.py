@@ -73,7 +73,8 @@ def r_phy_to_ang(r_phy, redshift, cosmo=None, phy_unit='kpc', ang_unit='arcsec')
     return (r_phy / cosmo.kpc_proper_per_arcmin(redshift)).to(u.Unit(ang_unit))
 
 
-def stats_summary(X, sigma=5.0, n_min=10, kde=True, bw=None, prefix=None):
+def stats_summary(X, sigma=5.0, n_min=5, kde=True, bw=None, 
+                  prefix=None, verbose=False, return_clipped=False):
     """
     Statistical summary of an array.
     """
@@ -88,7 +89,9 @@ def stats_summary(X, sigma=5.0, n_min=10, kde=True, bw=None, prefix=None):
     # Only use the ones with a good flux
     flag = np.isfinite(X)
     if len(X) <= n_min or flag.sum() <= n_min:
-        warnings.warn("# Does not have enough elements: {0}".format(flag.sum()))
+        if verbose:
+            warnings.warn(
+                "# Does not have enough elements: {0}".format(flag.sum()))
         return summary
 
     X = X[flag]
@@ -104,7 +107,9 @@ def stats_summary(X, sigma=5.0, n_min=10, kde=True, bw=None, prefix=None):
         summary[keys[1]] = np.nanmax(X)
 
     if len(X_clipped) <= n_min:
-        warnings.warn("# Does not have enough sky object: {0}".format(len(sigma)))
+        if verbose:
+            warnings.warn(
+                "# Does not have enough elements: {0}".format(len(sigma)))
         return summary
 
     # Mean, median, and standard deviation
@@ -118,6 +123,9 @@ def stats_summary(X, sigma=5.0, n_min=10, kde=True, bw=None, prefix=None):
         summary[keys[5]] = gaussian_kde(X_clipped, bw_method=bw)
 
     summary[keys[6]] = sigma
+
+    if return_clipped:
+        return X_clipped, summary
 
     return summary
 
