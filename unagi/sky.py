@@ -164,7 +164,7 @@ class SkyObjs():
         if box_mask.sum() == 0:
             warnings.warn(
                 "# No sky object in this region: {0}:{1}-{2}:{3}".format(ra1, ra2, dec1, dec2))
-            return None
+            return SkyObjs(self.skyobjs[self.skyobjs['tract'] < 0])
 
         if box_mask.sum() <= n_min:
             warnings.warn("# Only find {0} sky object(s)".format(box_mask.sum()))
