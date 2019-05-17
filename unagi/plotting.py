@@ -34,7 +34,7 @@ __all__ = ['FILTERS_COLOR', 'plot_skyobj_hist']
 FILTERS_COLOR = ['#2ca02c', '#ff7f0e', '#d62728', '#8c564b', '#7f7f7f']
 FILTERS_SHORT = ['g', 'r', 'i', 'z', 'y']
 
-def plot_skyobj_hist(X, summary, filt, prop, region=None, fontsize=21):
+def plot_skyobj_hist(X, summary, filt, prop, region=None, aper=None, fontsize=20):
     """Making 1-D summary plot of the sky objects."""
     # Range of the X-axis
     x_range = [summary['low'], summary['upp']]
@@ -90,19 +90,24 @@ def plot_skyobj_hist(X, summary, filt, prop, region=None, fontsize=21):
                      horizontalalignment='left', verticalalignment='center',
                      transform=ax1.transAxes)
 
-    _ = ax1.text(0.04, 0.81, r'$N:{0}$'.format(len(X)), fontsize=fontsize,
+    if aper is not None:
+        _ = ax1.text(0.04, 0.83, aper, fontsize=fontsize,
+                     horizontalalignment='left', verticalalignment='center',
+                     transform=ax1.transAxes)
+
+    _ = ax1.text(0.04, 0.74, r'$N:{0}$'.format(len(X)), fontsize=fontsize,
                  horizontalalignment='left', verticalalignment='center',
                  transform=ax1.transAxes)
 
-    _ = ax1.text(0.04, 0.71, r'$\mu:{0:8.5f}$'.format(summary['mean']), fontsize=fontsize,
+    _ = ax1.text(0.04, 0.65, r'$\mu:{0:8.5f}$'.format(summary['mean']), fontsize=fontsize,
                  horizontalalignment='left', verticalalignment='center',
                  transform=ax1.transAxes, color='k')
 
-    _ = ax1.text(0.04, 0.61, r'$\sigma:{0:8.5f}$'.format(summary['std']), fontsize=fontsize,
+    _ = ax1.text(0.04, 0.56, r'$\sigma:{0:8.5f}$'.format(summary['std']), fontsize=fontsize,
                  horizontalalignment='left', verticalalignment='center',
                  transform=ax1.transAxes, color='k')
 
-    _ = ax1.text(0.04, 0.51, r'$\rm m:{0:8.5f}$'.format(summary['median']),
+    _ = ax1.text(0.04, 0.47, r'$\rm m:{0:8.5f}$'.format(summary['median']),
                  fontsize=fontsize, horizontalalignment='left', verticalalignment='center',
                  transform=ax1.transAxes, color='k')
 
