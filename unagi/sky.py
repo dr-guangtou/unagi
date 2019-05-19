@@ -11,6 +11,9 @@ import numpy as np
 
 from astropy.table import Table
 
+from scipy.stats import sigmaclip
+from scipy.stats import binned_statistic_2d
+
 from . import utils
 from . import plotting
 
@@ -298,7 +301,7 @@ class SkyObjs():
     def get_summary(self, aper, band, prop, tract=None, patch=None,
                     rerun='s18a', kde=False, bw=0.2, sigma=3.0, to_mujy=True,
                     plot=False):
-        """Show histogram of the flux."""
+        """Show histogram of the properties of sky objects."""
         assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
         u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
 
@@ -343,3 +346,70 @@ class SkyObjs():
             return clipped, summary, hist
 
         return clipped, summary
+
+    def plot_map(self, aper, band, prop, tract=None, patch=None, boxsize=0.19,
+                 rerun='s18a', sigma=3.0, to_mujy=True, region=None, y_size=4,
+                 margin=0.2, fontsize=30):
+        """Show histogram of the properties of sky objects."""
+        assert band in self.FILTER_SHORT, "# Wrong filter name: {}".format(band)
+        u_factor = self.CGS_TO_MUJY if to_mujy else 1.0
+
+        if tract is None:
+            sky = self.skyobjs
+        else:
+            sky = self.select_tract(tract, patch=patch).skyobjs
+
+        # Column names
+        flux_col = aper.flux(rerun=rerun, band=band)
+        err_col = aper.err(rerun=rerun, band=band)
+
+        try:
+            if prop == 'flux':
+                values = sky[flux_col] * u_factor
+            elif prop == 'snr':
+                values = sky[flux_col] / sky[err_col]
+            elif prop == 'mu':
+                values = (sky[flux_col] * u_factor) / aper.area_arcsec
+            else:
+                raise Exception("# Wrong type of properties: flux/snr/mu")
+        except ValueError:
+            raise Exception("# Wrong flux column name: {0}".format(flux_col))
+
+        flag = np.isfinite(values)
+        values = values[flag]
+
+        # RA, Dec
+        ra, dec = sky['ra'][flag], sky['dec'][flag]
+
+        # Number of bins
+        x_bins = np.floor((np.max(ra) - np.min(ra)) / boxsize)
+        y_bins = np.floor((np.max(dec) - np.min(dec)) / boxsize)
+
+        _, low, upp = sigmaclip(values, low=sigma, high=sigma)
+        mask = (values >= low) & (values <= upp)
+
+        n_sky, x_edges, y_edges, _ = binned_statistic_2d(
+            ra[mask], dec[mask], values[mask], 'count', bins=[x_bins, y_bins])
+
+        mean_sky, _, _, _ = binned_statistic_2d(
+            ra[mask], dec[mask], values[mask], 'mean', bins=[x_bins, y_bins])
+
+        _, low_mean, upp_mean = sigmaclip(
+            mean_sky[np.isfinite(mean_sky)].flatten(), low=sigma, high=sigma)
+
+        v_edge = np.min(np.abs([low_mean, upp_mean]))
+
+        if region is not None:
+            region_str = r'$\rm {0}$'.format(region)
+        else:
+            region_str = ''
+
+        band_str = r'$\ \ \ \rm {0}-band$'.format(band)
+        aper_str = r"$\ \ \ \rm {0}$".format(aper.name[0].upper() + aper.name[1:])
+
+        skyobj_map = plotting.map_skyobjs(
+            x_edges, y_edges, n_sky, mean_sky,
+            label=region_str + band_str + aper_str, n_min=10,
+            vmin=-v_edge, vmax=v_edge, y_size=y_size, margin=margin, fontsize=fontsize)
+
+        return x_edges, y_edges, n_sky, mean_sky, skyobj_map

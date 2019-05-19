@@ -115,12 +115,12 @@ def plot_skyobj_hist(X, summary, filt, prop, region=None, aper=None, fontsize=20
     return fig
 
 def map_skyobjs(x, y, n, mu, label=None, n_min=10, vmin=None, vmax=None, 
-                y_size=4, margin=0.2, fontsize=30):
+                y_size=4, margin=0.2, fontsize=30, cbar_label=False):
     """Map the RA, Dec distributions of sky objects."""
     # Only keey the bins with enough sky objects in them
     mu[n <= n_min] = np.nan
 
-    xy_ratio = (x.max() - x.min()) / (y.max() - y.min)
+    xy_ratio = (x.max() - x.min()) / (y.max() - y.min())
 
     fig = plt.figure(figsize=(xy_ratio * y_size, y_size))
     ax1 = fig.add_subplot(111)
@@ -128,18 +128,19 @@ def map_skyobjs(x, y, n, mu, label=None, n_min=10, vmin=None, vmax=None,
     ax1.grid(linestyle='--', alpha=0.6)
     im = ax1.imshow(mu.T, origin='lower', extent=[x[0], x[-1], y[0], y[-1]],
                     aspect='equal', interpolation='nearest', 
-                    cmap=plt.get_cmap('coolwarm'))
+                    cmap=plt.get_cmap('coolwarm'), vmin=vmin, vmax=vmax)
 
     ax1.set_xlim(x.min() - margin, x.max() + margin)
     ax1.set_ylim(y.min() - margin, y.max() + margin)
 
     if label is not None:
-        plt.text(0.04, 1.05, label, transform=ax1.transAxes, fontsize=38)
+        plt.text(0.03, 1.05, label, transform=ax1.transAxes, fontsize=38)
 
     # Color bar
-    cb_axes = fig.add_axes([0.45, 0.90, 0.37, 0.06])
+    cb_axes = fig.add_axes([0.48, 0.90, 0.37, 0.06])
     cb = Colorbar(ax=cb_axes, mappable=im, orientation='horizontal', ticklocation='top')
-    cb.set_label(r'$\mu{\rm Jy}/\mathrm{arcsec}^2$', fontsize=25)
+    if cbar_label:
+        cb.set_label(r'$\mu{\rm Jy}/\mathrm{arcsec}^2$', fontsize=25)
 
     _ = ax1.set_xlabel(r'$\mathrm{R.A.\ [deg]}$', fontsize=fontsize)
     _ = ax1.set_ylabel(r'$\mathrm{Dec\ [deg]}$', fontsize=fontsize)
