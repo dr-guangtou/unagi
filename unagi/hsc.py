@@ -7,6 +7,8 @@ import urllib
 import shutil
 import warnings
 
+import numpy as np
+
 import astropy.units as u
 from astropy.io import fits
 from astropy.utils.data import download_file
@@ -373,6 +375,11 @@ class Hsc():
         """
         # Load the default dictionary
         cutout_dict = DEFAULT_CUTOUT_CENTER
+
+        # Check the size of the cutout image
+        if ((np.abs(coord2.ra - coord1.ra) >= self.MAX_CUTOUT) or (
+                np.abs(coord2.dec - coord1.dec) >= self.MAX_CUTOUT)):
+            raise Exception("# Image width is too large")
 
         # Parse the coordinate
         ra1_str, dec1_str = self._parse_coordinate(coord1)
