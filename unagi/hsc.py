@@ -219,7 +219,7 @@ class Hsc():
             h_half = self.DEFAULT_IMG_SIZE
 
         if coord_2 is not None:
-            raise NotImplementedError("# Not ready yet!")
+            cutout_dict = self._parse_cutout_corner(coord, coord_2, **kwargs)
         else:
             cutout_dict = self._parse_cutout_center(coord, w_half, h_half, **kwargs)
 
@@ -338,6 +338,50 @@ class Hsc():
         w_str, h_str = self._parse_size_center(w_half, h_half)
         cutout_dict['sw'] = w_str
         cutout_dict['sh'] = h_str
+
+        # Image filter
+        filt = self._check_filter(filt)
+        cutout_dict['filter'] = filt
+
+        # Image type
+        cutout_dict['type'] = img_type
+
+        # Content of the cutout
+        cutout_dict['image'] = 'on' if image else 'off'
+        cutout_dict['variance'] = 'on' if variance else 'off'
+        cutout_dict['mask'] = 'on' if mask else 'off'
+
+        # Rerun name
+        cutout_dict['rerun'] = self.rerun
+
+        return cutout_dict
+
+    def _parse_cutout_corner(self, coord1, coord2, filt='HSC-I',
+                             img_type='coadd', image=True,
+                             variance=False, mask=False):
+        """
+        Organize the parameters to generate the cutout image using corner coordinates.
+
+        Parameters:
+        -----------
+        coord: astropy.coordinates.SkyCoord object
+            Sky coordinate.
+        w_half: float
+            Half of the image width.
+        h_half: float
+            Half of the image height.
+        """
+        # Load the default dictionary
+        cutout_dict = DEFAULT_CUTOUT_CENTER
+
+        # Parse the coordinate
+        ra1_str, dec1_str = self._parse_coordinate(coord1)
+        cutout_dict['ra1'] = ra1_str
+        cutout_dict['dec1'] = dec1_str
+
+        ra2_str, dec2_str = self._parse_coordinate(coord2)
+        cutout_dict['ra2'] = ra2_str
+        cutout_dict['dec2'] = dec2_str
 
         # Image filter
         filt = self._check_filter(filt)
