@@ -4,7 +4,7 @@
 
 ----
 
-Besides being the most delicious fish in the world and one of the [signature Japanese dishes](https://en.wikipedia.org/wiki/Unagi), `unagi` can also help you navigate through the [public](https://hsc.mtk.nao.ac.jp/ssp/) or [nternal data release](https://hscdata.mtk.nao.ac.jp/hsc_ssp/) of the Hyper Suprime-Cam (HSC) Subaru Strategic Program (SSP; also known as the HSC survey) -- an ambitious multi-band deeep photometric survey using the awesome prime-focus camera on the 8.2m Subaru telescope. 
+Besides being the most delicious fish in the world and one of the [signature Japanese dishes](https://en.wikipedia.org/wiki/Unagi), `unagi` can also help you navigate through the [public](https://hsc.mtk.nao.ac.jp/ssp/) or [internal data release](https://hscdata.mtk.nao.ac.jp/hsc_ssp/) of the Hyper Suprime-Cam (HSC) Subaru Strategic Program (SSP; also known as the HSC survey) -- an ambitious multi-band deeep photometric survey using the awesome prime-focus camera on the 8.2m Subaru telescope. 
 
 Also, `unagi` does not stand for anything because forced acronym is for psychopath. 
 
