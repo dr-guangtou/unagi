@@ -15,7 +15,8 @@ from astropy.utils.data import download_file
 
 from . import config
 
-__all__ = ['Hsc', 'DEFAULT_CUTOUT_CENTER', 'DEFAULT_CUTOUT_ORIGIN']
+__all__ = ['Hsc', 'DEFAULT_CUTOUT_CENTER', 'DEFAULT_CUTOUT_CORNER',
+           'IMG_HDU', 'MSK_HDU', 'VAR_HDU']
 
 DEFAULT_CUTOUT_CENTER = {
     'ra': '', 'dec': '', 'sw': '5arcsec', 'sh': '5arcsec',
@@ -23,11 +24,15 @@ DEFAULT_CUTOUT_CENTER = {
     'filter': 'HSC-I', 'rerun': ''
 }
 
-DEFAULT_CUTOUT_ORIGIN = {
+DEFAULT_CUTOUT_CORNER = {
     'ra1': '', 'dec1': '', 'ra2': '', 'dec2': '',
     'type': 'coadd', 'image': 'on', 'mask': 'off', 'variance': 'off',
     'filter': 'HSC-I', 'rerun': ''
 }
+
+IMG_HDU = 1
+MSK_HDU = 2
+VAR_HDU = 3
 
 class HscException(Exception):
     """Class for error related to data release information.
@@ -376,7 +381,7 @@ class Hsc():
             Half of the image height.
         """
         # Load the default dictionary
-        cutout_dict = DEFAULT_CUTOUT_CENTER
+        cutout_dict = DEFAULT_CUTOUT_CORNER
 
         # Check the size of the cutout image
         if ((np.abs(coord2.ra - coord1.ra) >= self.MAX_CUTOUT) or (

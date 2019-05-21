@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
+import shutil
 from collections.abc import Iterable
 
 import numpy as np
 import astropy.units as u
 from astropy import wcs
 from astropy.io import fits
+from astropy.utils.data import download_file
 from astropy.visualization import make_lupton_rgb
 
 from .hsc import Hsc
@@ -122,9 +124,9 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
     return cutout_rgb, cutout_wcs
 
 def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters='i',
-               dr='dr2', rerun='s18a_wide', redshift=None, cosmo=None, use_saved=True,
-               prefix=None, verbose=True, archive=None, save_fits=True, output_dir='./',
-               **kwargs):
+               dr='dr2', rerun='s18a_wide', redshift=None, cosmo=None, img_type='coadd',
+               prefix=None, verbose=True, archive=None, save_output=True, use_saved=False,
+               output_dir='./', **kwargs):
     """
     Generate HSC cutout images.
     """
@@ -154,7 +156,7 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
                 cutout_size[1], redshift=redshift, cosmo=cosmo, verbose=verbose)
         else:
             ang_size_w = ang_size_h = _get_cutout_size(
-                cutout_size[0], redshift=redshift, cosmo=cosmo, verbose=verbose)
+                cutout_size, redshift=redshift, cosmo=cosmo, verbose=verbose)
     else:
         ang_size_w = ang_size_h = None
 
@@ -174,34 +176,54 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     prefix = os.path.join(output_dir, prefix)
 
     # List of fits file
-    fits_list = ['_'.join([prefix, f]) + '.fits' for f in filter_list]
+    if img_type == 'coadd':
+        output_list = ['_'.join([prefix, f]) + '.fits' for f in filter_list]
+    elif img_type == 'warp':
+        output_list = ['_'.join([prefix, f]) + '.tar' for f in filter_list]
+    else:
+        raise Exception("# Wrong image type: coadd or warp !")
 
     # Availability of each file
-    fits_save = [os.path.isfile(f) or os.path.islink(f) for f in fits_list]
+    file_available = [os.path.isfile(f) or os.path.islink(f) for f in output_list]
 
     # Get the cutout in each band
     cutout_list = []
 
     for ii, filt in enumerate(filter_list):
-        if fits_save[ii] and use_saved:
-            if verbose:
-                print("# Read in saved FITS file: {}".format(fits_save[ii]))
-            cutout_hdu = fits.open(fits_list[ii])
+        if file_available[ii] and use_saved:
+            if img_type == 'coadd':
+                if verbose:
+                    print("# Read in saved FITS file: {}".format(output_list[ii]))
+                cutout_hdu = fits.open(output_list[ii])
+            else:
+                if verbose:
+                    print("# Read in saved TAR file: {}".format(output_list[ii]))
+                # TODO
+                raise NotImplementedError("# Not yet...")
         else:
             if verbose:
-                print("# Retrieving cutout image in filter: {}".format(filt))
-            if save_fits:
-                cutout_hdu = archive.download_cutout(
-                    coord, fits_list[ii], coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h,
-                    filt=filt, **kwargs)
-            else:
-                cutout_hdu = archive.get_cutout_image(
-                    coord, coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h,
-                    filt=filt, **kwargs)
+                if img_type == 'coadd':
+                    print("# Retrieving cutout image in filter: {}".format(filt))
+                else:
+                    print("# Retrieving warped images in filter: {}".format(filt))
+
+            # Get the FITS data or the URL of compressed tarball
+            cutout_hdu = archive.get_cutout_image(
+                coord, coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h,
+                filt=filt, img_type=img_type, **kwargs)
+
+            if img_type == 'coadd' and save_output:
+                # Download FITS file for coadd image.
+                _ = cutout_hdu.writeto(output_list[ii], overwrite=True)
+
+            if img_type == 'warp':
+                # Download the tarball for warpped images.
+                _ = shutil.move(
+                    download_file(cutout_hdu, show_progress=False), output_list[ii])
 
         # Append the HDU to the list
         cutout_list.append(cutout_hdu)
-    
+
     if len(filter_list) == 1:
         return cutout_list[0]
 
