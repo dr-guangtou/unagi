@@ -201,6 +201,9 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 
         # Append the HDU to the list
         cutout_list.append(cutout_hdu)
+    
+    if len(filter_list) == 1:
+        return cutout_list[0]
 
     return cutout_list
 
