@@ -21,7 +21,7 @@ PHY_UNITS = ['pc', 'kpc', 'Mpc']
 def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
                  dr='dr2', rerun='s18a_wide', redshift=None, cosmo=None,
                  prefix=None, use_saved=False, save_img=False, verbose=True,
-                 rgb_order=False, hdu=1, archive=None,
+                 rgb_order=False, hdu=1, archive=None, output_dir='./',
                  save_rgb=False, rgb_q=15, rgb_stretch=0.5, rgb_min=0):
     """
     Generate HSC 3-color picture using coadd image.
@@ -67,6 +67,9 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
         ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
         size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
         prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
+
+    # Location of the output files
+    prefix = os.path.join(output_dir, prefix)
 
     # List of fits file
     fits_list = ['_'.join([prefix, f]) + '.fits' for f in filter_list]
@@ -121,7 +124,8 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
 
 def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters='i',
                dr='dr2', rerun='s18a_wide', redshift=None, cosmo=None, use_saved=True,
-               prefix=None, verbose=True, archive=None, save_fits=True, **kwargs):
+               prefix=None, verbose=True, archive=None, save_fits=True, output_dir='./',
+               **kwargs):
     """
     Generate HSC cutout images.
     """
@@ -168,6 +172,9 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
         ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
         size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
         prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
+
+    # Location of the output files
+    prefix = os.path.join(output_dir, prefix)
 
     # List of fits file
     fits_list = ['_'.join([prefix, f]) + '.fits' for f in filter_list]
