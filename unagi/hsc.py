@@ -151,6 +151,7 @@ class Hsc():
             # Download FITS file for coadd image.
             cutout = self.get_cutout_image(coord, **cutout_kwargs)
             _ = cutout.writeto(output_file, overwrite=overwrite)
+            return cutout
         elif img_type == 'warp':
             # Download the tarball for warpped images.
             cutout_url = self.get_cutout_image(coord, **cutout_kwargs)
@@ -158,6 +159,7 @@ class Hsc():
                 raise HscException("# File {} exists!".format(output_file))
             else:
                 _ = shutil.move(download_file(cutout_url, show_progress=False), output_file)
+            return cutout_url
         else:
             raise HscException("# Wrong image type: coadd or warp !")
 
