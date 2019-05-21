@@ -58,9 +58,15 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
 
     # Output file names
     if prefix is None:
-        ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
-        size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
-        prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
+        if coord_2 is None:
+            ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
+            size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
+            prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
+        else:
+            ra1_str, dec1_str = coord.to_string('decimal', precision=4).split(' ')
+            ra2_str, dec2_str = coord.to_string('decimal', precision=4).split(' ')
+            prefix = '{0}_{1}_ra_{2}_{3}_dec_{4}_{5}'.format(
+                dr, rerun, ra1_str, dec1_str, ra2_str, dec2_str)
 
     # Location of the output files
     prefix = os.path.join(output_dir, prefix)
@@ -154,9 +160,15 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 
     # Output file names
     if prefix is None:
-        ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
-        size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
-        prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
+        if coord_2 is None:
+            ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
+            size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
+            prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
+        else:
+            ra1_str, dec1_str = coord.to_string('decimal', precision=4).split(' ')
+            ra2_str, dec2_str = coord.to_string('decimal', precision=4).split(' ')
+            prefix = '{0}_{1}_ra_{2}_{3}_dec_{4}_{5}'.format(
+                dr, rerun, ra1_str, dec1_str, ra2_str, dec2_str)
 
     # Location of the output files
     prefix = os.path.join(output_dir, prefix)
