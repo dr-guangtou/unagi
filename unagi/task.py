@@ -18,10 +18,10 @@ __all__ = ['hsc_tricolor', 'hsc_cutout']
 ANG_UNITS = ['arcsec', 'arcsecond', 'arcmin', 'arcminute', 'deg']
 PHY_UNITS = ['pc', 'kpc', 'Mpc']
 
-def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
-                 dr='dr2', rerun='s18a_wide', redshift=None, cosmo=None,
-                 prefix=None, use_saved=False, save_img=False, verbose=True,
-                 rgb_order=False, hdu=1, archive=None, output_dir='./',
+def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
+                 filters='gri', dr='dr2', rerun='s18a_wide', redshift=None,
+                 cosmo=None, prefix=None, use_saved=False, save_img=False,
+                 verbose=True, rgb_order=False, hdu=1, archive=None, output_dir='./',
                  save_rgb=False, rgb_q=15, rgb_stretch=0.5, rgb_min=0):
     """
     Generate HSC 3-color picture using coadd image.
@@ -42,28 +42,22 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
 
     # Parse the cutout image size.
     # We use central coordinate and half image size as the default format.
-    if not isinstance(cutout_size, u.quantity.Quantity):
-        if verbose:
-            print("# Assume the cutout size is in arcsec unit.")
-        cutout_size = cutout_size * u.Unit('arcsec')
-        ang_size = cutout_size
-    else:
-        cutout_unit = cutout_size.unit
-        if str(cutout_unit) in ANG_UNITS:
-            ang_size = cutout_size.to(u.Unit('arcsec'))
-        elif str(cutout_unit) in PHY_UNITS:
-            if redshift is None:
-                raise ValueError("# Need to provide redshift value to use physical size!")
-            elif (redshift < 0.) or (~np.isfinite(redshift)):
-                raise ValueError("# Redshift value is not valid!")
-            else:
-                ang_size = r_phy_to_ang(cutout_size, redshift, cosmo=cosmo)
+    if coord_2 is None:
+        if isinstance(cutout_size, list):
+            if len(cutout_size) != 2:
+                raise Exception("# Cutout size should be like: [Width, Height]")
+            ang_size_w = _get_cutout_size(
+                cutout_size[0], redshift=redshift, cosmo=cosmo, verbose=verbose)
+            ang_size_h = _get_cutout_size(
+                cutout_size[1], redshift=redshift, cosmo=cosmo, verbose=verbose)
         else:
-            raise ValueError("# Wrong unit for cutout size: {}".format(str(cutout_unit)))
+            ang_size_w = ang_size_h = _get_cutout_size(
+                cutout_size[0], redshift=redshift, cosmo=cosmo, verbose=verbose)
+    else:
+        ang_size_w = ang_size_h = None
 
     # Output file names
     if prefix is None:
-        # TODO: More informed prefix
         ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
         size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
         prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
@@ -102,7 +96,7 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
             if verbose:
                 print("# Retrieving cutout image in filter: {}".format(filt))
             cutout_hdu = archive.get_cutout_image(
-                coord, w_half=ang_size, h_half=ang_size, filt=filt)
+                coord, coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h, filt=filt)
             if save_img:
                 _ = cutout_hdu.writeto(fits_list[ii], overwrite=True)
 
@@ -120,7 +114,6 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), filters='gri',
                                  filename=rgb_jpg)
 
     return cutout_rgb, cutout_wcs
-
 
 def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters='i',
                dr='dr2', rerun='s18a_wide', redshift=None, cosmo=None, use_saved=True,
@@ -146,26 +139,18 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     # Parse the cutout image size.
     # We use central coordinate and half image size as the default format.
     if coord_2 is None:
-        if not isinstance(cutout_size, u.quantity.Quantity):
-            if verbose:
-                print("# Assume the cutout size is in arcsec unit.")
-            cutout_size = cutout_size * u.Unit('arcsec')
-            ang_size = cutout_size
+        if isinstance(cutout_size, list):
+            if len(cutout_size) != 2:
+                raise Exception("# Cutout size should be like: [Width, Height]")
+            ang_size_w = _get_cutout_size(
+                cutout_size[0], redshift=redshift, cosmo=cosmo, verbose=verbose)
+            ang_size_h = _get_cutout_size(
+                cutout_size[1], redshift=redshift, cosmo=cosmo, verbose=verbose)
         else:
-            cutout_unit = cutout_size.unit
-            if str(cutout_unit) in ANG_UNITS:
-                ang_size = cutout_size.to(u.Unit('arcsec'))
-            elif str(cutout_unit) in PHY_UNITS:
-                if redshift is None:
-                    raise ValueError("# Need to provide redshift value to use physical size!")
-                elif (redshift < 0.) or (~np.isfinite(redshift)):
-                    raise ValueError("# Redshift value is not valid!")
-                else:
-                    ang_size = r_phy_to_ang(cutout_size, redshift, cosmo=cosmo)
-            else:
-                raise ValueError("# Wrong unit for cutout size: {}".format(str(cutout_unit)))
+            ang_size_w = ang_size_h = _get_cutout_size(
+                cutout_size[0], redshift=redshift, cosmo=cosmo, verbose=verbose)
     else:
-        ang_size = None
+        ang_size_w = ang_size_h = None
 
     # Output file names
     if prefix is None:
@@ -195,13 +180,38 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
                 print("# Retrieving cutout image in filter: {}".format(filt))
             if save_fits:
                 cutout_hdu = archive.download_cutout(
-                    coord, fits_list[ii], coord_2=coord_2, w_half=ang_size, h_half=ang_size,
+                    coord, fits_list[ii], coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h,
                     filt=filt, **kwargs)
             else:
                 cutout_hdu = archive.get_cutout_image(
-                    coord, coord_2=coord_2, w_half=ang_size, h_half=ang_size, filt=filt, **kwargs)
+                    coord, coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h,
+                    filt=filt, **kwargs)
 
         # Append the HDU to the list
         cutout_list.append(cutout_hdu)
 
     return cutout_list
+
+
+def _get_cutout_size(cutout_size, redshift=None, cosmo=None, verbose=True):
+    """Parse the input for the size of the cutout."""
+    if not isinstance(cutout_size, u.quantity.Quantity):
+        if verbose:
+            print("# Assume the cutout size is in arcsec unit.")
+        cutout_size = cutout_size * u.Unit('arcsec')
+        ang_size = cutout_size
+    else:
+        cutout_unit = cutout_size.unit
+        if str(cutout_unit) in ANG_UNITS:
+            ang_size = cutout_size.to(u.Unit('arcsec'))
+        elif str(cutout_unit) in PHY_UNITS:
+            if redshift is None:
+                raise ValueError("# Need to provide redshift value to use physical size!")
+            elif (redshift < 0.) or (~np.isfinite(redshift)):
+                raise ValueError("# Redshift value is not valid!")
+            else:
+                ang_size = r_phy_to_ang(cutout_size, redshift, cosmo=cosmo)
+        else:
+            raise ValueError("# Wrong unit for cutout size: {}".format(str(cutout_unit)))
+
+    return ang_size
