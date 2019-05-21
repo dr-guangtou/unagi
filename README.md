@@ -28,6 +28,11 @@ Documents
 I <del>promise</del>hope that documents will be available soon...but right now, please take a look at the Jupyter Notebook [demos](https://github.com/dr-guangtou/unagi/tree/master/demo) for each functionality. 
 
 
+Acknowledgement 
+---------------
+
+Thanks the HSC collaboration who works very hard to make this amazing survey happen and make these beautiful data available.  Also thank the good people at NAOJ who work tirelessly to prepare the data release.
+
 
 Reporting bugs
 --------------
