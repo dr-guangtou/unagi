@@ -18,12 +18,25 @@ Applications
 <img src="doc/unagi_cutout.gif" width="70%">
 
 - [Generate 3-color RGB picture of a small HSC region.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_color_image.ipynb)
+
+<img src="doc/unagi_color.gif" width="70%">
+
 - [Query and download HSC PSF model.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_psf.ipynb)
 
 <img src="doc/unagi_psf.gif" width="70%">
 
 - Download HSC files (coadded `Patch` or source catalogs).
 
+- [Dealing with the bitmask plane of HSC image](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_mask.ipynb)
+
+- Using HSC sky object to characterize residual background
+
+TODO List
+---------
+
+- Basic SQL search (I still need to learn how to run SQL using Python)
+
+- Reproduce the `CModel` result
 
 Installation
 ------------
