@@ -8,7 +8,9 @@ Besides being the most delicious fish in the world and one of the [signature Jap
 
 Also, `unagi` does not stand for anything because forced acronym is for psychopath. 
 
-If you want to learn more about the real unagi, you can check out [this video on Youtube](https://www.youtube.com/watch?v=1sqLCUuMMfo).  And here is a vlog about a famous unagi place I have tried: [Obana 尾花](https://www.youtube.com/watch?v=N26pjkM_z4A).  It is pretty close to downtown Tokyo and few statioins away from Kavli-IPMU.
+If you want to learn more about the real unagi, you can check out [this video on Youtube](https://www.youtube.com/watch?v=1sqLCUuMMfo).  And here is a vlog about a famous unagi place I have tried: [Obana 尾花](https://www.youtube.com/watch?v=N26pjkM_z4A).  It is pretty close to downtown Tokyo and few statioins away from Kavli-IPMU. 
+
+If you want to learn more about this amazing food, just try `import unagi; unagi.unagi()` in your `Jupyter` Notebook.
 
 Applications
 ------------
