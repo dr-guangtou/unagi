@@ -197,6 +197,49 @@ class Hsc():
 
         return cutout
 
+    def get_psf_model(self, coord, filt='HSC-I', img_type='coadd', centered=True, verbose=False):
+        """
+        Get the PSF model at a given sky position.
+
+        Parameters:
+        -----------
+        """
+        # Check the filter
+        filt = self._check_filter(filt)
+
+        # Centered the PSF model or not
+        center_psf = 'on' if centered else 'off'
+
+        # Image type
+        if img_type is not 'coadd' and img_type is not 'warp':
+            raise HscException("# Wrong image type !")
+
+        # Default dict for generating PSF
+        psf_dict = {'rerun': self.rerun, 'filter': filt, 'img_type': img_type,
+                    'centered': center_psf}
+
+        ra_str, dec_str = self._parse_coordinate(coord)
+        psf_dict['ra'] = ra_str
+        psf_dict['dec'] = dec_str
+
+        psf_url = self.archive.psf_url + '&'.join(
+            key + '=' + value for key, value in psf_dict.items())
+
+        if img_type == 'warp':
+            if verbose:
+                warnings.warn("# Not a coadd PSF model, will return the url")
+            return psf_url
+
+        try:
+            if verbose:
+                print("# Downloading FITS image from {}".format(psf_url))
+            psf_model = fits.open(psf_url)
+        except urllib.error.HTTPError as e:
+            print("# Error message: {}".format(e))
+            raise Exception("# Can not download cutout: {}".format(psf_url))
+
+        return psf_model
+
     def form_cutout_url(self, coord, coord_2=None, w_half=None, h_half=None, **kwargs):
         """
         Form the URL to download HSC cutout images.
@@ -235,15 +278,9 @@ class Hsc():
         return self.archive.img_url + '&'.join(
             key + '=' + value for key, value in cutout_dict.items())
 
-    def _form_image_url(self, coordinate, ):
+    def _form_image_url(self, coord, ):
         """
         Form the URL to directly download HSC files.
-        """
-        pass
-
-    def _form_psf_url(self, coordinate, ):
-        """
-        Form the URL to download HSC PSF model.
         """
         pass
 
