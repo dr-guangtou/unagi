@@ -379,16 +379,12 @@ def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=No
     gs.update(wspace=0.0, hspace=0.00)
 
     for ii in range(n_img):
-        col_id = int(np.floor(ii / n_row))
-        row_id = int(n_row - (ii + 1 - col_id * n_row))
-        print(col_id, row_id)
-
         if hdu_index is None:
             img_show = img_list[ii]
         else:
             img_show = img_list[ii][hdu_index].data
 
-        ax = plt.subplot(gs[row_id, col_id])
+        ax = plt.subplot(gs[ii])
         ax = display_single(img_show, ax=ax, **kwargs)
 
         if label_list is not None:
