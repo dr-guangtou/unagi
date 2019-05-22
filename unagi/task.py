@@ -54,7 +54,7 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
                 cutout_size[1], redshift=redshift, cosmo=cosmo, verbose=verbose)
         else:
             ang_size_w = ang_size_h = _get_cutout_size(
-                cutout_size[0], redshift=redshift, cosmo=cosmo, verbose=verbose)
+                cutout_size, redshift=redshift, cosmo=cosmo, verbose=verbose)
     else:
         ang_size_w = ang_size_h = None
 
