@@ -8,8 +8,9 @@ from astropy.visualization import ZScaleInterval, \
     AsymmetricPercentileInterval
 
 import matplotlib.pyplot as plt
-from matplotlib import rcParams
 from matplotlib import colors
+from matplotlib import rcParams
+from matplotlib import gridspec
 from matplotlib.colorbar import Colorbar
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
@@ -35,7 +36,7 @@ rcParams.update({'axes.titlepad': '10.0'})
 rcParams.update({'font.size': 25})
 
 __all__ = ['FILTERS_COLOR', 'plot_skyobj_hist', 'map_skyobjs', 'random_cmap',
-           'display_single']
+           'display_single', 'display_all']
 
 # Default colormaps
 IMG_CMAP = plt.get_cmap('viridis')
@@ -123,7 +124,7 @@ def plot_skyobj_hist(X, summary, filt, prop, region=None, aper=None, fontsize=20
 
     return fig
 
-def map_skyobjs(x, y, n, mu, label=None, n_min=10, vmin=None, vmax=None, 
+def map_skyobjs(x, y, n, mu, label=None, n_min=10, vmin=None, vmax=None,
                 y_size=4, margin=0.2, fontsize=30, cbar_label=False):
     """Map the RA, Dec distributions of sky objects."""
     # Only keey the bins with enough sky objects in them
@@ -136,7 +137,7 @@ def map_skyobjs(x, y, n, mu, label=None, n_min=10, vmin=None, vmax=None,
 
     ax1.grid(linestyle='--', alpha=0.6)
     im = ax1.imshow(mu.T, origin='lower', extent=[x[0], x[-1], y[0], y[-1]],
-                    aspect='equal', interpolation='nearest', 
+                    aspect='equal', interpolation='nearest',
                     cmap=plt.get_cmap('coolwarm'), vmin=vmin, vmax=vmax)
 
     ax1.set_xlim(x.min() - margin, x.max() + margin)
@@ -329,7 +330,7 @@ def display_single(img,
         text_x_0 = int(img_size_x*0.08)
         text_y_0 = int(img_size_y*0.80)
         ax1.text(
-            text_x_0, text_y_0, r'$\mathrm{'+add_text+'}$', 
+            text_x_0, text_y_0, r'$\mathrm{'+add_text+'}$',
             fontsize=text_fontsize, color=text_color)
 
     # Put a color bar on the image
@@ -356,3 +357,45 @@ def display_single(img,
     if ax is None:
         return fig
     return ax1
+
+
+def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=None,
+                label_x=0.1, label_y=0.9, fontsize=20, **kwargs):
+    """Display a list of images."""
+    # Number of image to show
+    n_img = len(img_list)
+
+    if n_img <= n_column:
+        n_col = n_img
+        n_row = 1
+    else:
+        n_col = n_column
+        n_row = int(np.ceil(n_img / n_column))
+
+    fig = plt.figure(figsize=(img_size * n_col, img_size * n_row))
+    fig.subplots_adjust(left=0., right=1., bottom=0., top=1., wspace=0., hspace=0.)
+
+    gs = gridspec.GridSpec(n_row, n_col)
+    gs.update(wspace=0.0, hspace=0.00)
+
+    for ii in range(n_img):
+        col_id = int(np.floor(ii / n_row))
+        row_id = int(n_row - (ii + 1 - col_id * n_row))
+        print(col_id, row_id)
+
+        if hdu_index is None:
+            img_show = img_list[ii]
+        else:
+            img_show = img_list[ii][hdu_index].data
+
+        ax = plt.subplot(gs[row_id, col_id])
+        ax = display_single(img_show, ax=ax, **kwargs)
+
+        if label_list is not None:
+            if len(label_list) != n_img:
+                print("# Wrong number for labels!")
+            else:
+                ax.text(label_x, label_y, label_list[ii], fontsize=fontsize,
+                        transform=ax.transAxes, color='w')
+
+    return fig
