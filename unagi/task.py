@@ -15,7 +15,7 @@ from astropy.visualization import make_lupton_rgb
 from .hsc import Hsc
 from .utils import r_phy_to_ang
 
-__all__ = ['hsc_tricolor', 'hsc_cutout']
+__all__ = ['hsc_tricolor', 'hsc_cutout', 'hsc_psf']
 
 ANG_UNITS = ['arcsec', 'arcsecond', 'arcmin', 'arcminute', 'deg']
 PHY_UNITS = ['pc', 'kpc', 'Mpc']
@@ -252,3 +252,85 @@ def _get_cutout_size(cutout_size, redshift=None, cosmo=None, verbose=True):
             raise ValueError("# Wrong unit for cutout size: {}".format(str(cutout_unit)))
 
     return ang_size
+
+
+def hsc_psf(coord, centered=True, filters='i', dr='dr2', rerun='s18a_wide',
+            img_type='coadd', prefix=None, verbose=True, archive=None, save_output=True,
+            use_saved=False, output_dir='./'):
+    """
+    Generate HSC PSF models.
+    """
+    # Login to HSC archive
+    if archive is None:
+        archive = Hsc(dr=dr, rerun=rerun)
+
+    # List of three filters
+    filter_list = list(filters)
+    if len(filter_list) > 1 and verbose:
+        print("# Will dgenerate cutouts for a list of filters:", filter_list)
+
+    # Check the choices of filters
+    assert np.all(
+        [(f in archive.FILTER_SHORT) or (f in archive.FILTER_LIST)
+         for f in filter_list]), '# Wrong filter choice!'
+
+    # Output file names
+    if prefix is None:
+        ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
+        prefix = '{0}_{1}_{2}_{3}_psf'.format(dr, rerun, ra_str, dec_str)
+
+    # Location of the output files
+    prefix = os.path.join(output_dir, prefix)
+
+    # List of fits file
+    if img_type == 'coadd':
+        output_list = ['_'.join([prefix, f]) + '.fits' for f in filter_list]
+    elif img_type == 'warp':
+        output_list = ['_'.join([prefix, f]) + '.tar' for f in filter_list]
+    else:
+        raise Exception("# Wrong image type: coadd or warp !")
+
+    # Availability of each file
+    file_available = [os.path.isfile(f) or os.path.islink(f) for f in output_list]
+
+    # Get the cutout in each band
+    psf_list = []
+
+    for ii, filt in enumerate(filter_list):
+        if file_available[ii] and use_saved:
+            if img_type == 'coadd':
+                if verbose:
+                    print("# Read in saved FITS file: {}".format(output_list[ii]))
+                psf_hdu = fits.open(output_list[ii])
+            else:
+                if verbose:
+                    print("# Read in saved TAR file: {}".format(output_list[ii]))
+                # TODO: read the files in the tarball
+                raise NotImplementedError("# Not yet...")
+        else:
+            if verbose:
+                if img_type == 'coadd':
+                    print("# Retrieving coadd PSF model in filter: {}".format(filt))
+                else:
+                    print("# Retrieving warped PSF model in filter: {}".format(filt))
+
+            # Get the FITS data or the URL of compressed tarball
+            psf_hdu = archive.get_psf_model(
+                coord, filt=filt, img_type=img_type, centered=centered)
+
+            if img_type == 'coadd' and save_output:
+                # Download FITS file for coadd image.
+                _ = psf_hdu.writeto(output_list[ii], overwrite=True)
+
+            if img_type == 'warp':
+                # Download the tarball for warpped images.
+                _ = shutil.move(
+                    download_file(psf_hdu, show_progress=False), output_list[ii])
+
+        # Append the HDU to the list
+        psf_list.append(psf_hdu)
+
+    if len(filter_list) == 1:
+        return psf_list[0]
+
+    return psf_list
