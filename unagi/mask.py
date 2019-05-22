@@ -4,9 +4,11 @@
 
 import numpy as np
 
+from matplotlib import colors
+
 from astropy.table import Table
 
-from matplotlib import colors
+from scipy.ndimage import gaussian_filter
 
 __all__ = ['Mask', 'BitMasks', 'S18A_BITMASKS', 'PDR1_BITMASKS']
 
@@ -139,8 +141,15 @@ class Mask():
         Get the 2-D array of one mask plane.
         """
         if show:
-            return self.mask_decode[:, :, self.table.get_index(name_or_bit)].astype(np.uint16)
+            return self.mask_decode[:, :, self.table.get_index(name_or_bit)].astype(float)
         return self.mask_decode[:, :, self.table.get_index(name_or_bit)]
+
+    def enlarge(self, name_or_bit, sigma=2.0, threshold=0.02):
+        """
+        Get an enlarged version of certain mask plane.
+        """
+        return (gaussian_filter(
+            self.extract(name_or_bit, show=True), sigma=sigma) >= threshold).astype(np.uint8)
 
 
 S18A_BITMASKS = np.array(
