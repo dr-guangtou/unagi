@@ -205,6 +205,7 @@ def display_single(img,
                    xsize=8,
                    ysize=8,
                    ax=None,
+                   alpha=1.0,
                    stretch='arcsinh',
                    scale='zscale',
                    contrast=0.25,
@@ -281,7 +282,7 @@ def display_single(img,
         zmin, zmax = np.nanmin(img_scale), np.nanmax(img_scale)
 
     show = ax1.imshow(img_scale, origin='lower', cmap=cmap,
-                      vmin=zmin, vmax=zmax)
+                      vmin=zmin, vmax=zmax, alpha=alpha)
 
     # Hide ticks and tick labels
     ax1.tick_params(
