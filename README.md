@@ -18,7 +18,10 @@ Applications
 <img src="doc/unagi_cutout.gif" width="70%">
 
 - [Generate 3-color RGB picture of a small HSC region.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_color_image.ipynb)
-- Query and download HSC PSF model.
+- [Query and download HSC PSF model.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_psf.ipynb)
+
+<img src="doc/unagi_psf.gif" width="70%">
+
 - Download HSC files (coadded `Patch` or source catalogs).
 
 
