@@ -89,25 +89,24 @@ class Mask():
         mask: numpy.ndarray
             2-D bitmask plane from HSC image.
         """
-        self.mask = mask.astype(np.uint16)
-
         # Shape of the array
-        h, w = self.mask.shape
+        h, w = mask.shape
         self.height = h
         self.width = w
 
         # Decode the bitmask array
-        self.mask_decode = self.decode(self.mask)
+        self.masks = self.decode(mask.astype(np.uint16))
 
         # Number of available mask planes
-        self.n_mask = self.mask_decode.shape[2]
+        self.n_mask = self.masks.shape[2]
 
         # WCS information
         self.wcs = wcs
 
         # Table for bitmask planes
         self.data_release = data_release
-        self.table = BitMasks(data_release=self.data_release)
+        self.bitmasks = BitMasks(data_release=self.data_release)
+        self.table = self.bitmasks.bitmasks
 
     def decode(self, bitmask):
         '''
@@ -134,15 +133,15 @@ class Mask():
         Get the colormap to show the mask plane.
         """
         return colors.ListedColormap(
-            ['white', self.table.get_color(name_or_bit)])
+            ['white', self.bitmasks.get_color(name_or_bit)])
 
     def extract(self, name_or_bit, show=False):
         """
         Get the 2-D array of one mask plane.
         """
         if show:
-            return self.mask_decode[:, :, self.table.get_index(name_or_bit)].astype(float)
-        return self.mask_decode[:, :, self.table.get_index(name_or_bit)]
+            return self.masks[:, :, self.bitmasks.get_index(name_or_bit)].astype(float)
+        return self.masks[:, :, self.bitmasks.get_index(name_or_bit)]
 
     def enlarge(self, name_or_bit, sigma=2.0, threshold=0.02):
         """
@@ -150,6 +149,36 @@ class Mask():
         """
         return (gaussian_filter(
             self.extract(name_or_bit, show=True), sigma=sigma) >= threshold).astype(np.uint8)
+
+    def combine(self, name_or_bit_list):
+        """
+        Combine a few mask planes together.
+        """
+        if not isinstance(name_or_bit_list, list):
+            raise TypeError("# Need to be a list of bitmask name or index")
+        if len(name_or_bit_list) == 1:
+            return self.extract(name_or_bit_list[0])
+        return np.bitwise_or.reduce([self.extract(nb) for nb in name_or_bit_list])
+
+    def effective(self):
+        """
+        Return the cube for the effective mask planes.
+        """
+        pass
+
+    def clean(self, name_or_bit_list):
+        """
+        Remove one or a list of mask plane.
+        """
+        if not isinstance(name_or_bit_list, list):
+            return np.bitwise_or.reduce(
+                np.delete(self.masks, (self.bitmasks.get_index(name_or_bit_list)), axis=2),
+                axis=2)
+        else:
+            return np.bitwise_or.reduce(
+                np.delete(
+                    self.masks, [self.bitmasks.get_index(nb) for nb in name_or_bit_list], axis=2),
+                axis=2)
 
 
 S18A_BITMASKS = np.array(
