@@ -22,12 +22,35 @@ class BitMasks():
         Define the bitmask plane of HSC coadd image.
         """
         if data_release == 's18a':
-            self.bitmasks = S18A_BITMASKS
+            self._bitmasks = S18A_BITMASKS
+            self.n_bits = 32
+            self.type = np.uint32
         elif data_release == 'pdr1':
-            self.bitmasks = PDR1_BITMASKS
+            self._bitmasks = PDR1_BITMASKS
+            self.n_bits = 16
+            self.type = np.uint16
         else:
             raise NotImplementedError(
                 "# Rerun {0} is not available yet".format(data_release))
+
+    @property
+    def bitmasks(self):
+        """
+        Structured array that describe the mask planes.
+        """
+        return self._bitmasks
+
+    @bitmasks.setter
+    def bitmasks(self, mask_array):
+        self._bitmasks = mask_array
+
+    # Number of bits used
+    @property
+    def n_mask(self):
+        """
+        Number of mask planes used.
+        """
+        return len(self.bitmasks)
 
     def bits2name(self, idx):
         """
@@ -49,6 +72,8 @@ class BitMasks():
             flag = self.bitmasks['name'] == name_or_bit.strip().upper()
         else:
             flag = self.bitmasks['bits'] == name_or_bit
+
+        print(np.where(flag)[0][0])
 
         return np.where(flag)[0][0]
 
@@ -80,7 +105,8 @@ class Mask():
     Class for HSC mask plane.
     """
 
-    def __init__(self, mask, wcs=None, data_release='s18a'):
+    def __init__(self, mask, wcs=None, compact=True, data_release='s18a',
+                 verbose=False):
         """
         Initialize a HSC mask plane object.
 
@@ -89,29 +115,50 @@ class Mask():
         mask: numpy.ndarray
             2-D bitmask plane from HSC image.
         """
-        # Shape of the array
-        h, w = mask.shape
-        self.height = h
-        self.width = w
-
-        # Decode the bitmask array
-        self.masks = self.decode(mask.astype(np.uint16))
-
-        # Number of available mask planes
-        self.n_mask = self.masks.shape[2]
-
-        # Useful mask plane
-        self.mask_used = [
-            self.masks[:, :, ii].sum() > 0 for ii in np.arange(self.n_mask)]
-        self.n_used = np.sum(self.mask_used)
-
         # WCS information
         self.wcs = wcs
 
         # Table for bitmask planes
         self.data_release = data_release
+
+        # BitMask object for this mask
         self.bitmasks = BitMasks(data_release=self.data_release)
-        self.table = self.bitmasks.bitmasks
+
+        # Decode the bitmask array
+        self._masks = self.decode(mask.astype(self.bitmasks.type))
+
+        assert self.bitmasks.n_mask == self.masks.shape[2]
+
+        # Useful mask plane
+        self.mask_used = [
+            self.masks[:, :, ii].sum() > 0 for ii in np.arange(self.bitmasks.n_mask)]
+        # Name of used mask planes (not all zeros)
+        self.name_used = self.bitmasks.bitmasks[self.mask_used]['name']
+        # Number of used mask planes
+        self.n_used = np.sum(self.mask_used)
+
+        # Compress the mask planes
+        if compact:
+            self.compact = True
+            # Update the bitmasks
+            self.bitmasks.bitmasks = self.bitmasks.bitmasks[self.mask_used]
+            if verbose:
+                print("# Used mask planes: ", self.name_used)
+            # Only keep the used mask planes.
+            self.masks = self.masks[:, :, self.mask_used]
+        else:
+            self.compact = False
+
+    @property
+    def masks(self):
+        """
+        Decoded mask planes in a 3-D numpy array.
+        """
+        return self._masks
+
+    @masks.setter
+    def masks(self, mask_array):
+        self._masks = mask_array
 
     def decode(self, bitmask):
         '''
@@ -125,13 +172,14 @@ class Mask():
         The code is based on convert_HSC_binary_mask() function by Jia-Xuan Li
         see: https://github.com/AstroJacobLi/slug/blob/master/slug/imutils.py
         '''
-        temp = np.array(np.hsplit(np.unpackbits(bitmask.view(np.uint8), axis=1), self.width))
+        temp = np.array(
+            np.hsplit(np.unpackbits(bitmask.view(np.uint8), axis=1), bitmask.shape[1]))
 
         decode_mask = np.flip(np.transpose(
             np.concatenate(np.flip(np.array(np.dsplit(temp, 2)), axis=0), axis=2),
             axes=(1, 0, 2)), axis=2)
 
-        return decode_mask
+        return decode_mask[:, :, :self.bitmasks.n_mask]
 
     def mask_cmap(self, name_or_bit):
         """
@@ -164,12 +212,6 @@ class Mask():
         if len(name_or_bit_list) == 1:
             return self.extract(name_or_bit_list[0])
         return np.bitwise_or.reduce([self.extract(nb) for nb in name_or_bit_list])
-
-    def effective(self):
-        """
-        Return the cube for the effective mask planes.
-        """
-        pass
 
     def clean(self, name_or_bit_list):
         """
@@ -238,7 +280,7 @@ S18A_BITMASKS = np.array(
      (16, 'INEXACT_PSF',
       'PSF is not correct',
       'gold')],
-    dtype=[('bits', np.uint8), ('name', '<U14'),
+    dtype=[('bits', np.uint8), ('name', '<U18'),
            ('meaning', '<U80'), ('color', '<U12')])
 
 PDR1_BITMASKS = np.array(
@@ -284,5 +326,5 @@ PDR1_BITMASKS = np.array(
      (13, 'CLIPPED',
       'Pixel that has been clipped',
       'crimson')],
-    dtype=[('bits', np.uint8), ('name', '<U14'),
+    dtype=[('bits', np.uint8), ('name', '<U18'),
            ('meaning', '<U80'), ('color', '<U12')])
