@@ -100,6 +100,11 @@ class Mask():
         # Number of available mask planes
         self.n_mask = self.masks.shape[2]
 
+        # Useful mask plane
+        self.mask_used = [
+            self.masks[:, :, ii].sum() > 0 for ii in np.arange(self.n_mask)]
+        self.n_used = np.sum(self.mask_used)
+
         # WCS information
         self.wcs = wcs
 
@@ -233,8 +238,8 @@ S18A_BITMASKS = np.array(
      (16, 'INEXACT_PSF',
       'PSF is not correct',
       'gold')],
-    dtype=[('bits', np.uint8), ('name', '<U10'),
-           ('meaning', '<U80'), ('color', '<U10')])
+    dtype=[('bits', np.uint8), ('name', '<U14'),
+           ('meaning', '<U80'), ('color', '<U12')])
 
 PDR1_BITMASKS = np.array(
     [(0, 'BAD',
@@ -279,5 +284,5 @@ PDR1_BITMASKS = np.array(
      (13, 'CLIPPED',
       'Pixel that has been clipped',
       'crimson')],
-    dtype=[('bits', np.uint8), ('name', '<U10'),
-           ('meaning', '<U80'), ('color', '<U10')])
+    dtype=[('bits', np.uint8), ('name', '<U14'),
+           ('meaning', '<U80'), ('color', '<U12')])
