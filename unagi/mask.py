@@ -150,8 +150,11 @@ class Mask():
         Get the colormap to show the mask plane.
         """
         # TODO: make 0 transparent
-        return colors.ListedColormap(
+        cmap = colors.ListedColormap(
             ['white', self.bitmasks.get_color(name_or_bit)])
+        cmap.set_under(color='w', alpha=0.0)
+        cmap.set_bad(color='w', alpha=0.0)
+        return cmap
 
     def display(self, bit_list, alpha_list=None):
         """
@@ -165,8 +168,8 @@ class Mask():
             masks = self.extract(bit_list, show=True)
             cmaps = [self.get_cmap(b) for b in bit_list]
             return plotting.overplot_all(
-                masks, xsize=6, ysize=6, scale='linear', alpha=0.7,
-                alpha_list=alpha_list, cmap_list=cmaps)
+                masks, xsize=6, ysize=6, stretch='linear', scale='minmax', 
+                alpha=0.7, alpha_list=alpha_list, cmap_list=cmaps, vmin=1)
 
     def extract(self, bit_list, show=False):
         """
