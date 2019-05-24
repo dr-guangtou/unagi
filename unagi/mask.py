@@ -10,7 +10,12 @@ from astropy.table import Table
 
 from scipy.ndimage import gaussian_filter
 
-__all__ = ['Mask', 'BitMasks', 'S18A_BITMASKS', 'PDR1_BITMASKS']
+from . import plotting
+
+__all__ = ['Mask', 'BitMasks',
+           'MASK_CMAP', 'S18A_BITMASKS', 'PDR1_BITMASKS']
+
+MASK_CMAP = plotting.random_cmap(512, background_color='white')
 
 class BitMasks():
     """
@@ -73,8 +78,6 @@ class BitMasks():
         else:
             flag = self.bitmasks['bits'] == name_or_bit
 
-        print(np.where(flag)[0][0])
-
         return np.where(flag)[0][0]
 
     def get_color(self, name_or_bit):
@@ -123,9 +126,13 @@ class Mask():
         # BitMask object for this mask
         self.bitmasks = BitMasks(data_release=self.data_release)
 
+        # Key information about the mask planes
+        self.library = self.bitmasks.bitmasks
+        self.n_mask = self.bitmasks.n_mask
+        self.type = self.bitmasks.type
+
         # Decode the bitmask array
         self._masks = mask.astype(self.bitmasks.type)
-
 
     @property
     def masks(self):
@@ -138,41 +145,29 @@ class Mask():
     def masks(self, mask_array):
         self._masks = mask_array
 
-    def decode(self, bitmask):
-        '''
-        Convert HSC binary mask to a 3-D array,
-        with binary digits located in the third axis.
-
-        Parameters:
-        -----------
-        bin_msk: 2-D np.array, can be loaded from HSC image cutouts
-
-        The code is based on convert_HSC_binary_mask() function by Jia-Xuan Li
-        see: https://github.com/AstroJacobLi/slug/blob/master/slug/imutils.py
-        '''
-        temp = np.array(
-            np.hsplit(np.unpackbits(bitmask.view(np.uint8), axis=1), bitmask.shape[1]))
-
-        decode_mask = np.flip(np.transpose(
-            np.concatenate(np.flip(np.array(np.dsplit(temp, 2)), axis=0), axis=2),
-            axes=(1, 0, 2)), axis=2)
-
-        return decode_mask[:, :, :self.bitmasks.n_mask]
-
-    def mask_cmap(self, name_or_bit):
+    def get_color(self, name_or_bit):
         """
         Get the colormap to show the mask plane.
         """
         return colors.ListedColormap(
             ['white', self.bitmasks.get_color(name_or_bit)])
 
+    def display(self):
+        """
+        Display one or multiple layers of masks.
+        """
+        pass
+
     def extract(self, name_or_bit, show=False):
         """
         Get the 2-D array of one mask plane.
         """
         if show:
-            return self.masks[:, :, self.bitmasks.get_index(name_or_bit)].astype(float)
-        return self.masks[:, :, self.bitmasks.get_index(name_or_bit)]
+            return self.masks & self.library[self.bitmasks.get_index(name_or_bit)]['value']
+
+        return (
+            self.masks & self.library[
+                self.bitmasks.get_index(name_or_bit)]['value'] > 0).astype(np.uint8)
 
     def enlarge(self, name_or_bit, sigma=2.0, threshold=0.02):
         """
