@@ -363,6 +363,8 @@ def display_single(img,
 def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=None,
                 label_x=0.1, label_y=0.9, fontsize=20, **kwargs):
     """Display a list of images."""
+    if not isinstance(img_list, list):
+        raise TypeError("Provide a list of image to show or use display_single()")
     # Number of image to show
     n_img = len(img_list)
 
@@ -394,5 +396,53 @@ def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=No
             else:
                 ax.text(label_x, label_y, label_list[ii], fontsize=fontsize,
                         transform=ax.transAxes, color='w')
+
+    return fig
+
+def overplot_all(img_list, cmap_list=None, hdu_index=None, **kwargs):
+    """
+    Display a list of images.
+    """
+    if not isinstance(img_list, list):
+        raise TypeError("Provide a list of image to show or use display_single()")
+    # Number of image to show
+    n_img = len(img_list)
+
+    if 'xsize' in kwargs:
+        xsize = kwargs.get('xsize')
+    else:
+        xsize = 6
+
+    if 'ysize' in kwargs:
+        ysize = kwargs.get('ysize')
+    else:
+        ysize = 6
+
+    if 'scale' in kwargs:
+        scale = kwargs.get('scale')
+    else:
+        scale = 'zscale'
+
+    if cmap_list is not None:
+        assert len(cmap_list) == len(img_list), "Wrong number of color maps!"
+
+    fig = plt.figure(figsize=(xsize, ysize))
+    fig.subplots_adjust(left=0., right=1., bottom=0., top=1., wspace=0., hspace=0.)
+    ax = plt.subplot(111)
+
+    for ii in range(n_img):
+        if hdu_index is None:
+            img = img_list[ii]
+        else:
+            img = img_list[ii][hdu_index].data
+
+        if cmap_list is not None:
+            cmap = cmap_list[ii]
+        else:
+            cmap = None
+
+        ax = display_single(img, ax=ax, scale=scale, cmap=cmap, **kwargs)
+
+    # TODO: Add legend
 
     return fig
