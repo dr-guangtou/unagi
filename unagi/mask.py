@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Deal with the mask plane of HSC images."""
 
+import copy
+
 import numpy as np
 
 from matplotlib import colors
@@ -139,8 +141,8 @@ class Mask():
 
         # Key information about the mask planes
         self.library = self.bitmasks.bitmasks
-        self.names = self.library['name']
-        self.bits = self.library['bits']
+        self.names = list(self.library['name'])
+        self.bits = list(self.library['bits'])
         self.n_mask = self.bitmasks.n_mask
         self.type = self.bitmasks.type
 
@@ -245,7 +247,17 @@ class Mask():
         """
         Remove one or a list of mask plane.
         """
-        pass
+        if not isinstance(name_or_bit_list, list):
+            name_or_bit_list = [name_or_bit_list]
+
+        if isinstance(name_or_bit_list[0], str):
+            mask_use = copy.deepcopy(self.names)
+        else:
+            mask_use = copy.deepcopy(self.bits)
+
+        _ = [mask_use.remove(b) for b in name_or_bit_list]
+
+        return self.combine(mask_use)
 
 
 S18A_BITMASKS = np.array(
