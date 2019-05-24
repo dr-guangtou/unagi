@@ -158,55 +158,56 @@ class Mask():
     def masks(self, mask_array):
         self._masks = mask_array
 
-    def get_cmap(self, name_or_bit):
+    def get_cmap(self, bit_list):
         """
         Get the colormap to show the mask plane.
         """
-        cmap = colors.ListedColormap(
-            ['white', self.bitmasks.get_color(name_or_bit)])
-        cmap.set_under(color='w', alpha=0.0)
-        cmap.set_bad(color='w', alpha=0.0)
-        return cmap
+        if not np.all(self.check(bit_list)):
+            raise NameError("One or more mask planes are not available!")
+
+        if not isinstance(bit_list, list):
+            cmap = colors.ListedColormap(
+                ['white', self.bitmasks.get_color(bit_list)])
+            cmap.set_under(color='w', alpha=0.0)
+            return cmap
+        else:
+            cmap_list = []
+            for b in bit_list:
+                cmap = colors.ListedColormap(
+                    ['white', self.bitmasks.get_color(b)])
+                cmap.set_under(color='w', alpha=0.0)
+                cmap_list.append(cmap)
+            return cmap_list
 
     def display(self, bit_list, alpha_list=None):
         """
         Display one or multiple layers of masks.
         """
+        mask = self.extract(bit_list, show=True)
+        cmap = self.get_cmap(bit_list)
         if not isinstance(bit_list, list):
-            mask = self.extract(bit_list, show=True)
-            cmap = self.get_cmap(bit_list)
             return plotting.display_single(mask, scale='linear', cmap=cmap, alpha=0.9)
         else:
-            masks = self.extract(bit_list, show=True)
-            cmaps = [self.get_cmap(b) for b in bit_list]
             return plotting.overplot_all(
-                masks, xsize=6, ysize=6, stretch='linear', scale='minmax',
-                alpha=0.7, alpha_list=alpha_list, cmap_list=cmaps, vmin=1)
+                mask, xsize=6, ysize=6, stretch='linear', scale='minmax',
+                alpha=0.7, alpha_list=alpha_list, cmap_list=cmap, vmin=1)
 
-    def check(self, bit_list, alpha=None):
+    def check(self, bit_list):
         """
-        Check whether the
-        """
-        if not isinstance(bit_list, list):
-            return bit_list in self.bits
-        else:
-            return [b in self.bits for b in bit_list]
-
-    def check(self, bit_list, alpha=None):
-        """
-        Check whether the
+        Check whether the bit or name is available.
         """
         if not isinstance(bit_list, list):
-            return bit_list in self.bits
+            return self.bitmasks.check(bit_list)
         else:
-            return [b in self.bits for b in bit_list]
-
-
+            return [self.bitmasks.check(b) for b in bit_list]
 
     def extract(self, bit_list, show=False):
         """
         Get the 2-D array of one or multiple mask plane.
         """
+        if not np.all(self.check(bit_list)):
+            raise NameError("One or more mask planes are not available!")
+
         if not isinstance(bit_list, list):
             if show:
                 return self.masks & self.library[self.bitmasks.get_index(bit_list)]['value']
