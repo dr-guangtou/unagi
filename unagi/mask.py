@@ -63,6 +63,15 @@ class BitMasks():
         """
         return self.bitmasks[self.bitmasks['bits'] == idx]['name'][0]
 
+    def check(self, name_or_bit):
+        """
+        Check whether a name or a bit is in this "library".
+        """
+        if isinstance(name_or_bit, str):
+            return name_or_bit in self.bitmasks['name']
+        else:
+            return name_or_bit in self.bitmasks['bits']
+
     def name2bits(self, name):
         """
         Convert the name of the mask plane to bits value.
@@ -73,6 +82,8 @@ class BitMasks():
         """
         Get the index of the mask plane.
         """
+        if not self.check(name_or_bit):
+            raise NameError("Mask {} in not available".format(name_or_bit))
         if isinstance(name_or_bit, str):
             flag = self.bitmasks['name'] == name_or_bit.strip().upper()
         else:
@@ -128,6 +139,8 @@ class Mask():
 
         # Key information about the mask planes
         self.library = self.bitmasks.bitmasks
+        self.names = self.library['name']
+        self.bits = self.library['bits']
         self.n_mask = self.bitmasks.n_mask
         self.type = self.bitmasks.type
 
@@ -149,7 +162,6 @@ class Mask():
         """
         Get the colormap to show the mask plane.
         """
-        # TODO: make 0 transparent
         cmap = colors.ListedColormap(
             ['white', self.bitmasks.get_color(name_or_bit)])
         cmap.set_under(color='w', alpha=0.0)
@@ -168,8 +180,28 @@ class Mask():
             masks = self.extract(bit_list, show=True)
             cmaps = [self.get_cmap(b) for b in bit_list]
             return plotting.overplot_all(
-                masks, xsize=6, ysize=6, stretch='linear', scale='minmax', 
+                masks, xsize=6, ysize=6, stretch='linear', scale='minmax',
                 alpha=0.7, alpha_list=alpha_list, cmap_list=cmaps, vmin=1)
+
+    def check(self, bit_list, alpha=None):
+        """
+        Check whether the
+        """
+        if not isinstance(bit_list, list):
+            return bit_list in self.bits
+        else:
+            return [b in self.bits for b in bit_list]
+
+    def check(self, bit_list, alpha=None):
+        """
+        Check whether the
+        """
+        if not isinstance(bit_list, list):
+            return bit_list in self.bits
+        else:
+            return [b in self.bits for b in bit_list]
+
+
 
     def extract(self, bit_list, show=False):
         """
@@ -212,15 +244,7 @@ class Mask():
         """
         Remove one or a list of mask plane.
         """
-        if not isinstance(name_or_bit_list, list):
-            return np.bitwise_or.reduce(
-                np.delete(self.masks, (self.bitmasks.get_index(name_or_bit_list)), axis=2),
-                axis=2)
-        else:
-            return np.bitwise_or.reduce(
-                np.delete(
-                    self.masks, [self.bitmasks.get_index(nb) for nb in name_or_bit_list], axis=2),
-                axis=2)
+        pass
 
 
 S18A_BITMASKS = np.array(
