@@ -145,29 +145,48 @@ class Mask():
     def masks(self, mask_array):
         self._masks = mask_array
 
-    def get_color(self, name_or_bit):
+    def get_cmap(self, name_or_bit):
         """
         Get the colormap to show the mask plane.
         """
+        # TODO: make 0 transparent
         return colors.ListedColormap(
             ['white', self.bitmasks.get_color(name_or_bit)])
 
-    def display(self):
+    def display(self, bit_list, alpha_list=None):
         """
         Display one or multiple layers of masks.
         """
-        pass
+        if not isinstance(bit_list, list):
+            mask = self.extract(bit_list, show=True)
+            cmap = self.get_cmap(bit_list)
+            return plotting.display_single(mask, scale='linear', cmap=cmap, alpha=0.9)
+        else:
+            masks = self.extract(bit_list, show=True)
+            cmaps = [self.get_cmap(b) for b in bit_list]
+            return plotting.overplot_all(
+                masks, xsize=6, ysize=6, scale='linear', alpha=0.7,
+                alpha_list=alpha_list, cmap_list=cmaps)
 
-    def extract(self, name_or_bit, show=False):
+    def extract(self, bit_list, show=False):
         """
-        Get the 2-D array of one mask plane.
+        Get the 2-D array of one or multiple mask plane.
         """
-        if show:
-            return self.masks & self.library[self.bitmasks.get_index(name_or_bit)]['value']
-
-        return (
-            self.masks & self.library[
-                self.bitmasks.get_index(name_or_bit)]['value'] > 0).astype(np.uint8)
+        if not isinstance(bit_list, list):
+            if show:
+                return self.masks & self.library[self.bitmasks.get_index(bit_list)]['value']
+            return (
+                self.masks & self.library[
+                    self.bitmasks.get_index(bit_list)]['value'] > 0).astype(np.uint8)
+        else:
+            if show:
+                return [
+                    self.masks & self.library[self.bitmasks.get_index(b)]['value']
+                    for b in bit_list]
+            return [
+                (self.masks & self.library[
+                    self.bitmasks.get_index(b)]['value'] > 0).astype(np.uint8)
+                for b in bit_list]
 
     def enlarge(self, name_or_bit, sigma=2.0, threshold=0.02):
         """
