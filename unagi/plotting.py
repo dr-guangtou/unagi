@@ -208,6 +208,8 @@ def display_single(img,
                    alpha=1.0,
                    stretch='arcsinh',
                    scale='zscale',
+                   zmin=None,
+                   zmax=None,
                    contrast=0.25,
                    no_negative=False,
                    lower_percentile=1.0,
@@ -266,23 +268,30 @@ def display_single(img,
     # Scale option
     if scale.strip() == 'zscale':
         try:
-            zmin, zmax = ZScaleInterval(contrast=contrast).get_limits(img_scale)
+            vmin, vmax = ZScaleInterval(contrast=contrast).get_limits(img_scale)
         except IndexError:
             # TODO: Deal with problematic image
-            zmin, zmax = -1.0, 1.0
+            vmin, vmax = -1.0, 1.0
     elif scale.strip() == 'percentile':
         try:
-            zmin, zmax = AsymmetricPercentileInterval(
+            vmin, vmax = AsymmetricPercentileInterval(
                 lower_percentile=lower_percentile,
                 upper_percentile=upper_percentile).get_limits(img_scale)
         except IndexError:
             # TODO: Deal with problematic image
-            zmin, zmax = -1.0, 1.0
+            vmin, vmax = -1.0, 1.0
+    elif scale.strip() == 'minmax':
+        vmin, vmax = np.nanmin(img_scale), np.nanmax(img_scale)
     else:
-        zmin, zmax = np.nanmin(img_scale), np.nanmax(img_scale)
+        vmin, vmax = np.nanmin(img_scale), np.nanmax(img_scale)
+
+    if zmin is not None:
+        vmin = zmin
+    if zmax is not None:
+        vmax = zmax
 
     show = ax1.imshow(img_scale, origin='lower', cmap=cmap,
-                      vmin=zmin, vmax=zmax, alpha=alpha)
+                      vmin=vmin, vmax=vmax, alpha=alpha)
 
     # Hide ticks and tick labels
     ax1.tick_params(
@@ -399,8 +408,9 @@ def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=No
 
     return fig
 
-def overplot_all(img_list, xsize=6, ysize=6, scale='zscale', alpha=0.7,
-                 cmap_list=None, hdu_index=None, alpha_list=None, **kwargs):
+def overplot_all(img_list, xsize=6, ysize=6, stretch='arcsinh', scale='minmax',
+                 alpha=0.7, vmin=None, cmap_list=None, hdu_index=None, alpha_list=None,
+                 **kwargs):
     """
     Display a list of images.
     """
@@ -436,8 +446,8 @@ def overplot_all(img_list, xsize=6, ysize=6, scale='zscale', alpha=0.7,
             alpha_use = alpha
 
         ax = display_single(
-            img, xsize=xsize, ysize=ysize, scale=scale, alpha=alpha_use,
-            ax=ax, cmap=cmap, **kwargs)
+            img, xsize=xsize, ysize=ysize, stretch=stretch, alpha=alpha_use,
+            ax=ax, cmap=cmap, zmin=vmin, scale=scale, **kwargs)
 
     # TODO: Add legend
 
