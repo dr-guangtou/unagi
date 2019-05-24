@@ -36,7 +36,7 @@ rcParams.update({'axes.titlepad': '10.0'})
 rcParams.update({'font.size': 25})
 
 __all__ = ['FILTERS_COLOR', 'plot_skyobj_hist', 'map_skyobjs', 'random_cmap',
-           'display_single', 'display_all']
+           'display_single', 'display_all', 'overplot_all']
 
 # Default colormaps
 IMG_CMAP = plt.get_cmap('viridis')
@@ -399,7 +399,8 @@ def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=No
 
     return fig
 
-def overplot_all(img_list, cmap_list=None, hdu_index=None, **kwargs):
+def overplot_all(img_list, xsize=6, ysize=6, scale='zscale', alpha=0.7,
+                 cmap_list=None, hdu_index=None, alpha_list=None, **kwargs):
     """
     Display a list of images.
     """
@@ -408,23 +409,11 @@ def overplot_all(img_list, cmap_list=None, hdu_index=None, **kwargs):
     # Number of image to show
     n_img = len(img_list)
 
-    if 'xsize' in kwargs:
-        xsize = kwargs.get('xsize')
-    else:
-        xsize = 6
-
-    if 'ysize' in kwargs:
-        ysize = kwargs.get('ysize')
-    else:
-        ysize = 6
-
-    if 'scale' in kwargs:
-        scale = kwargs.get('scale')
-    else:
-        scale = 'zscale'
-
     if cmap_list is not None:
         assert len(cmap_list) == len(img_list), "Wrong number of color maps!"
+
+    if alpha_list is not None:
+        assert len(alpha_list) == len(img_list), "Wrong number of alpha list!"
 
     fig = plt.figure(figsize=(xsize, ysize))
     fig.subplots_adjust(left=0., right=1., bottom=0., top=1., wspace=0., hspace=0.)
@@ -441,7 +430,14 @@ def overplot_all(img_list, cmap_list=None, hdu_index=None, **kwargs):
         else:
             cmap = None
 
-        ax = display_single(img, ax=ax, scale=scale, cmap=cmap, **kwargs)
+        if alpha_list is not None:
+            alpha_use = alpha_list[ii]
+        else:
+            alpha_use = alpha
+
+        ax = display_single(
+            img, xsize=xsize, ysize=ysize, scale=scale, alpha=alpha_use,
+            ax=ax, cmap=cmap, **kwargs)
 
     # TODO: Add legend
 
