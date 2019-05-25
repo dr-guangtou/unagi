@@ -370,10 +370,18 @@ def display_single(img,
 
 
 def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=None,
-                label_x=0.1, label_y=0.9, fontsize=20, **kwargs):
+                cmap_list=None, label_x=0.1, label_y=0.9, fontsize=20, fontcolor='k',
+                **kwargs):
     """Display a list of images."""
     if not isinstance(img_list, list):
         raise TypeError("Provide a list of image to show or use display_single()")
+
+    if cmap_list is not None:
+        assert len(cmap_list) == len(img_list), "Wrong number of color maps!"
+
+    if label_list is not None:
+        assert len(label_list) == len(img_list), "Wrong number of labels!"
+
     # Number of image to show
     n_img = len(img_list)
 
@@ -397,14 +405,14 @@ def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=No
             img_show = img_list[ii][hdu_index].data
 
         ax = plt.subplot(gs[ii])
-        ax = display_single(img_show, ax=ax, **kwargs)
+        ax = display_single(img_show, cmap=cmap_list[ii], ax=ax, **kwargs)
 
         if label_list is not None:
             if len(label_list) != n_img:
                 print("# Wrong number for labels!")
             else:
                 ax.text(label_x, label_y, label_list[ii], fontsize=fontsize,
-                        transform=ax.transAxes, color='w')
+                        transform=ax.transAxes, color=fontcolor)
 
     return fig
 

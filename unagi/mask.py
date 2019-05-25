@@ -259,6 +259,36 @@ class Mask():
 
         return self.combine(mask_use)
 
+    def mask_used(self):
+        """
+        Identify the mask plane that are actually used.
+        """
+        return [marr.sum() > 0 for marr in self.extract(self.names)]
+
+    def name_used(self):
+        """
+        Get the names of the used mask planes.
+        """
+        return list(self.library[self.mask_used()]['name'])
+
+    def show_used(self):
+        """
+        Display all mask planes that are used.
+        """
+        names = self.name_used()
+        masks = self.extract(names, show=True)
+        cmaps = self.get_cmap(names)
+
+        labels = [r"$\rm {0}$".format(n.replace('_', '\_')) for n in names]
+
+        fig = plotting.display_all(
+            masks, n_column=4, img_size=3., label_list=labels, cmap_list=cmaps,
+            label_x=0.1, label_y=0.9, fontsize=15, fontcolor='k',
+            scale='minmax', scale_bar_color='k', scale_bar_y_offset=1.2,
+            scale_bar_fontsize=15)
+
+        return fig, masks
+
 
 S18A_BITMASKS = np.array(
     [(0, 'BAD', 'Bad pixel',
