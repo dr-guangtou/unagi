@@ -15,21 +15,27 @@ If you want to learn more about this amazing food, just try `import unagi; unagi
 Applications
 ------------
 
+- [Config the access to HSC database and get basic survey information](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_config.ipynb)
+
+<img src="doc/unagi_config.png" width="70%">
+
 - [Generate cutout coadded or warped HSC images](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_cutout.ipynb).
 
-<img src="doc/unagi_cutout.gif" width="70%">
+<img src="doc/unagi_cutout.png" width="70%">
 
 - [Generate 3-color RGB picture of a small HSC region.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_color_image.ipynb)
 
-<img src="doc/unagi_color.gif" width="70%">
+<img src="doc/unagi_color.png" width="70%">
 
 - [Query and download HSC PSF model.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_psf.ipynb)
 
-<img src="doc/unagi_psf.gif" width="70%">
+<img src="doc/unagi_psf.png" width="70%">
 
-- Download HSC files (coadded `Patch` or source catalogs).
+- [Dealing with the mask planes of HSC images](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_mask.ipynb)
 
-- [Dealing with the bitmask plane of HSC image](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_mask.ipynb)
+<img src="doc/unagi_mask.png" width="70%">
+
+- Download HSC files (coadded `Patch` or source catalogs)
 
 - Using HSC sky object to characterize residual background
 
