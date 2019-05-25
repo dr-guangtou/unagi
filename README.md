@@ -35,9 +35,7 @@ Applications
 
 <img src="doc/unagi_mask.png" width="70%">
 
-- Download HSC files (coadded `Patch` or source catalogs).
-
-- [Dealing with the bitmask plane of HSC image](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_mask.ipynb)
+- Download HSC files (coadded `Patch` or source catalogs)
 
 - Using HSC sky object to characterize residual background
 
