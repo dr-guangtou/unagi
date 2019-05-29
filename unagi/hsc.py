@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Core functions"""
 
+import io
 import os
 import json
 import time
@@ -13,8 +14,9 @@ import numpy as np
 
 import astropy.units as u
 from astropy.io import fits
+from astropy.table import Table
 from astropy.utils.console import Spinner
-from astropy.utils.data import download_file, get_readable_fileobj
+from astropy.utils.data import download_file
 
 from . import config
 
@@ -631,13 +633,28 @@ class Hsc():
 
         return result
 
-    def parse_query_result(self, response, out_format='csv'):
+    def parse_query_result(self, response):
         """
         Parse the SQL result to something readable.
         """
+        try:
+            # Convert the output into Astropy.table
+            result = Table.read(
+                io.BytesIO(response.read(response.length)))
+            # Remove _isnull columns
+            columns = [col for col in result.colnames if not col.endswith('_isnull')]
+            result = result[columns]
+        except Exception as e:
+            print(e)
+            print("\n# Cannot convert search result into Astropy table.")
+
+        if not result:
+            warnings.warn('Query returned no results, so the table will be empty!')
+
+        return result
 
     def sql_query(
-            self, sql, out_file=None, preview=False, nomail=True, 
+            self, sql, out_file=None, preview=False, nomail=True,
             skip_syntax=True, delete_after=True, verbose=True):
         """
         SQL search in HSC archive.
@@ -657,12 +674,19 @@ class Hsc():
                 # If SQL search is done, get the result
                 response = self.get_query_result(job['id'])
 
+                # Convert the output into astropy.table
+                result = self.parse_query_result(response)
 
+                # Save a copy of the result to file
+                if out_file:
+                    if verbose:
+                        print('# Save result to {}'.format(out_file))
+                    result.write(out_file, overwrite=True)
 
                 # Delete the SQL search result from the archive
                 if delete_after:
                     self.delete_query(job['id'])
-                return response
+                return result
         except urllib.error.HTTPError as e:
             if e.code == 401:
                 print('invalid id or password!')
