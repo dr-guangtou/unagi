@@ -566,6 +566,8 @@ class Hsc():
     def _block_until_query_finishes(self, job_id):
         """
         Block untial the query is done.
+
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
         """
         interval = 1   # sec.
 
@@ -585,3 +587,22 @@ class Hsc():
 
                 next(spin)
 
+    def download_query(self, job_id, out_file):
+        """
+        Download SQL query result.
+
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
+        """
+        url = os.path.join(self.archive.cat_url, 'download')
+        post_data = {
+            'credential': self._credential(), 
+            'id': job_id}
+
+        res = self._http_post_json(url, post_data)
+
+        buff_size = 64 * 1<<10 # 64k
+        while True:
+            buf = res.read(buff_size)
+            out_file.write(buf)
+            if len(buf) < buff_size:
+                break
