@@ -587,7 +587,7 @@ class Hsc():
 
                 next(spin)
 
-    def download_query(self, job_id, out_file):
+    def download_query(self, job_id, out_file=None):
         """
         Download SQL query result.
 
@@ -595,14 +595,76 @@ class Hsc():
         """
         url = os.path.join(self.archive.cat_url, 'download')
         post_data = {
-            'credential': self._credential(), 
+            'credential': self._credential(),
             'id': job_id}
 
         res = self._http_post_json(url, post_data)
 
-        buff_size = 64 * 1<<10 # 64k
-        while True:
-            buf = res.read(buff_size)
-            out_file.write(buf)
-            if len(buf) < buff_size:
-                break
+        if out_file is not None:
+            buff_size = 64 * 1<<10 # 64k
+            while True:
+                buf = res.read(buff_size)
+                out_file.write(buf)
+                if len(buf) < buff_size:
+                    break
+
+        return json.load(res)
+
+    def preview_query(self, sql):
+        """
+        Preview a SQL query result.
+        """
+        url = os.path.join(self.archive.cat_url, 'preview')
+
+        catalog_job = {
+            'sql'             : sql,
+            'release_version' : self.dr
+            }
+
+        post_data = {
+            'credential': self._credential(),
+            'catalog_job': catalog_job}
+
+        res = self._http_post_json(url, post_data)
+        result = json.load(res)
+
+        return result
+
+    def sql_query(
+            self, sql, out_file=None, out_format='csv', preview=False,
+            nomail=True, skip_syntax=True, delete_after=True):
+        """
+        SQL search in HSC archive.
+        """
+        job = {'id': -9999}
+        try:
+            if preview:
+                # Preview SQL search
+                result = self.preview_query(sql)
+            else:
+                # Submit SQL job
+                job = self.submit_query(
+                    sql, out_format, nomail=nomail, skip_syntax=skip_syntax)
+                # Wait...
+                self._block_until_query_finishes(job['id'])
+                # If SQL search is done, download the result
+                result = self.download_query(job['id'], out_file=out_file)
+                # Delete the SQL search result from the archive
+                if delete_after:
+                    self.delete_query(job['id'])
+                return result
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                print('invalid id or password!')
+            if e.code == 406:
+                print(e.read())
+            else:
+                print(e)
+        except QueryError as e:
+            print(e)
+        except KeyboardInterrupt:
+            if job['id'] != -9999:
+                self.cancel_query(job['id'])
+            raise
+        else:
+            raise QueryError("Something is wrong with the SQL search!")
