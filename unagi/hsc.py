@@ -32,6 +32,8 @@ DEFAULT_CUTOUT_CORNER = {
     'filter': 'HSC-I', 'rerun': ''
 }
 
+SQL_OUTPUT_FORMAT = ['csv', 'csv.gz', 'sqlite3', 'fits']
+
 IMG_HDU = 1
 MSK_HDU = 2
 VAR_HDU = 3
@@ -57,6 +59,7 @@ class Hsc():
     # Default cutout image size in unit of arcsec
     DEFAULT_IMG_SIZE = 10.0 * u.arcsec
     # Available HSC database
+    # TODO: dr2-citus is not supported yet
     DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2']
     # List of HSC filters
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
@@ -136,7 +139,7 @@ class Hsc():
         except urllib.error.HTTPError as e:
             print("! Can not login to HSC archive: %s" % str(e))
             self.opener = None
-
+    
     def logout(self):
         """
         Log out of the HSC server.
@@ -473,7 +476,7 @@ class Hsc():
         res = urllib.request.urlopen(req)
         return res
 
-    def _http_post_json(self, url, data, headers=None):
+    def _http_post_json(self, url, data):
         """
         Send SQL request.
 
@@ -483,3 +486,37 @@ class Hsc():
         data['clientVersion'] = self.sql_version
         post_data = json.dumps(data)
         return self._http_post(url, post_data, {'Content-type': 'application/json'})
+
+    def _credential(self):
+        """
+        Return a dict that contains username and password.
+        """
+        return {'account_name': self.archive._username,
+                'password': self.archive._password}
+
+    def submit_query(self, sql, out_format, nomail=True, skip_syntax=True):
+        """
+        Submit SQL job to HSC archive.
+        """
+        url = os.path.join(self.archive.cat_url, 'submit')
+
+        if out_format.strip().lower() not in SQL_OUTPUT_FORMAT:
+            raise NameError("Wrong output format: ['csv', 'csv.gz', 'sqlite3', 'fits']")
+
+        catalog_job = {
+            'sql'                     : sql,
+            'out_format'              : out_format.strip().lower(),
+            'include_metainfo_to_body': True,
+            'release_version'         : self.dr,
+            }
+
+        post_data = {
+            'credential': self._credential(), 
+            'catalog_job': catalog_job, 
+            'nomail': nomail, 
+            'skip_syntax_check': skip_syntax
+            }
+
+        res = self._http_post_json(url, post_data)
+        job = json.load(res)
+        return job
