@@ -14,7 +14,7 @@ import numpy as np
 import astropy.units as u
 from astropy.io import fits
 from astropy.utils.console import Spinner
-from astropy.utils.data import download_file
+from astropy.utils.data import download_file, get_readable_fileobj
 
 from . import config
 
@@ -32,8 +32,6 @@ DEFAULT_CUTOUT_CORNER = {
     'type': 'coadd', 'image': 'on', 'mask': 'off', 'variance': 'off',
     'filter': 'HSC-I', 'rerun': ''
 }
-
-SQL_OUTPUT_FORMAT = ['csv', 'csv.gz', 'sqlite3', 'fits']
 
 IMG_HDU = 1
 MSK_HDU = 2
@@ -493,7 +491,7 @@ class Hsc():
         return {'account_name': self.archive._username,
                 'password': self.archive._password}
 
-    def submit_query(self, sql, out_format='csv', nomail=True, skip_syntax=True):
+    def submit_query(self, sql, nomail=True, skip_syntax=True):
         """
         Submit SQL job to HSC archive.
 
@@ -501,12 +499,9 @@ class Hsc():
         """
         url = os.path.join(self.archive.cat_url, 'submit')
 
-        if out_format.strip().lower() not in SQL_OUTPUT_FORMAT:
-            raise NameError("Wrong output format: ['csv', 'csv.gz', 'sqlite3', 'fits']")
-
         catalog_job = {
             'sql'                     : sql,
-            'out_format'              : out_format.strip().lower(),
+            'out_format'              : 'fits',
             'include_metainfo_to_body': True,
             'release_version'         : self.dr,
             }
@@ -563,7 +558,7 @@ class Hsc():
 
         _ = self._http_post_json(url, post_data)
 
-    def _block_until_query_finishes(self, job_id, verbose=verbose):
+    def _block_until_query_finishes(self, job_id, verbose=True):
         """
         Block untial the query is done.
 
@@ -601,7 +596,7 @@ class Hsc():
                 if interval > self.archive.timeout:
                     interval = self.archive.timeout
 
-    def download_query(self, job_id, out_file=None):
+    def get_query_result(self, job_id):
         """
         Download SQL query result.
 
@@ -612,22 +607,9 @@ class Hsc():
             'credential': self._credential(),
             'id': job_id}
 
-        res = self._http_post_json(url, post_data)
+        response = self._http_post_json(url, post_data)
 
-        if out_file is not None:
-            buff_size = 64 * 1<<10 # 64k
-            while True:
-                buf = res.read(buff_size)
-                out_file.write(buf)
-                if len(buf) < buff_size:
-                    break
-
-        try:
-            result = json.load(res)
-        except json.JSONDecodeError:
-            result = res
-        
-        return result
+        return response
 
     def preview_query(self, sql):
         """
@@ -649,9 +631,14 @@ class Hsc():
 
         return result
 
+    def parse_query_result(self, response, out_format='csv'):
+        """
+        Parse the SQL result to something readable.
+        """
+
     def sql_query(
-            self, sql, out_file=None, out_format='csv', preview=False,
-            nomail=True, skip_syntax=True, delete_after=True, verbose=True):
+            self, sql, out_file=None, preview=False, nomail=True, 
+            skip_syntax=True, delete_after=True, verbose=True):
         """
         SQL search in HSC archive.
         """
@@ -659,19 +646,23 @@ class Hsc():
         try:
             if preview:
                 # Preview SQL search
-                result = self.preview_query(sql)
+                response = self.preview_query(sql)
             else:
                 # Submit SQL job
                 job = self.submit_query(
-                    sql, out_format, nomail=nomail, skip_syntax=skip_syntax)
+                    sql, nomail=nomail, skip_syntax=skip_syntax)
                 # Wait...
                 self._block_until_query_finishes(job['id'], verbose=verbose)
-                # If SQL search is done, download the result
-                result = self.download_query(job['id'], out_file=out_file)
+
+                # If SQL search is done, get the result
+                response = self.get_query_result(job['id'])
+
+
+
                 # Delete the SQL search result from the archive
                 if delete_after:
                     self.delete_query(job['id'])
-                return result
+                return response
         except urllib.error.HTTPError as e:
             if e.code == 401:
                 print('invalid id or password!')
