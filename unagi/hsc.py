@@ -3,8 +3,8 @@
 """Core functions"""
 
 import os
-import ssl
 import json
+import time
 import urllib
 import shutil
 import warnings
@@ -13,6 +13,7 @@ import numpy as np
 
 import astropy.units as u
 from astropy.io import fits
+from astropy.utils.console import Spinner
 from astropy.utils.data import download_file
 
 from . import config
@@ -548,3 +549,39 @@ class Hsc():
             'credential': self._credential(), 'id': job_id}
 
         _ = self._http_post_json(url, post_data)
+
+    def delete_query(self, job_id):
+        """
+        Delete a SQL query job.
+
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
+        """
+        url = os.path.join(self.archive.cat_url, 'delete')
+
+        post_data = {
+            'credential': self._credential(), 'id': job_id}
+
+        _ = self._http_post_json(url, post_data)
+
+    def _block_until_query_finishes(self, job_id):
+        """
+        Block untial the query is done.
+        """
+        interval = 1   # sec.
+
+        with Spinner('Waiting for query to finish...', 'lightred') as spin:
+            while True:
+                time.sleep(interval)
+                status = self.check_query(job_id)
+
+                if status['status'] == 'error':
+                    raise QueryError('query error: {}'.format(status['error']))
+                if status['status'] == 'done':
+                    break
+
+                interval *= 2
+                if interval > self.archive.timeout:
+                    interval = self.archive.timeout
+
+                next(spin)
+
