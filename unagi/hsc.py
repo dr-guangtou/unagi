@@ -493,7 +493,7 @@ class Hsc():
         return {'account_name': self.archive._username,
                 'password': self.archive._password}
 
-    def submit_query(self, sql, out_format, nomail=True, skip_syntax=True):
+    def submit_query(self, sql, out_format='csv', nomail=True, skip_syntax=True):
         """
         Submit SQL job to HSC archive.
 
@@ -563,7 +563,7 @@ class Hsc():
 
         _ = self._http_post_json(url, post_data)
 
-    def _block_until_query_finishes(self, job_id):
+    def _block_until_query_finishes(self, job_id, verbose=verbose):
         """
         Block untial the query is done.
 
@@ -571,7 +571,23 @@ class Hsc():
         """
         interval = 1   # sec.
 
-        with Spinner('Waiting for query to finish...', 'lightred') as spin:
+        if verbose:
+            with Spinner('Waiting for query to finish...', 'lightred') as spin:
+                while True:
+                    time.sleep(interval)
+                    status = self.check_query(job_id)
+
+                    if status['status'] == 'error':
+                        raise QueryError('query error: {}'.format(status['error']))
+                    if status['status'] == 'done':
+                        break
+
+                    interval *= 2
+                    if interval > self.archive.timeout:
+                        interval = self.archive.timeout
+
+                    next(spin)
+        else:
             while True:
                 time.sleep(interval)
                 status = self.check_query(job_id)
@@ -584,8 +600,6 @@ class Hsc():
                 interval *= 2
                 if interval > self.archive.timeout:
                     interval = self.archive.timeout
-
-                next(spin)
 
     def download_query(self, job_id, out_file=None):
         """
@@ -608,7 +622,12 @@ class Hsc():
                 if len(buf) < buff_size:
                     break
 
-        return json.load(res)
+        try:
+            result = json.load(res)
+        except json.JSONDecodeError:
+            result = res
+        
+        return result
 
     def preview_query(self, sql):
         """
@@ -632,7 +651,7 @@ class Hsc():
 
     def sql_query(
             self, sql, out_file=None, out_format='csv', preview=False,
-            nomail=True, skip_syntax=True, delete_after=True):
+            nomail=True, skip_syntax=True, delete_after=True, verbose=True):
         """
         SQL search in HSC archive.
         """
@@ -646,7 +665,7 @@ class Hsc():
                 job = self.submit_query(
                     sql, out_format, nomail=nomail, skip_syntax=skip_syntax)
                 # Wait...
-                self._block_until_query_finishes(job['id'])
+                self._block_until_query_finishes(job['id'], verbose=verbose)
                 # If SQL search is done, download the result
                 result = self.download_query(job['id'], out_file=out_file)
                 # Delete the SQL search result from the archive
