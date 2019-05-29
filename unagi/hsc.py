@@ -139,7 +139,7 @@ class Hsc():
         except urllib.error.HTTPError as e:
             print("! Can not login to HSC archive: %s" % str(e))
             self.opener = None
-    
+
     def logout(self):
         """
         Log out of the HSC server.
@@ -469,8 +469,7 @@ class Hsc():
         """
         Request data.
 
-        Based on the NAOJ script:
-        https://hsc-gitlab.mtk.nao.ac.jp/snippets/13
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
         """
         req = urllib.request.Request(url, data.encode('utf-8'), headers)
         res = urllib.request.urlopen(req)
@@ -480,8 +479,7 @@ class Hsc():
         """
         Send SQL request.
 
-        Based on the NAOJ script:
-        https://hsc-gitlab.mtk.nao.ac.jp/snippets/13
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
         """
         data['clientVersion'] = self.sql_version
         post_data = json.dumps(data)
@@ -497,6 +495,8 @@ class Hsc():
     def submit_query(self, sql, out_format, nomail=True, skip_syntax=True):
         """
         Submit SQL job to HSC archive.
+
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
         """
         url = os.path.join(self.archive.cat_url, 'submit')
 
@@ -511,12 +511,40 @@ class Hsc():
             }
 
         post_data = {
-            'credential': self._credential(), 
-            'catalog_job': catalog_job, 
-            'nomail': nomail, 
+            'credential': self._credential(),
+            'catalog_job': catalog_job,
+            'nomail': nomail,
             'skip_syntax_check': skip_syntax
             }
 
         res = self._http_post_json(url, post_data)
         job = json.load(res)
         return job
+
+    def check_query(self, job_id):
+        """
+        Check the status of a SQL query job.
+
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
+        """
+        url = os.path.join(self.archive.cat_url, 'status')
+
+        post_data = {
+            'credential': self._credential(), 'id': job_id}
+
+        res = self._http_post_json(url, post_data)
+        job = json.load(res)
+        return job
+
+    def cancel_query(self, job_id):
+        """
+        Cancel a SQL query job.
+
+        Based on: https://hsc-gitlab.mtk.nao.ac.jp/snippets/31
+        """
+        url = os.path.join(self.archive.cat_url, 'cancel')
+
+        post_data = {
+            'credential': self._credential(), 'id': job_id}
+
+        _ = self._http_post_json(url, post_data)
