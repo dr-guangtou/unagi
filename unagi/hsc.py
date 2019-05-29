@@ -3,6 +3,8 @@
 """Core functions"""
 
 import os
+import ssl
+import json
 import urllib
 import shutil
 import warnings
@@ -36,6 +38,11 @@ VAR_HDU = 3
 
 class HscException(Exception):
     """Class for error related to data release information.
+    """
+    pass
+
+class QueryError(Exception):
+    """Class for error related to SQL query.
     """
     pass
 
@@ -84,6 +91,10 @@ class Hsc():
         self.rerun = rerun
         self.archive = config.Rerun(
             dr=self.dr, rerun=self.rerun, config_file=config_file)
+
+        # SQL client version
+        # TODO: figure out how to get this from HSC archive
+        self.sql_version = 20181012.1
 
         # Whether login to the server
         self.is_login = False
@@ -450,3 +461,25 @@ class Hsc():
         cutout_dict['rerun'] = self.rerun
 
         return cutout_dict
+
+    def _http_post(self, url, data, headers):
+        """
+        Request data.
+
+        Based on the NAOJ script:
+        https://hsc-gitlab.mtk.nao.ac.jp/snippets/13
+        """
+        req = urllib.request.Request(url, data.encode('utf-8'), headers)
+        res = urllib.request.urlopen(req)
+        return res
+
+    def _http_post_json(self, url, data, headers=None):
+        """
+        Send SQL request.
+
+        Based on the NAOJ script:
+        https://hsc-gitlab.mtk.nao.ac.jp/snippets/13
+        """
+        data['clientVersion'] = self.sql_version
+        post_data = json.dumps(data)
+        return self._http_post(url, post_data, {'Content-type': 'application/json'})
