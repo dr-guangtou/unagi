@@ -626,10 +626,18 @@ class Hsc():
 
         post_data = {
             'credential': self._credential(),
-            'catalog_job': catalog_job}
+            'catalog_job': catalog_job
+            }
 
         res = self._http_post_json(url, post_data)
         result = json.load(res)
+
+        print(result['result']['fields'])
+        for row in result['result']['rows']:
+            print(row)
+        if result['result']['count'] > len(result['result']['rows']):
+            raise QueryError(
+                'only top %d records are displayed !' % len(result['result']['rows']))
 
         return result
 
@@ -663,6 +671,8 @@ class Hsc():
         try:
             if preview:
                 # Preview SQL search
+                if verbose:
+                    print("# Preview the SQL search result...")
                 response = self.preview_query(sql)
             else:
                 # Submit SQL job
