@@ -31,6 +31,11 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
     # Login to HSC archive
     if archive is None:
         archive = Hsc(dr=dr, rerun=rerun)
+    else:
+        dr = archive.dr
+        rerun = archive.rerun
+        if dr[0] == 'p':
+            rerun = rerun.replace(dr + '_', '')
 
     # List of three filters
     filter_list = list(filters)
@@ -133,6 +138,11 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     # Login to HSC archive
     if archive is None:
         archive = Hsc(dr=dr, rerun=rerun)
+    else:
+        dr = archive.dr
+        rerun = archive.rerun
+        if dr[0] == 'p':
+            rerun = rerun.replace(dr + '_', '')
 
     # List of three filters
     filter_list = list(filters)
@@ -261,6 +271,11 @@ def hsc_psf(coord, centered=True, filters='i', dr='dr2', rerun='s18a_wide',
     # Login to HSC archive
     if archive is None:
         archive = Hsc(dr=dr, rerun=rerun)
+    else:
+        dr = archive.dr
+        rerun = archive.rerun
+        if dr[0] == 'p':
+            rerun = rerun.replace(dr + '_', '')
 
     # List of three filters
     filter_list = list(filters)
