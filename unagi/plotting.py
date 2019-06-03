@@ -371,10 +371,14 @@ def display_single(img,
 
 def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=None,
                 cmap_list=None, label_x=0.1, label_y=0.9, fontsize=20, fontcolor='k',
-                **kwargs):
+                hdu_list=False, hdu_start=1, **kwargs):
     """Display a list of images."""
     if not isinstance(img_list, list):
         raise TypeError("Provide a list of image to show or use display_single()")
+
+    # Make a numpy array list if the input is HDUList
+    if hdu_list:
+        img_list = [img_list[ii].data for ii in np.arange(len(img_list))[hdu_start:]]
 
     if cmap_list is not None:
         assert len(cmap_list) == len(img_list), "Wrong number of color maps!"
