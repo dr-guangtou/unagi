@@ -85,7 +85,7 @@ class Server(object):
 
             if dr == 'pdr1':
                 # Outdate warning
-                warnings.warn("# PDR1 is outdated and some of the links may be broken.",
+                warnings.warn("# PDR1 is outdated and some of the links may be broken." +
                               "Please consider using PDR2 instead!")
 
                 self.data_release = 'pdr1'

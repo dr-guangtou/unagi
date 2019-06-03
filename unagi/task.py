@@ -229,7 +229,6 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 
     return cutout_list
 
-
 def _get_cutout_size(cutout_size, redshift=None, cosmo=None, verbose=True):
     """Parse the input for the size of the cutout."""
     if not isinstance(cutout_size, u.quantity.Quantity):
@@ -252,7 +251,6 @@ def _get_cutout_size(cutout_size, redshift=None, cosmo=None, verbose=True):
             raise ValueError("# Wrong unit for cutout size: {}".format(str(cutout_unit)))
 
     return ang_size
-
 
 def hsc_psf(coord, centered=True, filters='i', dr='dr2', rerun='s18a_wide',
             img_type='coadd', prefix=None, verbose=True, archive=None, save_output=True,
