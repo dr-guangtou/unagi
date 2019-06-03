@@ -41,15 +41,17 @@ Applications
 
 <img src="doc/unagi_mask.png" width="70%">
 
-- Download HSC files (coadded `Patch` or source catalogs)
-
 - [Basic SQL search of HSC database](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_sql.ipynb)
+
+<img src="doc/unagi_sql.png" width="70%">
 
 - Using HSC sky object to characterize residual background
 
 
 TODO List
 ---------
+
+- Directly download data products from HSC pipeline (e.g., coadded `Patch` or source catalogs)
 
 - Access to HSC weak-lensing shape catalog
 
