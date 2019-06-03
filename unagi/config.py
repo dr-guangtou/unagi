@@ -76,8 +76,7 @@ class Server(object):
 
                 https://hsc-release.mtk.nao.ac.jp/das_quarry/manual.html
 
-            So far, only DR1 is available.
-            """
+            So far, only DR1 is available."""
             # Gather login information:
             self._get_credential(pdr=True, config_file=config_file)
 
@@ -85,10 +84,14 @@ class Server(object):
             self.database = 'PDR'
 
             if dr == 'pdr1':
+                # Outdate warning
+                warnings.warn("# PDR1 is outdated and some of the links may be broken.",
+                              "Please consider using PDR2 instead!")
+
                 self.data_release = 'pdr1'
 
                 # Time limit for connecting to HSC Server
-                self.timeout = 300
+                self.timeout = 600
 
                 # Useful URLs
                 self.base_url = PDR_URL
@@ -308,7 +311,49 @@ class Server(object):
                                _PDR_W_WIDE12, _PDR_W_HECTOMAP,
                                _PDR_W_VVDS, _PDR_AEGIS]
             elif dr == 'pdr2':
-                raise DrException("Please be patient! PDR2 is coming!")
+                self.data_release = 'pdr2'
+
+                # Time limit for connecting to HSC Server
+                self.timeout = 600
+
+                # Useful URLs
+                self.base_url = PDR_URL
+                # SQL catalog log search search server
+                self.cat_url = PDR_URL + "/datasearch/api/catalog_jobs/"
+                # Coadd image cutout server
+                self.img_url = PDR_URL + "/das_cutout/pdr2/cgi-bin/cutout?"
+                # PSF picker server
+                self.psf_url = PDR_URL + "/psf/pdr2/cgi/getpsf?"
+                # Direct file tree
+                self.file_url = PDR_URL + "/archive/filetree/"
+                # DAS search server
+                self.das_url = PDR_URL + "/das_search/"
+                # Ancillary information
+                self.map_url = PDR_URL + "/das_search/%s/images/%s/" % (
+                    self.data_release, self.data_release)
+                self.txt_url = PDR_URL + "/rsrc/pdr2/koike/survey-area/info"
+
+                # Available filters
+                """
+                Notice:
+                -------
+                    Only UDEEP+DEEP fields have narrow-band coverage.
+                """
+                self.filter_list = ['HSC-G', 'HSC-R', 'HSC-I',
+                                    'HSC-Z', 'HSC-Y', 'NB0387', 'NB0816', 'NB0921']
+                self.filter_list_short = ['g', 'r', 'i', 'z', 'y', 'nb387', 'nb816', 'nb921']
+
+                # Available reruns
+                self.rerun_list = ['any', 'pdr2_dud', 'pdr2_wide',
+                                   'pdr2_cosmos_wide_depth_best',
+                                   'pdr2_cosmos_wide_depth_median',
+                                   'pdr2_cosmos_wide_depth_worst']
+                self.rerun_default = 'pdr2_wide'
+                self.wide_default = 'pdr2_wide'
+                self.deep_default = 'pdr2_dud'
+                self.udeep_default = 'pdr2_dud'
+
+                # Available fields
             else:
                 raise DrException("!! Wrong information about data release !!")
 
