@@ -673,7 +673,8 @@ class Hsc():
                 # Preview SQL search
                 if verbose:
                     print("# Preview the SQL search result...")
-                response = self.preview_query(sql)
+                result = self.preview_query(sql)
+                return result
             else:
                 # Submit SQL job
                 job = self.submit_query(
