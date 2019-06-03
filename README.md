@@ -60,7 +60,9 @@ TODO List
 Installation
 ------------
 
-Right now, please just put `unagi` under your `PYTHONPATH` environment variable.
+- `python setup.py install` or `python setup.py develop` will do the job.
+- Right now, `unagi` only supports `Python>=3`.  If you are still using `Python 2`, you should make the switch.
+- `unagi` only depends on `numpy`, `scipy`, `astropy`, and `matplotlib`. All can be installed using `pip` or `conda`.
 
 Documents
 --------- 
