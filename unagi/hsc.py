@@ -19,6 +19,7 @@ from astropy.utils.console import Spinner
 from astropy.utils.data import download_file
 
 from . import config
+from . import query
 
 __all__ = ['Hsc', 'DEFAULT_CUTOUT_CENTER', 'DEFAULT_CUTOUT_CORNER',
            'IMG_HDU', 'MSK_HDU', 'VAR_HDU']
@@ -663,22 +664,27 @@ class Hsc():
 
     def sql_query(
             self, sql, out_file=None, preview=False, nomail=True,
-            skip_syntax=True, delete_after=True, verbose=True):
+            skip_syntax=True, delete_after=True, verbose=True, from_file=False):
         """
         SQL search in HSC archive.
         """
+        if from_file:
+            sql_str = open(sql, 'r').read()
+        else:
+            sql_str = sql
+
         job = {'id': -9999}
         try:
             if preview:
                 # Preview SQL search
                 if verbose:
                     print("# Preview the SQL search result...")
-                result = self.preview_query(sql)
+                result = self.preview_query(sql_str)
                 return result
             else:
                 # Submit SQL job
                 job = self.submit_query(
-                    sql, nomail=nomail, skip_syntax=skip_syntax)
+                    sql_str, nomail=nomail, skip_syntax=skip_syntax)
                 # Wait...
                 self._block_until_query_finishes(job['id'], verbose=verbose)
 
@@ -713,3 +719,18 @@ class Hsc():
             raise
         else:
             raise QueryError("Something is wrong with the SQL search!")
+
+    def tables(self):
+        """
+        List all the tables available for the rerun.
+        """
+        table_list = self.sql_query(query.HELP_BASIC.format(self.rerun), verbose=False)
+        mask = np.asarray(
+            [name.strip() != self.rerun and 'search' not in name for name in table_list['object']])
+
+        return list(table_list[mask]['object'])
+
+    def table_schema(self, table):
+        """
+        Show the schema of a table.
+        """
