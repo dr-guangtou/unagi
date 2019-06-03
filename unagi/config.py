@@ -329,9 +329,8 @@ class Server(object):
                 # DAS search server
                 self.das_url = PDR_URL + "/das_search/"
                 # Ancillary information
-                self.map_url = PDR_URL + "/das_search/%s/images/%s/" % (
-                    self.data_release, self.data_release)
-                self.txt_url = PDR_URL + "/rsrc/pdr2/koike/survey-area/info"
+                self.map_url = PDR_URL + "/rsrc/pdr2/koike/survey-area/fig/"
+                self.txt_url = PDR_URL + "/rsrc/pdr2/koike/survey-area/info/"
 
                 # Available filters
                 """
@@ -431,7 +430,7 @@ class Server(object):
                     'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
                                          'HSC-z', 'HSC-y'],
                     'field_map': (self.map_url +
-                                  'tracts_patches_W-w01_HSC-R.png'),
+                                  'tracts_patches_W_w01_HSC-R.png'),
                     'patch_info': (self.txt_url +
                                    'tracts_patches_W-w01.txt')
                     }
@@ -444,7 +443,7 @@ class Server(object):
                     'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
                                          'HSC-z', 'HSC-y'],
                     'field_map': (self.map_url +
-                                  'tracts_patches_W-w02_HSC-I.png'),
+                                  'tracts_patches_W_w02_HSC-I.png'),
                     'patch_info': (self.txt_url +
                                    'tracts_patches_W-w02.txt')
                     }
@@ -457,7 +456,7 @@ class Server(object):
                     'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
                                          'HSC-z', 'HSC-y'],
                     'field_map': (self.map_url +
-                                  'tracts_patches_W-w03_HSC-I.png'),
+                                  'tracts_patches_W_w03_HSC-I.png'),
                     'patch_info': (self.txt_url +
                                    'tracts_patches_W-w03.txt')
                     }
@@ -470,7 +469,7 @@ class Server(object):
                     'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
                                          'HSC-z', 'HSC-y'],
                     'field_map': (self.map_url +
-                                  'tracts_patches_W-w04_HSC-I.png'),
+                                  'tracts_patches_W_w04_HSC-I.png'),
                     'patch_info': (self.txt_url +
                                    'tracts_patches_W-w04.txt')
                     }
@@ -483,7 +482,7 @@ class Server(object):
                     'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
                                          'HSC-z', 'HSC-y'],
                     'field_map': (self.map_url +
-                                  'tracts_patches_W-w05_HSC-I.png'),
+                                  'tracts_patches_W_w05_HSC-I.png'),
                     'patch_info': (self.txt_url +
                                    'tracts_patches_W-w05.txt')
                     }
@@ -496,7 +495,7 @@ class Server(object):
                     'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
                                          'HSC-z', 'HSC-y'],
                     'field_map': (self.map_url +
-                                  'tracts_patches_W-w06_HSC-I.png'),
+                                  'tracts_patches_W_w06_HSC-I.png'),
                     'patch_info': (self.txt_url +
                                    'tracts_patches_W-w06.txt')
                     }
@@ -509,7 +508,7 @@ class Server(object):
                     'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
                                          'HSC-z', 'HSC-y'],
                     'field_map': (self.map_url +
-                                  'tracts_patches_W-AEGIS_HSC-I.png'),
+                                  'tracts_patches_W_AEGIS_HSC-I.png'),
                     'patch_info': (self.txt_url +
                                    'tracts_patches_W-AEGIS.txt')
                     }
