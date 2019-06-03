@@ -12,6 +12,12 @@ If you want to learn more about the real unagi, you can check out [this video on
 
 If you want to learn more about this amazing food, just try `import unagi; unagi.unagi()` in your `Jupyter` Notebook.
 
+
+Recent Updates
+--------------
+
+- 06/03/2019: **Support for HSC PDR2 is added** (need more tests)
+
 Applications
 ------------
 
@@ -37,12 +43,17 @@ Applications
 
 - Download HSC files (coadded `Patch` or source catalogs)
 
+- [Basic SQL search of HSC database](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_sql.ipynb)
+
 - Using HSC sky object to characterize residual background
+
 
 TODO List
 ---------
 
-- Basic SQL search (I still need to learn how to run SQL using Python)
+- Access to HSC weak-lensing shape catalog
+
+- Access to HSC random catalog
 
 - Reproduce the `CModel` result
 
