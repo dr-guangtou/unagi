@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """SQL search related functions"""
 
-from .hsc import Hsc
-
 __all__ = ['HELP_BASIC', 'COLUMNS_CONTAIN', 'TABLE_SCHEMA']
 
 HELP_BASIC = "SELECT * FROM help('{0}');"
