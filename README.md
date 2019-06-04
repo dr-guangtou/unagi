@@ -17,6 +17,7 @@ Recent Updates
 --------------
 
 - 06/03/2019: **Support for HSC PDR2 is added** (need more tests)
+  - The schema of all tables in the `PDR2_DUD` and `PDR2_WIDE` reruns are available in `unagi/data/` folder as a `.json` file.
 
 Applications
 ------------
