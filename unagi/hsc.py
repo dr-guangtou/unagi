@@ -764,28 +764,66 @@ class Hsc():
         # Otherwise, just return a list of table names
         return list(tables['object'])
 
+    def _check_table(self, table):
+        """
+        Check whether a table is available in the rerun.
+        """
+        return table.lower().strip() in self.table_list
+
     def table_schema(self, table, return_table=False, save=False):
         """
         Show the schema of a table.
         """
-        schema = self.sql_query(
-            query.TABLE_SCHEMA.format(self.rerun, table), verbose=False
-        )[1:]
+        if not self._check_table(table):
+            raise NameError("# Wrong table name, see self.table_list")
 
-        # Remove the rerun and table name from the schema list
-        for item in schema:
-            item['object'] = item['object'].replace("{0}.{1}.".format(self.rerun, table), '')
+        schema_dir = os.path.join(os.path.dirname(unagi.__file__), 'data', self.rerun)
+        output_fits = os.path.join(schema_dir, '{0}_{1}_schema.fits'.format(self.rerun, table))
+
+        if os.path.isfile(output_fits):
+            print("# Read from saved file {}".format(output_fits))
+            schema = Table.read(output_fits)
+        else:
+            schema = self.sql_query(
+                query.TABLE_SCHEMA.format(self.rerun, table), verbose=False)[1:]
+            # Remove the rerun and table name from the schema list
+            for item in schema:
+                item['object'] = item['object'].replace("{0}.{1}.".format(self.rerun, table), '')
 
         # Save a fits version of the schema of the table
         if save:
-            schema_dir = os.path.join(os.path.dirname(unagi.__file__), 'data', self.rerun)
             if not os.path.isdir(schema_dir):
                 os.mkdir(schema_dir)
-            schema.write(
-                os.path.join(schema_dir, '{0}_{1}_schema.fits'.format(self.rerun, table)),
-                overwrite=True)
+            schema.write(output_fits, overwrite=True)
 
         if return_table:
             return schema
         # Otherwise, just return a list of column names
         return list(schema['object'])
+
+    def build_schema(self, verbose=True, save=True):
+        """
+        Get the schema of all tables in the rerun and save them.
+        """
+        schema_dir = os.path.join(os.path.dirname(unagi.__file__), 'data', self.rerun)
+        output_json = os.path.join(schema_dir, '{0}_schema.json'.format(self.rerun))
+
+        if os.path.isfile(output_json):
+            schema_dict = json.loads(open(output_json).read())
+        else:
+            if verbose:
+                print("# Dealing with {0} catalogs, this will take a while".format(
+                    len(self.table_list)))
+            schema_dict = {}
+            for table in self.table_list:
+                if verbose:
+                    print("# Deal with table: {}".format(table))
+                schema_dict["{}".format(table)] = self.table_schema(table, save=True)
+
+            # Save the complete schema list to a json file
+            if save:
+                json_file = open(output_json, "w")
+                json_file.write(json.dumps(schema_dict))
+                json_file.close()
+
+        return schema_dict
