@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Basic configuration of HSC archive."""
 
 import os
 import sys
