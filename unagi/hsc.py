@@ -827,3 +827,4 @@ class Hsc():
                 json_file.close()
 
         return schema_dict
+    

@@ -15,7 +15,8 @@ from astropy.visualization import make_lupton_rgb
 from .hsc import Hsc
 from .utils import r_phy_to_ang
 
-__all__ = ['hsc_tricolor', 'hsc_cutout', 'hsc_psf']
+__all__ = ['hsc_tricolor', 'hsc_cutout', 'hsc_psf', 
+           'hsc_cone_search', 'hsc_box_search']
 
 ANG_UNITS = ['arcsec', 'arcsecond', 'arcmin', 'arcminute', 'deg']
 PHY_UNITS = ['pc', 'kpc', 'Mpc']
@@ -347,3 +348,16 @@ def hsc_psf(coord, centered=True, filters='i', dr='dr2', rerun='s18a_wide',
         return psf_list[0]
 
     return psf_list
+
+def hsc_cone_search(coord, radius, template='basic', archive=None):
+    """
+    Search for objects within a cone area.
+    """
+    pass
+
+def hsc_box_search(coord, box_size=10.0 * u.Unit('arcsec'), coord_2=None, template='basic',
+                   archive=None):
+    """
+    Search for objects within a box area.
+    """
+    pass
