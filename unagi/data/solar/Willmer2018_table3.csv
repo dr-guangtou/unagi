@@ -1,0 +1,181 @@
+filter,vegamag,AB,ST,Apparent (vegamag),Apparent (AB),Apparent (ST),AB mag of Vega,ST mag of Vega,Pivot Wavelength (μm),Filter Reference
+Johnson_U,5.61,6.33,5.42,-25.97,-25.25,-26.15,0.721,-0.183,0.3611,"Mann & von Braun, 2015 PASP 127,102"
+Johnson_B,5.44,5.31,4.84,-26.13,-26.26,-26.74,-0.128,-0.605,0.4396,"Mann & von Braun, 2015 PASP 127,102"
+Johnson_V,4.81,4.8,4.81,-26.76,-26.77,-26.76,-0.013,0.001,0.5511,"Mann & von Braun, 2015 PASP 127,102"
+Cousins_R,4.43,4.6,5.0,-27.15,-26.97,-26.57,0.178,0.578,0.6582,"Mann & von Braun, 2015 PASP 127,102"
+Cousins_I,4.1,4.51,5.35,-27.47,-27.06,-26.22,0.414,1.247,0.8034,"Mann & von Braun, 2015 PASP 127,102"
+Tycho_Bt,5.58,5.48,4.91,-25.99,-26.09,-26.66,-0.097,-0.667,0.4212,"Mann & von Braun, 2015 PASP 127,102"
+Tycho_Vt,4.88,4.85,4.79,-26.69,-26.72,-26.78,-0.035,-0.091,0.5335,"Mann & von Braun, 2015 PASP 127,102"
+Hipparcos_Hp,4.87,4.87,4.88,-26.7,-26.7,-26.69,-0.002,0.011,0.5508,"Mann & von Braun, 2015 PASP 127,102"
+2MASS_J,3.67,4.54,6.31,-27.9,-27.03,-25.26,0.87,2.644,1.2393,"Cohen, Wheaton & Megeath 2003 AJ, 126 1090"
+2MASS_H,3.32,4.66,7.06,-28.25,-26.91,-24.51,1.344,3.739,1.6495,"Cohen, Wheaton & Megeath 2003 AJ, 126 1090"
+2MASS_Ks,3.27,5.08,8.07,-28.3,-26.49,-23.5,1.814,4.798,2.1638,"Cohen, Wheaton & Megeath 2003 AJ, 126 1090"
+SDSS_u,5.49,6.39,5.45,-26.08,-25.18,-26.12,0.9,-0.037,0.3556,http://classic.sdss.org/dr7/instruments/imager/filters/u.dat
+SDSS_g,5.23,5.11,4.78,-26.34,-26.47,-26.8,-0.125,-0.456,0.4702,http://classic.sdss.org/dr7/instruments/imager/filters/g.dat
+SDSS_r,4.53,4.65,4.91,-27.04,-26.93,-26.66,0.119,0.38,0.6176,http://classic.sdss.org/dr7/instruments/imager/filters/r.dat
+SDSS_i,4.19,4.53,5.21,-27.38,-27.05,-26.37,0.332,1.012,0.749,http://classic.sdss.org/dr7/instruments/imager/filters/i.dat
+SDSS_z,4.01,4.5,5.57,-27.56,-27.07,-26.0,0.494,1.56,0.8947,http://classic.sdss.org/dr7/instruments/imager/filters/z.dat
+DES_u,5.83,6.14,5.38,-25.74,-25.44,-26.2,0.307,-0.452,0.3859,http://www.ctio.noao.edu/noao/sites/default/files/DECam/DECam filters.xlsx
+DES_g,5.17,5.05,4.78,-26.41,-26.52,-26.8,-0.114,-0.391,0.482,http://www.ctio.noao.edu/noao/sites/default/files/DECam/DECam filters.xlsx
+DES_r,4.45,4.61,4.96,-27.12,-26.96,-26.61,0.159,0.505,0.6423,http://www.ctio.noao.edu/noao/sites/default/files/DECam/DECam filters.xlsx
+DES_i,4.14,4.52,5.29,-27.43,-27.05,-26.28,0.382,1.152,0.7807,http://www.ctio.noao.edu/noao/sites/default/files/DECam/DECam filters.xlsx
+DES_z,4.01,4.5,5.62,-27.56,-27.07,-25.95,0.493,1.61,0.9158,http://www.ctio.noao.edu/noao/sites/default/files/DECam/DECam filters.xlsx
+DES_Y,3.96,4.5,5.78,-27.61,-27.07,-25.79,0.54,1.819,0.9866,http://www.ctio.noao.edu/noao/sites/default/files/DECam/DECam filters.xlsx
+PS1_g,5.14,5.03,4.77,-26.43,-26.54,-26.8,-0.112,-0.376,0.4849,Tonry et al. 2012 ApJ 750 99
+PS1_r,4.53,4.64,4.92,-27.05,-26.93,-26.66,0.12,0.39,0.6201,Tonry et al. 2012 ApJ 750 99
+PS1_i,4.18,4.52,5.22,-27.39,-27.05,-26.35,0.339,1.033,0.7535,Tonry et al. 2012 ApJ 750 99
+PS1_z,4.02,4.51,5.5,-27.55,-27.07,-26.07,0.483,1.482,0.8674,Tonry et al. 2012 ApJ 750 99
+PS1_Y,3.99,4.5,5.73,-27.59,-27.07,-25.85,0.515,1.741,0.9628,Tonry et al. 2012 ApJ 750 99
+cfhtls_u,5.7,6.04,5.25,-25.87,-25.53,-26.33,0.336,-0.455,0.3803,http://www1.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/community/CFHTLS-SG/docs/extra/filt
+cfhtls_g,5.15,5.03,4.77,-26.42,-26.54,-26.8,-0.116,-0.382,0.4844,http://www1.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/community/CFHTLS-SG/docs/extra/filt
+cfhtls_r,4.5,4.64,4.92,-27.07,-26.94,-26.65,0.131,0.417,0.6248,http://www1.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/community/CFHTLS-SG/docs/extra/filt
+cfhtls_i,4.16,4.52,5.26,-27.41,-27.05,-26.32,0.362,1.096,0.7678,http://www1.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/community/CFHTLS-SG/docs/extra/filt
+cfhtls_z,4.02,4.51,5.55,-27.56,-27.07,-26.02,0.49,1.535,0.8859,http://www1.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/community/CFHTLS-SG/docs/extra/filt
+CFHT_12kx8k_B,5.43,5.28,4.8,-26.14,-26.3,-26.77,-0.157,-0.632,0.4399,Nick Kaiser 2002 private communication
+CFHT_12kx8k_R,4.39,4.59,5.0,-27.18,-26.98,-26.57,0.196,0.605,0.661,Nick Kaiser 2002 private communication
+CFHT_12kx8k_I,4.1,4.51,5.38,-27.47,-27.06,-26.19,0.415,1.282,0.8159,Nick Kaiser 2002 private communication
+UKIRT_z,4.02,4.51,5.54,-27.56,-27.07,-26.03,0.489,1.526,0.8826,"Hewett et al 2006 MNRAS, 367, 354"
+UKIRT_Y,3.92,4.51,5.88,-27.66,-27.07,-25.69,0.591,1.966,1.0315,Hewett et al 2006 MNRAS 367 354
+UKIRT_J,3.65,4.54,6.33,-27.92,-27.03,-25.24,0.891,2.684,1.2502,Hewett et al 2006 MNRAS 367 354
+UKIRT_H,3.33,4.66,7.03,-28.25,-26.92,-24.54,1.329,3.705,1.636,Hewett et al 2006 MNRAS 367 354
+UKIRT_K,3.27,5.12,8.14,-28.3,-26.45,-23.43,1.848,4.874,2.206,Hewett et al 2006 MNRAS 367 354
+LSST_u,5.65,6.27,5.4,-25.93,-25.3,-26.17,0.627,-0.244,0.3665,https://github.com/lsst/throughputs/tree/master/baseline
+LSST_g,5.17,5.06,4.77,-26.4,-26.52,-26.8,-0.116,-0.399,0.4808,https://github.com/lsst/throughputs/tree/master/baseline
+LSST_r,4.52,4.64,4.92,-27.05,-26.93,-26.66,0.121,0.395,0.621,https://github.com/lsst/throughputs/tree/master/baseline
+LSST_i,4.18,4.52,5.22,-27.39,-27.05,-26.35,0.34,1.034,0.7537,https://github.com/lsst/throughputs/tree/master/baseline
+LSST_z,4.02,4.51,5.51,-27.55,-27.07,-26.06,0.484,1.486,0.8686,https://github.com/lsst/throughputs/tree/master/baseline
+LSST_y,3.98,4.5,5.74,-27.59,-27.07,-25.83,0.52,1.763,0.9705,https://github.com/lsst/throughputs/tree/master/baseline
+Bessell_Murphy_U,5.57,6.34,5.43,-26.0,-25.23,-26.14,0.768,-0.144,0.3597,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_Murphy_B,5.46,5.33,4.84,-26.11,-26.24,-26.73,-0.134,-0.62,0.4378,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_Murphy_V,4.82,4.81,4.81,-26.75,-26.77,-26.76,-0.017,-0.012,0.5489,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_Murphy_R,4.44,4.61,4.99,-27.13,-26.96,-26.58,0.168,0.548,0.6524,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_Murphy_I,4.11,4.52,5.33,-27.46,-27.06,-26.24,0.408,1.227,0.7984,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_Murphy_Bt,5.6,5.51,4.93,-25.98,-26.06,-26.65,-0.088,-0.669,0.419,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_Murphy_Vt,4.89,4.86,4.79,-26.68,-26.71,-26.79,-0.038,-0.108,0.53,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_Murphy_Hp,4.93,4.92,4.86,-26.64,-26.66,-26.71,-0.018,-0.068,0.5349,"Bessell & Murphy 2012 PASP, 124, 140"
+Bessell_88_J,3.67,4.54,6.3,-27.9,-27.03,-25.27,0.866,2.632,1.2347,"Bessell & Brett 1988 PASP, 100, 1134"
+Bessell_88_H,3.32,4.66,7.05,-28.25,-26.91,-24.52,1.337,3.726,1.645,"Bessell & Brett 1988 PASP, 100, 1134"
+Bessell_88_K,3.27,5.09,8.07,-28.3,-26.49,-23.5,1.815,4.802,2.1663,"Bessell & Brett 1988 PASP, 100, 1134"
+Bessell_88_L,3.26,5.98,10.0,-28.31,-25.59,-21.58,2.721,6.737,3.4797,"Bessell & Brett 1988 PASP, 100, 1134"
+Bessell_88_Lprime,3.26,6.17,10.39,-28.31,-25.4,-21.18,2.914,7.135,3.8247,"Bessell & Brett 1988 PASP, 100, 1134"
+Bessell_88_M,3.29,6.64,11.33,-28.28,-24.93,-20.25,3.349,8.034,4.7347,"Bessell & Brett 1988 PASP, 100, 1134"
+GALEX_FUV,15.22,17.3,14.54,-16.36,-14.27,-17.03,2.085,-0.676,0.1535,https://universe.gsfc.nasa.gov/archive/galex/Documents/PostLaunchFUVImagingRespo
+GALEX_NUV,8.53,10.16,8.28,-23.04,-21.41,-23.3,1.629,-0.253,0.2301,https://universe.gsfc.nasa.gov/archive/galex/Documents/PostLaunchNUVImagingRespo
+WISE_1,3.26,5.91,9.87,-28.31,-25.66,-21.7,2.655,6.614,3.3897,Jarrett et al. 2011 ApJ 735 112
+WISE_2,3.28,6.57,11.22,-28.29,-25.0,-20.36,3.291,7.932,4.6406,Jarrett et al. 2011 ApJ 735 112
+WISE_3,3.26,8.48,15.28,-28.31,-23.09,-16.29,5.215,12.019,12.5705,Jarrett et al. 2011 ApJ 735 112
+WISE_4,3.27,9.88,17.93,-28.3,-21.7,-13.65,6.602,14.652,22.3142,Jarrett et al. 2011 ApJ 735 112
+IRAS12,3.26,8.3,14.89,-28.31,-23.27,-16.69,5.037,11.621,11.3562,http://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html
+IRAS25,3.27,9.92,18.09,-28.3,-21.65,-13.48,6.646,14.819,23.6079,http://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html
+IRAS60,3.28,11.9,22.12,-28.29,-19.67,-9.46,8.621,18.833,60.3699,http://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html
+IRAS100,3.29,13.14,24.47,-28.28,-18.43,-7.1,9.854,21.186,101.1267,http://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html
+IRAC_3.6,3.26,6.02,10.08,-28.31,-25.56,-21.5,2.758,6.817,3.5508,http://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralres
+IRAC_4.5,3.28,6.51,11.08,-28.29,-25.06,-20.49,3.232,7.804,4.496,http://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralres
+IRAC_5.8,3.28,7.0,12.09,-28.3,-24.58,-19.48,3.72,8.816,5.7245,http://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralres
+IRAC_8.0,3.26,7.62,13.41,-28.31,-23.95,-18.16,4.36,10.152,7.8842,http://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralres
+IRS_16,3.27,9.11,16.42,-28.31,-22.47,-15.15,5.839,13.157,15.9222,http://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/bluePUtrans.txt
+IRS_22,3.27,9.86,17.92,-28.3,-21.72,-13.65,6.584,14.65,22.4704,http://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/redPUtrans.txt
+MIPS_24,3.27,10.01,18.19,-28.3,-21.57,-13.38,6.731,14.918,23.7592,http://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt
+MIPS_70,3.29,12.4,23.0,-28.28,-19.17,-8.58,9.114,19.708,71.9861,http://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt
+MIPS_160,3.29,14.15,26.42,-28.28,-17.43,-5.15,10.857,23.137,156.4274,http://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt
+ACS_F330W,5.34,6.43,5.47,-26.24,-25.14,-26.1,1.097,0.139,0.3521,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F410W,5.7,5.67,5.02,-25.87,-25.9,-26.55,-0.033,-0.68,0.4064,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F435W,5.48,5.35,4.84,-26.09,-26.22,-26.73,-0.129,-0.639,0.4328,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F475W,5.21,5.09,4.78,-26.36,-26.49,-26.8,-0.122,-0.432,0.4747,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F555W,4.87,4.84,4.79,-26.71,-26.74,-26.78,-0.03,-0.076,0.5361,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F606W,4.66,4.72,4.89,-26.92,-26.85,-26.68,0.063,0.233,0.5922,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F625W,4.49,4.63,4.94,-27.08,-26.94,-26.64,0.14,0.448,0.6312,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F775W,4.16,4.52,5.26,-27.42,-27.05,-26.31,0.364,1.103,0.7694,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F814W,4.12,4.52,5.36,-27.46,-27.06,-26.22,0.4,1.239,0.8059,ftp://ftp.stsci.edu/cdbs/comp/acs
+ACS_F850LP,4.01,4.5,5.59,-27.56,-27.07,-25.98,0.494,1.577,0.9016,ftp://ftp.stsci.edu/cdbs/comp/acs
+WFC3_F218W,9.09,10.74,8.79,-22.48,-20.83,-22.78,1.654,-0.298,0.2229,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F225W,8.51,10.13,8.32,-23.06,-21.44,-23.25,1.625,-0.191,0.2372,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F336W,5.49,6.64,5.58,-26.09,-24.93,-25.99,1.158,0.094,0.3355,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F390W,5.66,5.85,5.12,-25.91,-25.73,-26.45,0.187,-0.536,0.3924,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F438W,5.5,5.32,4.81,-26.07,-26.25,-26.76,-0.178,-0.69,0.4326,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F475W,5.19,5.07,4.77,-26.38,-26.5,-26.8,-0.122,-0.419,0.4774,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F555W,4.91,4.86,4.79,-26.67,-26.72,-26.78,-0.048,-0.116,0.5308,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F606W,4.67,4.73,4.88,-26.91,-26.85,-26.69,0.059,0.217,0.5887,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F625W,4.52,4.64,4.92,-27.06,-26.93,-26.65,0.124,0.409,0.6241,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F775W,4.16,4.52,5.25,-27.41,-27.05,-26.33,0.357,1.083,0.7648,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F814W,4.12,4.52,5.35,-27.45,-27.06,-26.22,0.395,1.226,0.803,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F098m,3.96,4.5,5.78,-27.61,-27.07,-25.79,0.538,1.816,0.9864,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F105W,3.89,4.51,5.94,-27.68,-27.06,-25.63,0.622,2.046,1.0551,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F125W,3.66,4.54,6.33,-27.91,-27.03,-25.24,0.877,2.667,1.2486,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F140W,3.51,4.56,6.59,-28.06,-27.01,-24.98,1.052,3.079,1.3922,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFC3_F160W,3.37,4.6,6.84,-28.2,-26.97,-24.73,1.228,3.469,1.537,ftp://ftp.stsci.edu/cdbs/comp/wfc3
+WFPC2_F218W,9.17,10.83,8.86,-22.4,-20.74,-22.72,1.657,-0.316,0.2207,ftp://ftp.stsci.edu/cdbs/comp/wfpc2
+WFPC2_F300W,6.1,7.4,6.09,-25.48,-24.17,-25.48,1.307,-0.005,0.2992,ftp://ftp.stsci.edu/cdbs/comp/wfpc2
+WFPC2_F450W,5.31,5.2,4.8,-26.26,-26.37,-26.77,-0.11,-0.509,0.4556,ftp://ftp.stsci.edu/cdbs/comp/wfpc2
+WFPC2_F555W,4.84,4.82,4.81,-26.73,-26.75,-26.77,-0.025,-0.038,0.5442,ftp://ftp.stsci.edu/cdbs/comp/wfpc2
+WFPC2_F606W,4.62,4.7,4.9,-26.95,-26.87,-26.67,0.077,0.276,0.6001,ftp://ftp.stsci.edu/cdbs/comp/wfpc2
+WFPC2_F702W,4.33,4.57,5.08,-27.24,-27.0,-26.49,0.24,0.748,0.6919,ftp://ftp.stsci.edu/cdbs/comp/wfpc2
+WFPC2_F814W,4.12,4.52,5.34,-27.45,-27.05,-26.23,0.392,1.216,0.8002,ftp://ftp.stsci.edu/cdbs/comp/wfpc2
+NIC2_F110W,3.82,4.52,6.08,-27.75,-27.05,-25.49,0.704,2.265,1.1235,ftp://ftp.stsci.edu/cdbs/comp/nicmos
+NIC2_F160W,3.35,4.64,6.97,-28.22,-26.93,-24.6,1.286,3.618,1.603,ftp://ftp.stsci.edu/cdbs/comp/nicmos
+NIC3_F110W,3.82,4.52,6.08,-27.75,-27.05,-25.5,0.701,2.255,1.12,ftp://ftp.stsci.edu/cdbs/comp/nicmos
+NIC3_F160W,3.35,4.64,6.97,-28.22,-26.93,-24.6,1.287,3.621,1.6042,ftp://ftp.stsci.edu/cdbs/comp/nicmos
+NIRCAM_F070W,4.29,4.56,5.1,-27.28,-27.02,-26.47,0.264,0.811,0.7046,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F090W,4.02,4.5,5.59,-27.56,-27.07,-25.98,0.488,1.573,0.9025,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F115W,3.77,4.53,6.15,-27.8,-27.05,-25.43,0.753,2.373,1.1543,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F140M,3.48,4.56,6.6,-28.09,-27.02,-24.97,1.079,3.126,1.4053,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F150W,3.41,4.59,6.78,-28.16,-26.98,-24.79,1.182,3.371,1.5007,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F150W2,3.5,4.7,7.11,-28.07,-26.87,-24.46,1.203,3.61,1.6588,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F162M,3.32,4.65,7.01,-28.25,-26.93,-24.56,1.328,3.693,1.6272,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F164N,3.29,4.66,7.05,-28.28,-26.91,-24.53,1.368,3.756,1.6445,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F182M,3.28,4.81,7.45,-28.29,-26.76,-24.12,1.534,4.172,1.8452,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F187N,3.25,4.85,7.52,-28.33,-26.72,-24.05,1.6,4.272,1.8739,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F200W,3.28,4.93,7.73,-28.3,-26.64,-23.84,1.652,4.453,1.9886,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F210M,3.27,5.03,7.94,-28.3,-26.54,-23.63,1.757,4.671,2.0955,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F212N,3.28,5.05,7.99,-28.3,-26.52,-23.58,1.778,4.719,2.1213,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F250M,3.27,5.37,8.67,-28.3,-26.21,-22.91,2.093,5.393,2.5032,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F277W,3.26,5.53,9.04,-28.31,-26.04,-22.53,2.265,5.779,2.7618,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F300M,3.26,5.69,9.37,-28.31,-25.88,-22.2,2.429,6.115,2.9892,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F322W2,3.26,5.77,9.63,-28.31,-25.8,-21.95,2.509,6.365,3.232,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F323N,3.26,5.84,9.7,-28.31,-25.73,-21.87,2.583,6.441,3.2369,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F335M,3.26,5.92,9.86,-28.31,-25.66,-21.71,2.658,6.599,3.3621,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F356W,3.26,6.02,10.09,-28.31,-25.55,-21.48,2.763,6.833,3.5684,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F405N,3.24,6.3,10.65,-28.33,-25.27,-20.93,3.058,7.404,4.0517,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F410M,3.26,6.31,10.67,-28.32,-25.27,-20.9,3.049,7.411,4.0822,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F430M,3.27,6.41,10.88,-28.31,-25.16,-20.69,3.147,7.613,4.2813,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F444W,3.27,6.46,10.99,-28.3,-25.11,-20.59,3.185,7.712,4.404,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F460M,3.29,6.6,11.23,-28.28,-24.97,-20.34,3.308,7.943,4.6285,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F466N,3.26,6.62,11.26,-28.31,-24.96,-20.31,3.352,8.0,4.6544,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F470N,3.29,6.63,11.3,-28.28,-24.94,-20.27,3.341,8.013,4.7078,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+NIRCAM_F480M,3.29,6.67,11.39,-28.28,-24.9,-20.18,3.383,8.104,4.8167,https://jwst-docs.stsci.edu/display/JTI/NIRCam+Filters
+MIRI_F560W,3.28,6.97,12.03,-28.29,-24.6,-19.54,3.693,8.756,5.6362,MIRI-TN-00072-ATC
+MIRI_F770W,3.26,7.58,13.3,-28.31,-24.0,-18.27,4.314,10.039,7.6428,MIRI-TN-00072-ATC
+MIRI_F1000W,3.26,8.15,14.45,-28.31,-23.42,-17.13,4.883,11.181,9.9544,MIRI-TN-00072-ATC
+MIRI_F1130W,3.26,8.43,15.0,-28.31,-23.14,-16.57,5.166,11.741,11.3087,MIRI-TN-00072-ATC
+MIRI_F1500W,3.27,9.03,16.23,-28.31,-22.54,-15.35,5.763,12.961,15.0651,MIRI-TN-00072-ATC
+MIRI_F1800W,3.27,9.42,17.0,-28.3,-22.15,-14.57,6.149,13.732,17.9865,MIRI-TN-00072-ATC
+MIRI_F2100W,3.27,9.72,17.62,-28.3,-21.85,-13.95,6.453,14.351,20.795,MIRI-TN-00072-ATC
+MIRI_F2550W,3.28,10.16,18.49,-28.3,-21.41,-13.08,6.887,15.216,25.3639,MIRI-TN-00072-ATC
+NIRISS_F090W,4.02,4.5,5.59,-27.56,-27.07,-25.98,0.488,1.575,0.9031,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F115W,3.78,4.53,6.14,-27.79,-27.05,-25.43,0.747,2.358,1.1499,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F140M,3.48,4.56,6.6,-28.09,-27.02,-24.97,1.078,3.123,1.4044,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F150W,3.41,4.59,6.77,-28.16,-26.98,-24.81,1.173,3.352,1.4936,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F158M,3.35,4.62,6.93,-28.23,-26.95,-24.64,1.277,3.582,1.5825,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F200W,3.28,4.93,7.74,-28.3,-26.64,-23.83,1.656,4.461,1.993,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F277W,3.27,5.53,9.04,-28.3,-26.05,-22.53,2.258,5.774,2.7641,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F356W,3.26,6.03,10.11,-28.31,-25.54,-21.46,2.769,6.854,3.5926,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F380M,3.26,6.17,10.39,-28.31,-25.4,-21.18,2.908,7.128,3.8229,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F430M,3.27,6.4,10.87,-28.3,-25.17,-20.7,3.13,7.595,4.2792,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F444W,3.27,6.47,11.0,-28.3,-25.11,-20.57,3.191,7.729,4.427,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+NIRISS_F480M,3.29,6.66,11.38,-28.28,-24.91,-20.19,3.366,8.086,4.8113,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Filters
+OMEGACAM_u,5.46,6.34,5.43,-26.11,-25.23,-26.15,0.881,-0.035,0.359,http://www.eso.org/observing/etc/bin/gen/form?INS.NAME=OMEGACAM+INS.MODE=imaging
+OMEGACAM_g,5.21,5.09,4.77,-26.36,-26.48,-26.8,-0.126,-0.442,0.4735,http://www.eso.org/observing/etc/bin/gen/form?INS.NAME=OMEGACAM+INS.MODE=imaging
+OMEGACAM_r,4.5,4.63,4.93,-27.07,-26.94,-26.64,0.133,0.429,0.6276,http://www.eso.org/observing/etc/bin/gen/form?INS.NAME=OMEGACAM+INS.MODE=imaging
+OMEGACAM_i,4.2,4.53,5.21,-27.38,-27.05,-26.36,0.331,1.013,0.7495,http://www.eso.org/observing/etc/bin/gen/form?INS.NAME=OMEGACAM+INS.MODE=imaging
+OMEGACAM_z,4.01,4.51,5.55,-27.56,-27.07,-26.03,0.493,1.534,0.8842,http://www.eso.org/observing/etc/bin/gen/form?INS.NAME=OMEGACAM+INS.MODE=imaging
+VIRCAM_Z,4.02,4.51,5.56,-27.56,-27.07,-26.01,0.491,1.546,0.8899,http://www.eso.org/sci/facilities/paranal/instruments/vircam/inst.html
+VIRCAM_Y,3.93,4.51,5.87,-27.64,-27.07,-25.7,0.577,1.94,1.0253,http://www.eso.org/sci/facilities/paranal/instruments/vircam/inst.html
+VIRCAM_H,3.65,4.54,6.34,-27.93,-27.03,-25.23,0.892,2.691,1.2535,http://www.eso.org/sci/facilities/paranal/instruments/vircam/inst.html
+VIRCAM_J,3.32,4.66,7.05,-28.25,-26.91,-24.53,1.335,3.721,1.643,http://www.eso.org/sci/facilities/paranal/instruments/vircam/inst.html
+VIRCAM_Ks,3.27,5.07,8.04,-28.3,-26.5,-23.53,1.797,4.767,2.1494,http://www.eso.org/sci/facilities/paranal/instruments/vircam/inst.html
+SkyMapper_u,5.33,6.32,5.4,-26.24,-25.25,-26.17,0.989,0.073,0.359,Bessell et al 2011 PASP 123 789
+SkyMapper_v,5.81,6.09,5.31,-25.77,-25.49,-26.26,0.28,-0.493,0.3836,Bessell et al 2011 PASP 123 789
+SkyMapper_g,5.03,4.94,4.78,-26.55,-26.63,-26.79,-0.082,-0.247,0.5075,Bessell et al 2011 PASP 123 789
+SkyMapper_r,4.56,4.66,4.91,-27.02,-26.91,-26.66,0.104,0.352,0.6138,Bessell et al 2011 PASP 123 789
+SkyMapper_i,4.14,4.52,5.28,-27.43,-27.05,-26.29,0.377,1.137,0.7768,Bessell et al 2011 PASP 123 789
+SkyMapper_z,4.0,4.5,5.62,-27.57,-27.07,-25.95,0.502,1.615,0.9143,Bessell et al 2011 PASP 123 789
