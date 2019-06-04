@@ -6,6 +6,7 @@ import os
 
 import numpy as np
 
+from astropy.io import fits
 from astropy.table import Table
 
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ from matplotlib import rcParams
 
 import unagi
 
-__all__ = ['filters_to_kcorrect', 'HscFilter']
+__all__ = ['filters_to_kcorrect', 'HscFilter', 'SolarSpectrum']
 
 plt.rc('text', usetex=True)
 rcParams.update({'xtick.major.pad': '7.0'})
@@ -34,6 +35,8 @@ rcParams.update({'font.size': 26})
 
 # Directory that save the transmission curves of the filter
 FILTER_DIR = os.path.join(os.path.dirname(unagi.__file__), 'data', 'filters')
+# Directory that keeps the solar spectra
+SOLAR_DIR = os.path.join(os.path.dirname(unagi.__file__), 'data', 'solar')
 
 # Formal names and nick names of the filters
 FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-R2', 'HSC-I', 'HSC-I2', 'HSC-Z', 'HSC-Y',
@@ -228,3 +231,73 @@ def filters_to_kcorrect(filename):
         par.close()
 
     return wave, response
+
+
+class SolarSpectrum(object):
+    """Class to hold solar spectrum.
+
+    On deriving Solar absolute magnitude:
+    ------------------------------------
+    To derive the Sun's absolute magnitudes, the IAU 2012 definitions of the astronomical unit
+    (au) (Prša et al. 2016) and parsec were used, giving a distance modulus for the
+    Sun of −31.5721 mag.
+
+    To rationalize the use of solar constants, the IAU in 2015 adopted a nominal value for the Sun's
+    luminosity L⊙ = 3.828 × 10^8 W (Prša et al. 2016), which corresponds to an average
+    TSI of 1361 W m−2 at 1 au and an absolute bolometric magnitude of MBol = 4.74.
+    """
+    def __init__(self, kind='Willmer2018'):
+        """Read in the solar spectrum and process it."""
+        # Conversion to d=10 pc from 1 AU
+        au_to_10pc = (1.0 / (3600 * 180 / np.pi * 10)) ** 2.0
+
+        if kind.strip() == 'Willmer2018':
+            # This is based on the work by Willmer 2018:
+            #   https://iopscience.iop.org/article/10.3847/1538-4365/aabfdf
+            # More information can be found on this webpage:
+            #   http://mips.as.arizona.edu/~cnaw/sun.html
+            # About the spectrum:
+            #   The solar SED used here also combines observations with model spectra.
+            #   The observed spectrum is a composite calculated by Haberreiter et al. (2017)
+            #   using data from over 20 space-based instruments for an arbitrary date
+            #   (2008 December 19, JDN = 2454820) during the solar minimum.
+            #   The absolute calibration is set using the ${ATLAS}\,3$ composite spectrum
+            #   of Thuillier et al. (2004), and constraining the Total Solar Irradiance (TSI)
+            #   to the value measured for each day by Dudok de Wit et al. (2017).
+            #   The observed composite ends at ~2.0 μm, and to extend the SED into the infrared;
+            #   the model spectra of Fontenla et al. (2011) and Kurucz (2011) are used.
+            self.file = os.path.join(SOLAR_DIR, 'sun_composite.fits')
+            if os.path.isfile(self.file):
+                solar_fits = fits.open(self.file)[1].data
+                # Wavelength
+                self.wave = solar_fits['WAVE']
+                self.wave_unit = 'Angstrom'
+                self.flux = solar_fits['FLUX'] * au_to_10pc
+                self.flux_unit = 'erg/s/cm^2/AA'
+            else:
+                raise IOError("# Cannot find the solar spectrum {}".format(self.file))
+        elif kind.strip() == 'Kurucz1993':
+            # This is the theoretical spectrum of the Sun from Kurucz
+            # from: ftp://ftp.stsci.edu/cdbs/grid/k93models/standards/sun_kurucz93.fits
+            # The theoretical spectrum is scaled to match the observed spectrum
+            # from 1.5 - 2.5 microns, and then it is used where the observed spectrum ends.
+            # The theoretical model of the Sun from Kurucz93 atlas using the following
+            # parameters when the Sun is at 1 au.
+            #   log_Z T_eff log_g V_{Johnson} +0.0 5777 +4.44 -26.75
+            self.file = os.path.join(SOLAR_DIR, 'sun_kurucz93.fits')
+
+            # This file should be in AA and erg/s/cm^2/AA at 1AU
+            if os.path.isfile(self.file):
+                solar_fits = fits.open(self.file)[1].data
+                # Wavelength
+                self.wave = solar_fits['WAVELENGTH']
+                self.wave_unit = 'Angstrom'
+                self.flux = solar_fits['FLUX'] * au_to_10pc
+                self.flux_unit = 'erg/s/cm^2/AA'
+            else:
+                raise IOError("# Cannot find the solar spectrum {}".format(self.file))
+        else:
+            raise NameError("# Wrong type of Solar spectrum: [Willmer2018|Kurucz1993]")
+
+        self.wave_min, self.wave_max = self.wave.min(), self.wave.max()
+        self.solar = np.column_stack((self.wave, self.flux))
