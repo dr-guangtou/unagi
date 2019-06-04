@@ -8,6 +8,7 @@ import numpy as np
 
 from astropy.io import fits
 from astropy.table import Table
+from astropy import constants as const
 
 import matplotlib.pyplot as plt
 from matplotlib import rc
@@ -46,6 +47,12 @@ FILTER_SHORT = ['g', 'r', 'r2', 'i', 'i2', 'z', 'y', 'nb387', 'nb816', 'nb921']
 # Colors to show the filter
 FILTER_COLORS = ['#2ca02c', '#ff7f0e', '#ff7f0e', '#d62728', '#d62728',
                  '#8c564b', '#7f7f7f', 'c', 'm', 'purple']
+
+# AB reference flux in unit of erg/s/cm^2/Hz
+AB_FLUX = 3.631e-20
+# Speed of light in unit of AA/s
+C_AA_PER_SEC = const.c.to('AA/s').value
+
 
 class HscFilter(object):
     """Class for organizing HSC filters.
@@ -116,6 +123,13 @@ class HscFilter(object):
         self.effective_width = None
         self._basic_properties()
 
+        # AB Zeropoint in counts
+        self.ab_zero_counts = self._counts(
+            self.wave, AB_FLUX * C_AA_PER_SEC / (self.wave ** 2))
+
+        # AB absolute magnitude of Sun in this band
+        self.solar_ab_mag = self._solar_ab_mag(kind='Willmer2018')
+
     def _load_filter(self):
         """Load and process the transimission curve."""
         if not os.path.isfile(self.filename):
@@ -141,6 +155,7 @@ class HscFilter(object):
         print("# Mean wavelength        : {:8.3f} Angstrom".format(self.wave_mean))
         print("# Effective width        : {:8.3f} Angstrom".format(self.effective_width))
         print("# Rectangular width      : {:8.3f} Angstrom".format(self.rectangular_width))
+        print("# AB absolute magnitude of the sun : {:6.3f} mag".format(self.solar_ab_mag))
 
     def plot(self):
         """Plot the transmission curves of the filter."""
@@ -197,6 +212,30 @@ class HscFilter(object):
         self.effective_width = (2.0 * np.sqrt(2. * np.log(2.)) *
                                 self.gauss_width * self.wave_effective)
 
+    def _counts(self, obj_wave, obj_flux):
+        """Project source spectrum onto filter and return the detector signal.
+        """
+        # Interpolate filter transmission to source spectrum
+        newtrans = np.interp(obj_wave, self.wave, self.trans, left=0., right=0.)
+
+        # Integrate lambda * f_lambda * R
+        if True in (newtrans > 0.):
+            positive = np.where(newtrans > 0.)[0]
+            ind = slice(max(positive.min() - 1, 0),
+                        min(positive.max() + 2, len(obj_wave)))
+            counts = np.trapz(obj_wave[ind] * newtrans[ind] *
+                              obj_flux[..., ind], obj_wave[ind], axis=-1)
+            return np.squeeze(counts)
+
+        return float('NaN')
+
+    def _solar_ab_mag(self, kind='Willmer2018'):
+        """Get the absolute magnitude of Sun in this band.
+        """
+        # Get the solar spectrum
+        solar_spectrum = SolarSpectrum(kind=kind)
+        counts = self._counts(solar_spectrum.wave, solar_spectrum.flux)
+        return -2.5 * np.log10(counts / self.ab_zero_counts)
 
 
 def filters_to_kcorrect(filename):
@@ -210,7 +249,7 @@ def filters_to_kcorrect(filename):
         raise IOError("# Cannot find the response curve file {}".format(curve_file))
 
     # Read in the .txt response curve
-    wave, response = np.genfromtxt(curve_file, usecols=(0,1), unpack=True)
+    wave, response = np.genfromtxt(curve_file, usecols=(0, 1), unpack=True)
 
     # Output file name
     prefix, band = os.path.splitext(filename)[0].split('-')
