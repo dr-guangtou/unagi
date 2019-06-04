@@ -18,6 +18,7 @@ from astropy.table import Table
 from astropy.utils.console import Spinner
 from astropy.utils.data import download_file
 
+import unagi
 from . import config
 from . import query
 
@@ -68,7 +69,7 @@ class Hsc():
                    'NB0387', 'NB0816', 'NB0921']
     FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921']
 
-    def __init__(self, dr='dr2', rerun='s18a_wide', config_file=None):
+    def __init__(self, dr='dr2', rerun='s18a_wide', verbose=True, config_file=None):
         """
         Initialize a HSC rerun object.
 
@@ -107,6 +108,19 @@ class Hsc():
         # Try to login to the HSC archive
         if not self.is_login or self.opener is None:
             self.login()
+
+        # List of available tables
+        table_list = os.path.join(
+            os.path.dirname(unagi.__file__), 'data',
+            '{}'.format(self.rerun), '{}_tables.fits'.format(self.rerun))
+        if os.path.isfile(table_list):
+            if verbose:
+                print("# Get table list from {}".format(table_list))
+            self.table_list = list(Table.read(table_list)['object'])
+        else:
+            if verbose:
+                print("# Querying for the table list and save it to {}".format(table_list))
+            self.table_list = self.tables(save=True)
 
     def login(self, username=None, password=None):
         """
@@ -720,17 +734,53 @@ class Hsc():
         else:
             raise QueryError("Something is wrong with the SQL search!")
 
-    def tables(self):
+    def tables(self, return_table=False, save=False):
         """
         List all the tables available for the rerun.
         """
-        table_list = self.sql_query(query.HELP_BASIC.format(self.rerun), verbose=False)
-        mask = np.asarray(
-            [name.strip() != self.rerun and 'search' not in name for name in table_list['object']])
+        output = self.sql_query(query.HELP_BASIC.format(self.rerun), verbose=False)
+        tables = output[np.asarray(
+            [name.strip() != self.rerun and 'search' not in name for name in output['object']])]
 
-        return list(table_list[mask]['object'])
+        # Remove the rerun name from the table name column
+        for item in tables:
+            item['object'] = item['object'].replace("{}.".format(self.rerun), '')
 
-    def table_schema(self, table):
+        # Save a fits version of the table list
+        if save:
+            schema_dir = os.path.join(os.path.dirname(unagi.__file__), 'data', self.rerun)
+            if not os.path.isdir(schema_dir):
+                os.mkdir(schema_dir)
+            tables.write(
+                os.path.join(schema_dir, '{0}_tables.fits'.format(self.rerun)), overwrite=True)
+
+        if return_table:
+            return tables
+        # Otherwise, just return a list of table names
+        return list(tables['object'])
+
+    def table_schema(self, table, return_table=False, save=False):
         """
         Show the schema of a table.
         """
+        schema = self.sql_query(
+            query.TABLE_SCHEMA.format(self.rerun, table), verbose=False
+        )[1:]
+
+        # Remove the rerun and table name from the schema list
+        for item in schema:
+            item['object'] = item['object'].replace("{0}.{1}.".format(self.rerun, table), '')
+
+        # Save a fits version of the schema of the table
+        if save:
+            schema_dir = os.path.join(os.path.dirname(unagi.__file__), 'data', self.rerun)
+            if not os.path.isdir(schema_dir):
+                os.mkdir(schema_dir)
+            schema.write(
+                os.path.join(schema_dir, '{0}_{1}_schema.fits'.format(self.rerun, table)),
+                overwrite=True)
+
+        if return_table:
+            return schema
+        # Otherwise, just return a list of column names
+        return list(schema['object'])
