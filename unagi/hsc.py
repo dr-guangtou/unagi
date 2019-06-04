@@ -738,21 +738,26 @@ class Hsc():
         """
         List all the tables available for the rerun.
         """
-        output = self.sql_query(query.HELP_BASIC.format(self.rerun), verbose=False)
-        tables = output[np.asarray(
-            [name.strip() != self.rerun and 'search' not in name for name in output['object']])]
+        schema_dir = os.path.join(os.path.dirname(unagi.__file__), 'data', self.rerun)
+        output_fits = os.path.join(schema_dir, '{0}_tables.fits'.format(self.rerun))
 
-        # Remove the rerun name from the table name column
-        for item in tables:
-            item['object'] = item['object'].replace("{}.".format(self.rerun), '')
+        if os.path.isfile(output_fits):
+            print("# Read from saved file {}".format(output_fits))
+            tables = Table.read(output_fits)
+        else:
+            output = self.sql_query(query.HELP_BASIC.format(self.rerun), verbose=False)
+            tables = output[np.asarray(
+                [name.strip() != self.rerun and 'search' not in name
+                 for name in output['object']])]
+            # Remove the rerun name from the table name column
+            for item in tables:
+                item['object'] = item['object'].replace("{}.".format(self.rerun), '')
 
         # Save a fits version of the table list
         if save:
-            schema_dir = os.path.join(os.path.dirname(unagi.__file__), 'data', self.rerun)
             if not os.path.isdir(schema_dir):
                 os.mkdir(schema_dir)
-            tables.write(
-                os.path.join(schema_dir, '{0}_tables.fits'.format(self.rerun)), overwrite=True)
+            tables.write(output_fits, overwrite=True)
 
         if return_table:
             return tables
