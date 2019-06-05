@@ -18,6 +18,8 @@ Recent Updates
 
 - 06/03/2019: **Support for HSC PDR2 is added** (need more tests)
   - The schema of all tables in the `PDR2_DUD` and `PDR2_WIDE` reruns are available in `unagi/data/` folder as a `.json` file.
+- 06/04/2019: **New features: filters.py and camera.py**
+  - Help you get important information about HSC camera (e.g. CCD QE, primary mirror reflectivity) and filters (e.g. transmission curves, absolute AB magnitude of Sun in each filter etc.).
 
 Applications
 ------------
@@ -25,6 +27,10 @@ Applications
 - [Config the access to HSC database and get basic survey information](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_config.ipynb)
 
 <img src="doc/unagi_config.png" width="70%">
+
+- [Access to information about HSC filters and camera](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_filters.ipynb)
+
+<img src="doc/unagi_filters_camera.png" width="70%">
 
 - [Generate cutout coadded or warped HSC images](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_cutout.ipynb).
 
