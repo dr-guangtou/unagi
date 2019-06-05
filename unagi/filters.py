@@ -3,6 +3,7 @@
 """Functions to deal with HSC filters."""
 
 import os
+import json
 
 import numpy as np
 
@@ -16,7 +17,7 @@ from matplotlib import rcParams
 
 import unagi
 
-__all__ = ['filters_to_kcorrect', 'HscFilter', 'SolarSpectrum']
+__all__ = ['filters_to_kcorrect', 'hsc_filters', 'HscFilter', 'SolarSpectrum']
 
 plt.rc('text', usetex=True)
 rcParams.update({'xtick.major.pad': '7.0'})
@@ -54,7 +55,7 @@ AB_FLUX = 3.631e-20
 C_AA_PER_SEC = const.c.to('AA/s').value
 
 
-class HscFilter(object):
+class Filter(object):
     """Class for organizing HSC filters.
 
     Please see the following page for more details about HSC filters:
@@ -129,6 +130,12 @@ class HscFilter(object):
 
         # AB absolute magnitude of Sun in this band
         self.solar_ab_mag = self._solar_ab_mag(kind='Willmer2018')
+
+        # Convert to Kcorrect filter format
+        self.to_kfilter()
+
+        # Save it as a JSON file
+        self.to_json()
 
     def _load_filter(self):
         """Load and process the transimission curve."""
@@ -237,14 +244,57 @@ class HscFilter(object):
         counts = self._counts(solar_spectrum.wave, solar_spectrum.flux)
         return -2.5 * np.log10(counts / self.ab_zero_counts)
 
+    def to_kfilter(self):
+        """Convert the filter transmission curve into Kcorrect format.
+        """
+        _ = filters_to_kcorrect(self.filename)
 
-def filters_to_kcorrect(filename):
+    def as_dict(self):
+        """Convert it into a dict."""
+        filter_dict = self.__dict__
+        filter_dict['wave'] = list(filter_dict['wave'])
+        filter_dict['trans'] = list(filter_dict['trans'])
+        return filter_dict
+
+    def to_json(self):
+        """Save as a JSON file."""
+        pre, _ = os.path.splitext(self.filename)
+        json_out = pre + '.json'
+        with open(json_out, 'w') as jf:
+            json.dump(self.as_dict(), jf)
+
+
+def hsc_filters(origin=False, center=False):
+    """Get the tabel that summarizes information about HSC filters."""
+    if origin:
+        if center:
+            tab_id = 'origin_center'
+            xml_table = os.path.join(FILTER_DIR, 'hsc_filters_origin_center.xml')
+        else:
+            tab_id = 'origin_weighted'
+            xml_table = os.path.join(FILTER_DIR, 'hsc_filters_origin_weighted.xml')
+    else:
+        tab_id = 'total'
+        xml_table = os.path.join(FILTER_DIR, 'hsc_filters_total.xml')
+
+    # If already created, just read it in
+    if os.path.isfile(xml_table):
+        return Table.read(xml_table, format='votable', table_id=tab_id)
+    else:
+        # Summarize the filters
+        # Total transmission curves
+        f_table = Table(
+            [Filter(f, origin=origin, center=center).as_dict() for f in FILTER_LIST])
+        f_table.write(xml_table, format='votable', table_id=tab_id)
+        return f_table
+
+
+def filters_to_kcorrect(curve_file, verbose=False):
     """
     Convert a filter response curve to the Kcorrect format.
 
     This is used by Kcorrect and iSEDFit.
     """
-    curve_file = os.path.join(FILTER_DIR, filename)
     if not os.path.isfile(curve_file):
         raise IOError("# Cannot find the response curve file {}".format(curve_file))
 
@@ -252,12 +302,12 @@ def filters_to_kcorrect(filename):
     wave, response = np.genfromtxt(curve_file, usecols=(0, 1), unpack=True)
 
     # Output file name
-    prefix, band = os.path.splitext(filename)[0].split('-')
-    output_par = os.path.join(
-        FILTER_DIR, "{0}_{1}.par".format(prefix.lower().strip(), band.lower()))
+    prefix, _ = os.path.splitext(curve_file)
+    output_par = prefix + '.par'
 
     if os.path.isfile(output_par):
-        print("# Curve {0} is already available".format(output_par))
+        if verbose:
+            print("# Curve {0} is already available".format(output_par))
     else:
         assert len(wave) == len(response), '''
             Wavelength and response curve should have the same size'''
