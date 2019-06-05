@@ -267,7 +267,7 @@ class Filter(object):
             json.dump(self.as_dict(), jf)
 
 
-def hsc_filters(origin=False, center=False):
+def hsc_filters(origin=False, center=False, use_saved=True):
     """Get the tabel that summarizes information about HSC filters."""
     if origin:
         if center:
@@ -281,7 +281,7 @@ def hsc_filters(origin=False, center=False):
         xml_table = os.path.join(FILTER_DIR, 'hsc_filters_total.xml')
 
     # If already created, just read it in
-    if os.path.isfile(xml_table):
+    if os.path.isfile(xml_table) and use_saved:
         return Table.read(xml_table, format='votable', table_id=tab_id)
     else:
         # Summarize the filters
