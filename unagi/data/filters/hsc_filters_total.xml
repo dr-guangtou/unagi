@@ -5,6 +5,7 @@
  <RESOURCE type="results">
   <TABLE ID="total">
    <FIELD ID="ab_zero_counts" datatype="double" name="ab_zero_counts"/>
+   <FIELD ID="color" arraysize="7" datatype="unicodeChar" name="color"/>
    <FIELD ID="effective_width" datatype="double" name="effective_width"/>
    <FIELD ID="filename" arraysize="83" datatype="unicodeChar" name="filename"/>
    <FIELD ID="filter" arraysize="9" datatype="unicodeChar" name="filter"/>
@@ -27,6 +28,7 @@
     <TABLEDATA>
      <TR>
       <TD>0.013669606268694026</TD>
+      <TD>#2ca02c</TD>
       <TD>978.3586833753423</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_g_v2018.dat</TD>
       <TD>HSC-G</TD>
@@ -48,6 +50,7 @@
      </TR>
      <TR>
       <TD>0.012897454925409143</TD>
+      <TD>#ff7f0e</TD>
       <TD>1016.5629970763438</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_r_v2018.dat</TD>
       <TD>HSC-R</TD>
@@ -69,6 +72,7 @@
      </TR>
      <TR>
       <TD>0.014504031600633953</TD>
+      <TD>#ff7f0e</TD>
       <TD>1026.8645497285834</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_r2_v2018.dat</TD>
       <TD>HSC-R2</TD>
@@ -90,6 +94,7 @@
      </TR>
      <TR>
       <TD>0.010538870476717088</TD>
+      <TD>#d62728</TD>
       <TD>1056.7454066932794</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_i_v2018.dat</TD>
       <TD>HSC-I</TD>
@@ -111,6 +116,7 @@
      </TR>
      <TR>
       <TD>0.010338220837957848</TD>
+      <TD>#d62728</TD>
       <TD>1073.9509037859336</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_i2_v2018.dat</TD>
       <TD>HSC-I2</TD>
@@ -132,6 +138,7 @@
      </TR>
      <TR>
       <TD>0.004495923437683253</TD>
+      <TD>#8c564b</TD>
       <TD>551.3146191265723</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_z_v2018.dat</TD>
       <TD>HSC-Z</TD>
@@ -153,6 +160,7 @@
      </TR>
      <TR>
       <TD>0.0031514060898457817</TD>
+      <TD>#7f7f7f</TD>
       <TD>721.9541658871457</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_y_v2018.dat</TD>
       <TD>HSC-Y</TD>
@@ -174,6 +182,7 @@
      </TR>
      <TR>
       <TD>0.0002228429223781715</TD>
+      <TD>c</TD>
       <TD>45.213995635290956</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_nb387_v2018.dat</TD>
       <TD>HSC-NB387</TD>
@@ -195,6 +204,7 @@
      </TR>
      <TR>
       <TD>0.0006794864658663843</TD>
+      <TD>m</TD>
       <TD>95.24480014684913</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_nb816_v2018.dat</TD>
       <TD>HSC-NB816</TD>
@@ -216,6 +226,7 @@
      </TR>
      <TR>
       <TD>0.0006750989285023162</TD>
+      <TD>purple</TD>
       <TD>109.72624467291163</TD>
       <TD>/Users/song/Dropbox/work/project/unagi/unagi/data/filters/total/hsc_nb921_v2018.dat</TD>
       <TD>HSC-NB921</TD>
