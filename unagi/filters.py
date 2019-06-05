@@ -78,6 +78,9 @@ class Filter(object):
         self.filter = FILTER_LIST[self.index]
         self.short = FILTER_SHORT[self.index]
 
+        # Color to show the filter
+        self.color = FILTER_COLORS[self.index]
+
         # Old or new version of r- and i-band filters
         if self.short == 'r' or self.short == 'i':
             self.version = 'old'
