@@ -288,7 +288,7 @@ def hsc_filters(origin=False, center=False):
         # Total transmission curves
         f_table = Table(
             [Filter(f, origin=origin, center=center).as_dict() for f in FILTER_LIST])
-        f_table.write(xml_table, format='votable', table_id=tab_id)
+        f_table.write(xml_table, format='votable', table_id=tab_id, overwrite=True)
         return f_table
 
 
