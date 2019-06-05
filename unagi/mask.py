@@ -185,18 +185,18 @@ class Mask():
                 cmap_list.append(cmap)
             return cmap_list
 
-    def display(self, bit_list, alpha_list=None):
+    def display(self, bit_list, alpha_list=None, **kwargs):
         """
         Display one or multiple layers of masks.
         """
         mask = self.extract(bit_list, show=True)
         cmap = self.get_cmap(bit_list)
         if not isinstance(bit_list, list):
-            return plotting.display_single(mask, scale='linear', cmap=cmap, alpha=0.9)
+            return plotting.display_single(mask, scale='linear', cmap=cmap, alpha=0.9, **kwargs)
         else:
             return plotting.overplot_all(
                 mask, xsize=6, ysize=6, stretch='linear', scale='minmax',
-                alpha=0.7, alpha_list=alpha_list, cmap_list=cmap, vmin=1)
+                alpha=0.7, alpha_list=alpha_list, cmap_list=cmap, vmin=1, **kwargs)
 
     def check(self, bit_list):
         """
