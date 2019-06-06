@@ -656,7 +656,7 @@ class Hsc():
 
         return result
 
-    def parse_query_result(self, response):
+    def parse_query_result(self, response, verbose=False):
         """
         Parse the SQL result to something readable.
         """
@@ -671,7 +671,7 @@ class Hsc():
             print(e)
             print("\n# Cannot convert search result into Astropy table.")
 
-        if not result:
+        if not result and verbose:
             warnings.warn('Query returned no results, so the table will be empty!')
 
         return result
@@ -706,7 +706,7 @@ class Hsc():
                 response = self.get_query_result(job['id'])
 
                 # Convert the output into astropy.table
-                result = self.parse_query_result(response)
+                result = self.parse_query_result(response, verbose=verbose)
 
                 # Save a copy of the result to file
                 if out_file:
@@ -827,4 +827,3 @@ class Hsc():
                 json_file.close()
 
         return schema_dict
-    

@@ -12,11 +12,12 @@ from astropy.io import fits
 from astropy.utils.data import download_file
 from astropy.visualization import make_lupton_rgb
 
+from . import query
 from .hsc import Hsc
 from .utils import r_phy_to_ang
 
-__all__ = ['hsc_tricolor', 'hsc_cutout', 'hsc_psf', 
-           'hsc_cone_search', 'hsc_box_search']
+__all__ = ['hsc_tricolor', 'hsc_cutout', 'hsc_psf',
+           'hsc_cone_search', 'hsc_box_search', 'hsc_check_coverage']
 
 ANG_UNITS = ['arcsec', 'arcsecond', 'arcmin', 'arcminute', 'deg']
 PHY_UNITS = ['pc', 'kpc', 'Mpc']
@@ -361,3 +362,34 @@ def hsc_box_search(coord, box_size=10.0 * u.Unit('arcsec'), coord_2=None, templa
     Search for objects within a box area.
     """
     pass
+
+def hsc_check_coverage(coord, dr='pdr2', rerun='pdr2_wide', archive=None, verbose=False,
+                       return_filter=False):
+    """
+    Check if the coordinate is covered by HSC footprint.
+
+    TODO: This is not very fast, will take at least a few seconds for one object.
+          And it does not guarentee that the location has data.
+    """
+    # Login to HSC archive
+    if archive is None:
+        archive = Hsc(dr=dr, rerun=rerun)
+    else:
+        dr = archive.dr
+        rerun = archive.rerun
+
+    sql_str = query.PATCH_CONTAIN.format(rerun, coord.ra.value, coord.dec.value)
+
+    coverage = archive.sql_query(sql_str, verbose=False)
+    filter_list = list(np.unique(coverage['filter01']))
+
+    if verbose:
+        if filter_list:
+            print("# Covered by {}-band".format(len(filter_list)))
+            print(filter_list)
+        else:
+            print("# Not covered")
+
+    if return_filter:
+        return filter_list
+    return coverage
