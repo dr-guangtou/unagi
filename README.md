@@ -20,6 +20,7 @@ Recent Updates
   - The schema of all tables in the `PDR2_DUD` and `PDR2_WIDE` reruns are available in `unagi/data/` folder as a `.json` file.
 - 06/04/2019: **New features: filters.py and camera.py**
   - Help you get important information about HSC camera (e.g. CCD QE, primary mirror reflectivity) and filters (e.g. transmission curves, absolute AB magnitude of Sun in each filter etc.).
+- 06/06/2019: **New features: add hsc_check_coverage() method** to check if a coordinate is covered by one HSC `Patch`. See [here](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_sql.ipynb) for example.
 
 Applications
 ------------
