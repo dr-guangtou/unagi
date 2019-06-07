@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 """SQL search related functions"""
 
-from .hsc import Hsc
+from . import hsc
 
 __all__ = ['HELP_BASIC', 'COLUMNS_CONTAIN', 'TABLE_SCHEMA', 'PATCH_CONTAIN',
+           'PDR2_CLEAN',
            'basic_forced_photometry', 'column_dict_to_str', 'join_table_by_id',
            'box_search']
 
@@ -26,6 +27,20 @@ PATCH_CONTAIN = """
         patch_contains(patch_area, wcs, {1}, {2})
     ;
     """
+
+PDR2_CLEAN = [
+    'g_pixelflags_edge', 'r_pixelflags_edge', 'i_pixelflags_edge',
+    'z_pixelflags_edge', 'z_pixelflags_edge',
+    'g_pixelflags_interpolatedcenter', 'r_pixelflags_interpolatedcenter',
+    'i_pixelflags_interpolatedcenter', 'z_pixelflags_interpolatedcenter',
+    'z_pixelflags_interpolatedcenter',
+    'g_pixelflags_saturatedcenter', 'r_pixelflags_saturatedcenter',
+    'i_pixelflags_saturatedcenter', 'z_pixelflags_saturatedcenter',
+    'z_pixelflags_saturatedcenter',
+    'g_pixelflags_crcenter', 'r_pixelflags_crcenter',
+    'i_pixelflags_crcenter', 'z_pixelflags_crcenter',
+    'z_pixelflags_crcenter'
+    ]
 
 def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
                             shape=False, flux=False, aper_type='3_20'):
@@ -187,16 +202,16 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
                 }
             else:
                 aper_dict = {
-                    'g_aper_mag': 'forced4.g_convolvedmag_{}_mag'.format(aper_type),
-                    'r_aper_mag': 'forced4.r_convolvedmag_{}_mag'.format(aper_type),
-                    'i_aper_mag': 'forced4.i_convolvedmag_{}_mag'.format(aper_type),
-                    'z_aper_mag': 'forced4.z_convolvedmag_{}_mag'.format(aper_type),
-                    'y_aper_mag': 'forced4.y_convolvedmag_{}_mag'.format(aper_type),
-                    'g_aper_mag_err': 'forced4.g_convolvedmag_{}_magsigma'.format(aper_type),
-                    'r_aper_mag_err': 'forced4.r_convolvedmag_{}_magsigma'.format(aper_type),
-                    'i_aper_mag_err': 'forced4.i_convolvedmag_{}_magsigma'.format(aper_type),
-                    'z_aper_mag_err': 'forced4.z_convolvedmag_{}_magsigma'.format(aper_type),
-                    'y_aper_mag_err': 'forced4.y_convolvedmag_{}_magsigma'.format(aper_type),
+                    'g_aper_mag': 'forced4.g_convolvedflux_{}_mag'.format(aper_type),
+                    'r_aper_mag': 'forced4.r_convolvedflux_{}_mag'.format(aper_type),
+                    'i_aper_mag': 'forced4.i_convolvedflux_{}_mag'.format(aper_type),
+                    'z_aper_mag': 'forced4.z_convolvedflux_{}_mag'.format(aper_type),
+                    'y_aper_mag': 'forced4.y_convolvedflux_{}_mag'.format(aper_type),
+                    'g_aper_mag_err': 'forced4.g_convolvedflux_{}_magsigma'.format(aper_type),
+                    'r_aper_mag_err': 'forced4.r_convolvedflux_{}_magsigma'.format(aper_type),
+                    'i_aper_mag_err': 'forced4.i_convolvedflux_{}_magsigma'.format(aper_type),
+                    'z_aper_mag_err': 'forced4.z_convolvedflux_{}_magsigma'.format(aper_type),
+                    'y_aper_mag_err': 'forced4.y_convolvedflux_{}_magsigma'.format(aper_type),
                 }
             aper_dict.update(aper_flag)
         else:
@@ -244,7 +259,7 @@ def column_dict_to_str(columns, add_select=True):
         return 'SELECT ' + col_str
     return col_str
 
-def join_table_by_id(rerun, tables, add_from=True):
+def join_table_by_id(rerun, tables):
     """
     Convert a list of tables into the "FROM" part of SQL search string.
     """
@@ -260,20 +275,27 @@ def join_table_by_id(rerun, tables, add_from=True):
 
     from_str = ' '.join(table_list)
 
-    if add_from:
-        return 'FROM ' + from_str
     return from_str
 
+def sql_clean_objects(rerun):
+    """
+    Return a "WHERE" string to select "clean" objects.
+    """
+    if 'pdr2' in rerun:
+        return "AND NOT " + " AND NOT ".join(PDR2_CLEAN)
+    else:
+        # TODO: need to support other reruns
+        raise NameError("Wrong rerun name")
 
-def box_search(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide',
+def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun='pdr2_wide',
                archive=None, psf=True, cmodel=True, aper=False,
-               shape=False, flux=False, aper_type='3_20'):
+               shape=False, flux=False, aper_type='3_20', where_list=None):
     """
     Get the SQL template for box search.
     """
     # Login to HSC archive
     if archive is None:
-        archive = Hsc(dr=dr, rerun=rerun)
+        archive = hsc.Hsc(dr=dr, rerun=rerun)
     else:
         dr = archive.dr
         rerun = archive.rerun
@@ -292,11 +314,20 @@ def box_search(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide',
         if aper:
             tables.append('forced4')
     else:
+        # TODO: need to support other reruns
         raise NameError("Wrong rerun name")
+    from_str = join_table_by_id(rerun, tables)
 
     # The "WHERE" part of the SQL search
+    where_str = "WHERE boxSearch(coord, {0}, {1}, {2}, {3})".format(ra1, ra2, dec1, dec2)
+    if primary:
+        where_str += ' AND isprimary'
+    if clean:
+        where_str += sql_clean_objects(rerun)
+    if where_list:
+        where_str += " AND ".join(where_list)
 
-    return tables
+    return ' '.join([select_str, from_str, where_str])
 
 def cone_search_template(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide', archive=None):
     """
@@ -304,7 +335,7 @@ def cone_search_template(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide',
     """
     # Login to HSC archive
     if archive is None:
-        archive = Hsc(dr=dr, rerun=rerun)
+        archive = hsc.Hsc(dr=dr, rerun=rerun)
     else:
         dr = archive.dr
         rerun = archive.rerun
