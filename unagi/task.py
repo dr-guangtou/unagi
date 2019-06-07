@@ -180,7 +180,7 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
             prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
         else:
             ra1_str, dec1_str = coord.to_string('decimal', precision=4).split(' ')
-            ra2_str, dec2_str = coord.to_string('decimal', precision=4).split(' ')
+            ra2_str, dec2_str = coord_2.to_string('decimal', precision=4).split(' ')
             prefix = '{0}_{1}_ra_{2}_{3}_dec_{4}_{5}'.format(
                 dr, rerun, ra1_str, dec1_str, ra2_str, dec2_str)
 
