@@ -5,7 +5,8 @@
 from .hsc import Hsc
 
 __all__ = ['HELP_BASIC', 'COLUMNS_CONTAIN', 'TABLE_SCHEMA', 'PATCH_CONTAIN',
-           'basic_forced_photometry', 'column_dict_to_str']
+           'basic_forced_photometry', 'column_dict_to_str', 'join_table_by_id',
+           'box_search']
 
 HELP_BASIC = "SELECT * FROM help('{0}');"
 
@@ -234,17 +235,39 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
 
     return basic_dict
 
-def column_dict_to_str(columns, select=True):
+def column_dict_to_str(columns, add_select=True):
     """
     Convert the dictionary of columns into a SQL search SQL.
     """
     col_str = ', '.join(["{0} AS {1}".format(v, k) for k, v in columns.items()])
-    if select:
+    if add_select:
         return 'SELECT ' + col_str
     return col_str
 
-def box_search_template(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide', 
-                        archive=None):
+def join_table_by_id(rerun, tables, add_from=True):
+    """
+    Convert a list of tables into the "FROM" part of SQL search string.
+    """
+    table_list = ["{0}.{1}".format(rerun, t) for t in tables]
+    from_str_0 = 'FROM {0} '
+    from_str_1 = 'LEFT JOIN {0} USING (object_id)'
+
+    for ii, tab in enumerate(table_list):
+        if ii == 0:
+            table_list[ii] = from_str_0.format(tab)
+        else:
+            table_list[ii] = from_str_1.format(tab)
+
+    from_str = ' '.join(table_list)
+
+    if add_from:
+        return 'FROM ' + from_str
+    return from_str
+
+
+def box_search(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide',
+               archive=None, psf=True, cmodel=True, aper=False,
+               shape=False, flux=False, aper_type='3_20'):
     """
     Get the SQL template for box search.
     """
@@ -255,10 +278,25 @@ def box_search_template(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide',
         dr = archive.dr
         rerun = archive.rerun
 
-    # The selection part of the SQL search
-    select_str = column_dict_to_str(basic_forced_photometry(rerun))
+    # The "SELECT" part of the SQL search
+    select_str = column_dict_to_str(
+        basic_forced_photometry(
+            rerun, psf=psf, cmodel=cmodel, aper=aper, shape=shape,
+            flux=flux, aper_type=aper_type))
 
-    pass
+    # The "FROM" part of the SQL search
+    tables = ['forced']
+    if 'pdr2' in rerun:
+        if psf or shape:
+            tables.append('forced2')
+        if aper:
+            tables.append('forced4')
+    else:
+        raise NameError("Wrong rerun name")
+
+    # The "WHERE" part of the SQL search
+
+    return tables
 
 def cone_search_template(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide', archive=None):
     """
