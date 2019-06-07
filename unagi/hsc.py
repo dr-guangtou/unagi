@@ -727,6 +727,10 @@ class Hsc():
                 print(e)
         except QueryError as e:
             print(e)
+            try:
+                self.delete_query(job['id'])
+            except Exception:
+                pass
         except KeyboardInterrupt:
             if job['id'] != -9999:
                 self.cancel_query(job['id'])
