@@ -12,7 +12,7 @@ import astropy.units as u
 from scipy.stats import sigmaclip
 from scipy.stats import gaussian_kde
 
-__all__ = ['same_string', 'random_string', 'r_phy_to_ang', 
+__all__ = ['same_string', 'random_string', 'r_phy_to_ang',
            'save_to_dill', 'read_from_dill', 'moments_to_shape']
 
 
@@ -73,7 +73,7 @@ def r_phy_to_ang(r_phy, redshift, cosmo=None, phy_unit='kpc', ang_unit='arcsec')
     return (r_phy / cosmo.kpc_proper_per_arcmin(redshift)).to(u.Unit(ang_unit))
 
 
-def stats_summary(X, sigma=5.0, n_min=5, kde=True, bw=None, 
+def stats_summary(X, sigma=5.0, n_min=5, kde=True, bw=None,
                   prefix=None, verbose=False, return_clipped=False):
     """
     Statistical summary of an array.
@@ -158,12 +158,12 @@ def moments_to_shape(xx, yy, xy, axis_ratio=False, radian=False):
     """
     e1 = (xx - yy) / (xx + yy)
     e2 = (2.0 * xy / (xx + yy))
-    rad= np.sqrt(xx + yy)
+    rad = np.sqrt(xx + yy)
     ell = np.sqrt(e1 ** 2.0 + e2 ** 2.0)
     theta = (0.5 * np.arctan2(e2, e1))
     if not radian:
         theta *= (180.0 / np.pi)
-    
+
     if axis_ratio:
         return rad, 1.0 - ell, theta
 
