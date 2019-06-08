@@ -356,12 +356,45 @@ def hsc_cone_search(coord, radius, template='basic', archive=None):
     """
     pass
 
-def hsc_box_search(coord, box_size=10.0 * u.Unit('arcsec'), coord_2=None, template='basic',
-                   archive=None):
+def hsc_box_search(coord, box_size=10.0 * u.Unit('arcsec'), coord_2=None, redshift=None,
+                   archive=None, dr='pdr2', rerun='pdr2_wide', cosmo=None,
+                   verbose=True, **kwargs):
     """
     Search for objects within a box area.
     """
-    pass
+    # Login to HSC archive
+    if archive is None:
+        archive = Hsc(dr=dr, rerun=rerun)
+    else:
+        dr = archive.dr
+        rerun = archive.rerun
+        if dr[0] == 'p':
+            rerun = rerun.replace(dr + '_', '')
+
+    # We use central coordinate and half image size as the default format.
+    if coord_2 is None:
+        if isinstance(box_size, list):
+            if len(box_size) != 2:
+                raise Exception("# Cutout size should be like: [Width, Height]")
+            ang_size_w = _get_cutout_size(
+                box_size[0], redshift=redshift, cosmo=cosmo, verbose=verbose)
+            ang_size_h = _get_cutout_size(
+                box_size[1], redshift=redshift, cosmo=cosmo, verbose=verbose)
+        else:
+            ang_size_w = ang_size_h = _get_cutout_size(
+                box_size, redshift=redshift, cosmo=cosmo, verbose=verbose)
+        ra_size = ang_size_w.to(u.Unit('deg'))
+        dec_size = ang_size_h.to(u.Unit('deg'))
+        ra1, ra2 = coord.ra.value - ra_size.value, coord.ra.value + ra_size.value
+        dec1, dec2 = coord.dec.value - dec_size.value, coord.dec.value + dec_size.value
+    else:
+        ra1, dec1 = coord.ra.value, coord.dec.value
+        ra2, dec2 = coord_2.ra.value, coord_2.dec.value
+
+    objects = archive.sql_query(
+        query.box_search(ra1, ra2, dec1, dec2, archive=archive, **kwargs), verbose=True)
+
+    return objects
 
 def hsc_check_coverage(coord, dr='pdr2', rerun='pdr2_wide', archive=None, verbose=False,
                        return_filter=False):
