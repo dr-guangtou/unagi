@@ -370,7 +370,7 @@ def hsc_cone_search(coord, radius=10.0 * u.Unit('arcsec'), redshift=None,
         radius, redshift=redshift, cosmo=cosmo, verbose=verbose).to(u.Unit('arcsec'))
 
     objects = archive.sql_query(
-        query.cone_search(ra, ra, rad_arcsec, archive=archive, **kwargs), verbose=True)
+        query.cone_search(ra, dec, rad_arcsec, archive=archive, **kwargs), verbose=True)
 
     return objects
 

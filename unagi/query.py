@@ -60,7 +60,7 @@ def basic_meas_photometry(rerun, band):
     """
     Return a dict of column names for basic independent photometric measurements.
     """
-    if 'pdr2' in rerun or 's18a' in rerun:
+    if ('pdr2' in rerun) or ('s18a' in rerun):
         meas_dict = {
             'object_id': 'meas.object_id',
             'ra': 'meas.{}_ra'.format(band),
@@ -108,7 +108,7 @@ def basic_meas_photometry(rerun, band):
             'psf_mag': 'meas.{}_psfflux_mag'.format(band),
             'psf_mag_err': 'meas.{}_psfflux_magsigma'.format(band),
         }
-    elif 's16a' in rerun:
+    elif ('pdr1' in rerun) or ('s16a' in rerun):
         meas_dict = {
             'object_id': 'meas.object_id',
             'ra': 'meas.{}ra'.format(band),
@@ -150,7 +150,7 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
         'a_z': 'forced.a_z', 'a_y': 'forced.a_y',
     }
 
-    if 'pdr2' in rerun or 's18a' in rerun:
+    if ('pdr2' in rerun) or ('s18a' in rerun):
         # This is for the columns in PDR2 rerun and S18A
         # Flag
         meta_dict = {
@@ -499,7 +499,7 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
         if shape:
             print("# SDSS Shape is not available for forced photometry in S17A release.")
         shape_dict = {}
-    elif 'pdr1' in rerun or 's16a' in rerun:
+    elif ('pdr1' in rerun) or ('s16a' in rerun):
         # This is for the columns in PDR1 and S16A release
         # Flag
         meta_dict = {
@@ -722,7 +722,7 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
 
     # The "FROM" part of the SQL search
     tables = ['forced']
-    if 'pdr2' in rerun or 's18a' in rerun:
+    if ('pdr2' in rerun) or ('s18a' in rerun):
         if psf or shape:
             tables.append('forced2')
         if aper:
@@ -730,17 +730,16 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
         if meas:
             tables.append('meas')
             tables.append('meas2')
-    if 's17a' in rerun:
+    elif 's17a' in rerun:
         if aper:
             tables.append('forced3')
         if meas:
             tables.append('meas')
-    if 's16a' in rerun or 'pdr1' in rerun:
+    elif ('pdr1' in rerun) or ('s16a' in rerun):
         # Only forced catalog is used
         if meas:
             tables.append('meas')
     else:
-        # TODO: need to support other reruns
         raise NameError("Wrong rerun name")
     from_str = join_table_by_id(rerun, tables)
 
