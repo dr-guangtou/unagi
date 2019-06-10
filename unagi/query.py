@@ -630,12 +630,19 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
     if 's17a' in rerun:
         if aper:
             tables.append('forced3')
+    if 's16a' in rerun or 'pdr1' in rerun:
+        # Only forced catalog is used
+        pass
     else:
         # TODO: need to support other reruns
         raise NameError("Wrong rerun name")
     from_str = join_table_by_id(rerun, tables)
 
     # The "WHERE" part of the SQL search
+    # boxSearch(): Returns true if coord is in a box [ra1, ra2] × [dec1, dec2].
+    # (Units are degrees). Note that boxSearch(coord, 350, 370, dec1, dec2) is different
+    # from boxSearch(coord, 350, 10, dec1, dec2). In the former, ra ∈ [350, 360] ∪ [0, 10];
+    # while in the latter, ra ∈ [10, 350].
     where_str = "WHERE boxSearch(coord, {0}, {1}, {2}, {3})".format(ra1, ra2, dec1, dec2)
     if primary:
         where_str += ' AND isprimary'
@@ -646,9 +653,11 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
 
     return ' '.join([select_str, from_str, where_str])
 
-def cone_search_template(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide', archive=None):
+def cone_search(ra, dec, rad, primary=True, clean=False, dr='pdr2', rerun='pdr2_wide',
+                archive=None, psf=True, cmodel=True, aper=False,
+                shape=False, flux=False, aper_type='3_20', where_list=None):
     """
-    Get the SQL template for box search.
+    Get the SQL template for cone search.
     """
     # Login to HSC archive
     if archive is None:
@@ -656,4 +665,40 @@ def cone_search_template(primary=True, clean=True, dr='pdr2', rerun='pdr2_wide',
     else:
         dr = archive.dr
         rerun = archive.rerun
-    pass
+
+    # The "SELECT" part of the SQL search
+    select_str = column_dict_to_str(
+        basic_forced_photometry(
+            rerun, psf=psf, cmodel=cmodel, aper=aper, shape=shape,
+            flux=flux, aper_type=aper_type))
+
+    # The "FROM" part of the SQL search
+    tables = ['forced']
+    if 'pdr2' in rerun or 's18a' in rerun:
+        if psf or shape:
+            tables.append('forced2')
+        if aper:
+            tables.append('forced4')
+    if 's17a' in rerun:
+        if aper:
+            tables.append('forced3')
+    if 's16a' in rerun or 'pdr1' in rerun:
+        # Only forced catalog is used
+        pass
+    else:
+        # TODO: need to support other reruns
+        raise NameError("Wrong rerun name")
+    from_str = join_table_by_id(rerun, tables)
+
+    # The "WHERE" part of the SQL search
+    # coneSearch(): Returns true if coord is within radius arcseconds from (ra, dec).
+    # The sky coordinates are in degrees. Radius is in arcseconds.
+    where_str = "WHERE coneSearch(coord, {0}, {1}, {2})".format(ra, dec, rad)
+    if primary:
+        where_str += ' AND isprimary'
+    if clean:
+        where_str += sql_clean_objects(rerun)
+    if where_list:
+        where_str += " AND ".join(where_list)
+
+    return ' '.join([select_str, from_str, where_str])
