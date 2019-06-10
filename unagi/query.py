@@ -5,9 +5,9 @@
 from . import hsc
 
 __all__ = ['HELP_BASIC', 'COLUMNS_CONTAIN', 'TABLE_SCHEMA', 'PATCH_CONTAIN',
-           'PDR2_CLEAN',
+           'PDR2_CLEAN', 'basic_meas_photometry',
            'basic_forced_photometry', 'column_dict_to_str', 'join_table_by_id',
-           'box_search']
+           'box_search', 'cone_search']
 
 HELP_BASIC = "SELECT * FROM help('{0}');"
 
@@ -41,6 +41,87 @@ PDR2_CLEAN = [
     'i_pixelflags_crcenter', 'z_pixelflags_crcenter',
     'z_pixelflags_crcenter'
     ]
+
+def basic_meas_photometry(rerun, band):
+    """
+    Return a dict of column names for basic independent photometric measurements.
+    """
+    if 'pdr2' in rerun or 's18a' in rerun:
+        meas_dict = {
+            'object_id': 'meas.object_id',
+            'ra': 'meas.{}_ra'.format(band),
+            'dec': 'meas.{}_dec'.format(band),
+            'cmodel_mag': 'meas.{}_cmodel_mag'.format(band),
+            'cmodel_mag_err': 'meas.{}_cmodel_magsigma'.format(band),
+            'cmodel_ellipse_11': 'meas.{}_cmodel_ellipse_11'.format(band),
+            'cmodel_ellipse_22': 'meas.{}_cmodel_ellipse_22'.format(band),
+            'cmodel_ellipse_12': 'meas.{}_cmodel_ellipse_12'.format(band),
+            'cmodel_exp_mag': 'meas.{}_cmodel_exp_mag'.format(band),
+            'cmodel_exp_mag_err': 'meas.{}_cmodel_exp_magsigma'.format(band),
+            'cmodel_exp_ellipse_11': 'meas.{}_cmodel_exp_ellipse_11'.format(band),
+            'cmodel_exp_ellipse_22': 'meas.{}_cmodel_exp_ellipse_22'.format(band),
+            'cmodel_exp_ellipse_12': 'meas.{}_cmodel_exp_ellipse_12'.format(band),
+            'cmodel_dev_mag': 'meas.{}_cmodel_dev_mag'.format(band),
+            'cmodel_dev_mag_err': 'meas.{}_cmodel_dev_magsigma'.format(band),
+            'cmodel_dev_ellipse_11': 'meas.{}_cmodel_dev_ellipse_11'.format(band),
+            'cmodel_dev_ellipse_22': 'meas.{}_cmodel_dev_ellipse_22'.format(band),
+            'cmodel_dev_ellipse_12': 'meas.{}_cmodel_dev_ellipse_12'.format(band),
+            'cmodel_fracdev': 'meas.{}_cmodel_fracdev'.format(band),
+            'psf_mag': 'meas2.{}_psfflux_mag'.format(band),
+            'psf_mag_err': 'meas2.{}_psfflux_magsigma'.format(band),
+        }
+    elif 's17a' in rerun:
+        meas_dict = {
+            'object_id': 'meas.object_id',
+            'ra': 'meas.{}_ra'.format(band),
+            'dec': 'meas.{}_dec'.format(band),
+            'cmodel_mag': 'meas.{}_cmodel_mag'.format(band),
+            'cmodel_mag_err': 'meas.{}_cmodel_magsigma'.format(band),
+            'cmodel_ellipse_11': 'meas.{}_cmodel_ellipse_11'.format(band),
+            'cmodel_ellipse_22': 'meas.{}_cmodel_ellipse_22'.format(band),
+            'cmodel_ellipse_12': 'meas.{}_cmodel_ellipse_12'.format(band),
+            'cmodel_exp_mag': 'meas.{}_cmodel_exp_mag'.format(band),
+            'cmodel_exp_mag_err': 'meas.{}_cmodel_exp_magsigma'.format(band),
+            'cmodel_exp_ellipse_11': 'meas.{}_cmodel_exp_ellipse_11'.format(band),
+            'cmodel_exp_ellipse_22': 'meas.{}_cmodel_exp_ellipse_22'.format(band),
+            'cmodel_exp_ellipse_12': 'meas.{}_cmodel_exp_ellipse_12'.format(band),
+            'cmodel_dev_mag': 'meas.{}_cmodel_dev_mag'.format(band),
+            'cmodel_dev_mag_err': 'meas.{}_cmodel_dev_magsigma'.format(band),
+            'cmodel_dev_ellipse_11': 'meas.{}_cmodel_dev_ellipse_11'.format(band),
+            'cmodel_dev_ellipse_22': 'meas.{}_cmodel_dev_ellipse_22'.format(band),
+            'cmodel_dev_ellipse_12': 'meas.{}_cmodel_dev_ellipse_12'.format(band),
+            'cmodel_fracdev': 'meas.{}_cmodel_fracdev'.format(band),
+            'psf_mag': 'meas.{}_psfflux_mag'.format(band),
+            'psf_mag_err': 'meas.{}_psfflux_magsigma'.format(band),
+        }
+    elif 's16a' in rerun:
+        meas_dict = {
+            'object_id': 'meas.object_id',
+            'ra': 'meas.{}ra'.format(band),
+            'dec': 'meas.{}dec'.format(band),
+            'cmodel_mag': 'meas.{}cmodel_mag'.format(band),
+            'cmodel_mag_err': 'meas.{}cmodel_mag_err'.format(band),
+            'cmodel_ellipse_11': 'meas.{}cmodel_ellipse_11'.format(band),
+            'cmodel_ellipse_22': 'meas.{}cmodel_ellipse_22'.format(band),
+            'cmodel_ellipse_12': 'meas.{}cmodel_ellipse_12'.format(band),
+            'cmodel_exp_mag': 'meas.{}cmodel_exp_mag'.format(band),
+            'cmodel_exp_mag_err': 'meas.{}cmodel_exp_mag_err'.format(band),
+            'cmodel_exp_ellipse_11': 'meas.{}cmodel_exp_ellipse_11'.format(band),
+            'cmodel_exp_ellipse_22': 'meas.{}cmodel_exp_ellipse_22'.format(band),
+            'cmodel_exp_ellipse_12': 'meas.{}cmodel_exp_ellipse_12'.format(band),
+            'cmodel_dev_mag': 'meas.{}cmodel_dev_mag'.format(band),
+            'cmodel_dev_mag_err': 'meas.{}cmodel_dev_mag_err'.format(band),
+            'cmodel_dev_ellipse_11': 'meas.{}cmodel_dev_ellipse_11'.format(band),
+            'cmodel_dev_ellipse_22': 'meas.{}cmodel_dev_ellipse_22'.format(band),
+            'cmodel_dev_ellipse_12': 'meas.{}cmodel_dev_ellipse_12'.format(band),
+            'cmodel_fracdev': 'meas.{}cmodel_fracdev'.format(band),
+            'psf_mag': 'meas.{}mag_psf'.format(band),
+            'psf_mag_err': 'meas.{}mag_psf_err'.format(band),
+        }
+    else:
+        raise NameError("Wrong rerun name")
+
+    return meas_dict
 
 def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
                             shape=False, flux=False, aper_type='3_20'):
