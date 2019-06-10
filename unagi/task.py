@@ -350,11 +350,29 @@ def hsc_psf(coord, centered=True, filters='i', dr='dr2', rerun='s18a_wide',
 
     return psf_list
 
-def hsc_cone_search(coord, radius, template='basic', archive=None):
+def hsc_cone_search(coord, radius=10.0 * u.Unit('arcsec'), redshift=None,
+                    archive=None, dr='pdr2', rerun='pdr2_wide', cosmo=None,
+                    verbose=True, **kwargs):
     """
     Search for objects within a cone area.
     """
-    pass
+    if archive is None:
+        archive = Hsc(dr=dr, rerun=rerun)
+    else:
+        dr = archive.dr
+        rerun = archive.rerun
+        if dr[0] == 'p':
+            rerun = rerun.replace(dr + '_', '')
+
+    # We use central coordinate and half image size as the default format.
+    ra, dec = coord.ra.value, coord.dec.value
+    rad_arcsec = _get_cutout_size(
+        radius, redshift=redshift, cosmo=cosmo, verbose=verbose).to(u.Unit('arcsec'))
+
+    objects = archive.sql_query(
+        query.cone_search(ra, ra, rad_arcsec, archive=archive, **kwargs), verbose=True)
+
+    return objects
 
 def hsc_box_search(coord, box_size=10.0 * u.Unit('arcsec'), coord_2=None, redshift=None,
                    archive=None, dr='pdr2', rerun='pdr2_wide', cosmo=None,
