@@ -55,8 +55,8 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
         'a_z': 'forced.a_z', 'a_y': 'forced.a_y',
     }
 
-    if 'pdr2' in rerun:
-        # This is for the columns in PDR2 rerun
+    if 'pdr2' in rerun or 's18a' in rerun:
+        # This is for the columns in PDR2 rerun and S18A
         # Flag
         meta_dict = {
             'merge_peak_sky': 'forced.merge_peak_sky',
@@ -90,11 +90,11 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
             'i_flag_interpolated_cen': 'forced.i_pixelflags_interpolatedcenter',
             'z_flag_interpolated_cen': 'forced.z_pixelflags_interpolatedcenter',
             'y_flag_interpolated_cen': 'forced.y_pixelflags_interpolatedcenter',
-            'g_extendedness': 'g_extendedness_value',
-            'r_extendedness': 'r_extendedness_value',
-            'i_extendedness': 'i_extendedness_value',
-            'z_extendedness': 'z_extendedness_value',
-            'y_extendedness': 'y_extendedness_value'
+            'g_extendedness': 'forced.g_extendedness_value',
+            'r_extendedness': 'forced.r_extendedness_value',
+            'i_extendedness': 'forced.i_extendedness_value',
+            'z_extendedness': 'forced.z_extendedness_value',
+            'y_extendedness': 'forced.y_extendedness_value'
         }
 
         # CModel photometry
@@ -238,6 +238,172 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
             }
         else:
             shape_dict = {}
+    elif 's17a' in rerun:
+        # This is for the columns in PDR2 rerun and S18A
+        # Flag
+        meta_dict = {
+            'merge_peak_sky': 'forced.merge_peak_sky',
+            'g_inputcount': 'forced.g_inputcount_value',
+            'r_inputcount': 'forced.r_inputcount_value',
+            'i_inputcount': 'forced.i_inputcount_value',
+            'z_inputcount': 'forced.z_inputcount_value',
+            'y_inputcount': 'forced.y_inputcount_value',
+            'g_flag_edge': 'forced.g_pixelflags_edge',
+            'r_flag_edge': 'forced.r_pixelflags_edge',
+            'i_flag_edge': 'forced.i_pixelflags_edge',
+            'z_flag_edge': 'forced.z_pixelflags_edge',
+            'y_flag_edge': 'forced.y_pixelflags_edge',
+            'g_flag_saturated': 'forced.g_pixelflags_saturated',
+            'r_flag_saturated': 'forced.r_pixelflags_saturated',
+            'i_flag_saturated': 'forced.i_pixelflags_saturated',
+            'z_flag_saturated': 'forced.z_pixelflags_saturated',
+            'y_flag_saturated': 'forced.y_pixelflags_saturated',
+            'g_flag_interpolated': 'forced.g_pixelflags_interpolated',
+            'r_flag_interpolated': 'forced.r_pixelflags_interpolated',
+            'i_flag_interpolated': 'forced.i_pixelflags_interpolated',
+            'z_flag_interpolated': 'forced.z_pixelflags_interpolated',
+            'y_flag_interpolated': 'forced.y_pixelflags_interpolated',
+            'g_flag_saturated_cen': 'forced.g_pixelflags_saturatedcenter',
+            'r_flag_saturated_cen': 'forced.r_pixelflags_saturatedcenter',
+            'i_flag_saturated_cen': 'forced.i_pixelflags_saturatedcenter',
+            'z_flag_saturated_cen': 'forced.z_pixelflags_saturatedcenter',
+            'y_flag_saturated_cen': 'forced.y_pixelflags_saturatedcenter',
+            'g_flag_interpolated_cen': 'forced.g_pixelflags_interpolatedcenter',
+            'r_flag_interpolated_cen': 'forced.r_pixelflags_interpolatedcenter',
+            'i_flag_interpolated_cen': 'forced.i_pixelflags_interpolatedcenter',
+            'z_flag_interpolated_cen': 'forced.z_pixelflags_interpolatedcenter',
+            'y_flag_interpolated_cen': 'forced.y_pixelflags_interpolatedcenter',
+            'g_extendedness': 'forced.g_extendedness_value',
+            'r_extendedness': 'forced.r_extendedness_value',
+            'i_extendedness': 'forced.i_extendedness_value',
+            'z_extendedness': 'forced.z_extendedness_value',
+            'y_extendedness': 'forced.y_extendedness_value'
+        }
+
+        # CModel photometry
+        if cmodel:
+            cmodel_flag = {
+                'g_cmodel_flag': 'forced.g_cmodel_flag',
+                'r_cmodel_flag': 'forced.r_cmodel_flag',
+                'i_cmodel_flag': 'forced.i_cmodel_flag',
+                'z_cmodel_flag': 'forced.z_cmodel_flag',
+                'y_cmodel_flag': 'forced.y_cmodel_flag'
+            }
+            if flux:
+                cmodel_dict = {
+                    'g_cmodel_flux': 'forced.g_cmodel_flux',
+                    'r_cmodel_flux': 'forced.r_cmodel_flux',
+                    'i_cmodel_flux': 'forced.i_cmodel_flux',
+                    'z_cmodel_flux': 'forced.z_cmodel_flux',
+                    'y_cmodel_flux': 'forced.y_cmodel_flux',
+                    'g_cmodel_flux_err': 'forced.g_cmodel_fluxsigma',
+                    'r_cmodel_flux_err': 'forced.r_cmodel_fluxsigma',
+                    'i_cmodel_flux_err': 'forced.i_cmodel_fluxsigma',
+                    'z_cmodel_flux_err': 'forced.z_cmodel_fluxsigma',
+                    'y_cmodel_flux_err': 'forced.y_cmodel_fluxsigma'
+                }
+            else:
+                cmodel_dict = {
+                    'g_cmodel_mag': 'forced.g_cmodel_mag',
+                    'r_cmodel_mag': 'forced.r_cmodel_mag',
+                    'i_cmodel_mag': 'forced.i_cmodel_mag',
+                    'z_cmodel_mag': 'forced.z_cmodel_mag',
+                    'y_cmodel_mag': 'forced.y_cmodel_mag',
+                    'g_cmodel_flux_err': 'forced.g_cmodel_fluxsigma',
+                    'r_cmodel_flux_err': 'forced.r_cmodel_fluxsigma',
+                    'i_cmodel_flux_err': 'forced.i_cmodel_fluxsigma',
+                    'z_cmodel_flux_err': 'forced.z_cmodel_fluxsigma',
+                    'y_cmodel_flux_err': 'forced.y_cmodel_fluxsigma'
+                }
+            # Put the CModel flag
+            cmodel_dict.update(cmodel_flag)
+        else:
+            cmodel_dict = {}
+
+        # PSF photometry
+        if psf:
+            psf_flag = {
+                'g_psf_flag': 'forced.g_psfflux_flag',
+                'r_psf_flag': 'forced.r_psfflux_flag',
+                'i_psf_flag': 'forced.i_psfflux_flag',
+                'z_psf_flag': 'forced.z_psfflux_flag',
+                'y_psf_flag': 'forced.y_psfflux_flag'
+            }
+            if flux:
+                psf_dict = {
+                    'g_psf_flux': 'forced.g_psfflux_flux',
+                    'r_psf_flux': 'forced.r_psfflux_flux',
+                    'i_psf_flux': 'forced.i_psfflux_flux',
+                    'z_psf_flux': 'forced.z_psfflux_flux',
+                    'y_psf_flux': 'forced.y_psfflux_flux',
+                    'g_psf_flux_err': 'forced.g_psfflux_fluxsigma',
+                    'r_psf_flux_err': 'forced.r_psfflux_fluxsigma',
+                    'i_psf_flux_err': 'forced.i_psfflux_fluxsigma',
+                    'z_psf_flux_err': 'forced.z_psfflux_fluxsigma',
+                    'y_psf_flux_err': 'forced.y_psfflux_fluxsigma'
+                }
+            else:
+                psf_dict = {
+                    'g_psf_mag': 'forced.g_psfflux_mag',
+                    'r_psf_mag': 'forced.r_psfflux_mag',
+                    'i_psf_mag': 'forced.i_psfflux_mag',
+                    'z_psf_mag': 'forced.z_psfflux_mag',
+                    'y_psf_mag': 'forced.y_psfflux_mag',
+                    'g_psf_mag_err': 'forced.g_psfflux_magsigma',
+                    'r_psf_mag_err': 'forced.r_psfflux_magsigma',
+                    'i_psf_mag_err': 'forced.i_psfflux_magsigma',
+                    'z_psf_mag_err': 'forced.z_psfflux_magsigma',
+                    'y_psf_mag_err': 'forced.y_psfflux_magsigma'
+                }
+            # Put the PSF flag
+            psf_dict.update(psf_flag)
+        else:
+            psf_dict = {}
+
+        # Aperture photometry with matched PSF
+        if aper:
+            # Flag for aperture photometry
+            aper_flag = {
+                'g_aper_flag': 'forced3.g_convolvedflux_{}_flag'.format(aper_type),
+                'r_aper_flag': 'forced3.r_convolvedflux_{}_flag'.format(aper_type),
+                'i_aper_flag': 'forced3.i_convolvedflux_{}_flag'.format(aper_type),
+                'z_aper_flag': 'forced3.z_convolvedflux_{}_flag'.format(aper_type),
+                'y_aper_flag': 'forced3.y_convolvedflux_{}_flag'.format(aper_type),
+            }
+            if flux:
+                aper_dict = {
+                    'g_aper_flux': 'forced3.g_convolvedflux_{}_flux'.format(aper_type),
+                    'r_aper_flux': 'forced3.r_convolvedflux_{}_flux'.format(aper_type),
+                    'i_aper_flux': 'forced3.i_convolvedflux_{}_flux'.format(aper_type),
+                    'z_aper_flux': 'forced3.z_convolvedflux_{}_flux'.format(aper_type),
+                    'y_aper_flux': 'forced3.y_convolvedflux_{}_flux'.format(aper_type),
+                    'g_aper_flux_err': 'forced3.g_convolvedflux_{}_fluxsigma'.format(aper_type),
+                    'r_aper_flux_err': 'forced3.r_convolvedflux_{}_fluxsigma'.format(aper_type),
+                    'i_aper_flux_err': 'forced3.i_convolvedflux_{}_fluxsigma'.format(aper_type),
+                    'z_aper_flux_err': 'forced3.z_convolvedflux_{}_fluxsigma'.format(aper_type),
+                    'y_aper_flux_err': 'forced3.y_convolvedflux_{}_fluxsigma'.format(aper_type),
+                }
+            else:
+                aper_dict = {
+                    'g_aper_mag': 'forced3.g_convolvedflux_{}_mag'.format(aper_type),
+                    'r_aper_mag': 'forced3.r_convolvedflux_{}_mag'.format(aper_type),
+                    'i_aper_mag': 'forced3.i_convolvedflux_{}_mag'.format(aper_type),
+                    'z_aper_mag': 'forced3.z_convolvedflux_{}_mag'.format(aper_type),
+                    'y_aper_mag': 'forced3.y_convolvedflux_{}_mag'.format(aper_type),
+                    'g_aper_mag_err': 'forced3.g_convolvedflux_{}_magsigma'.format(aper_type),
+                    'r_aper_mag_err': 'forced3.r_convolvedflux_{}_magsigma'.format(aper_type),
+                    'i_aper_mag_err': 'forced3.i_convolvedflux_{}_magsigma'.format(aper_type),
+                    'z_aper_mag_err': 'forced3.z_convolvedflux_{}_magsigma'.format(aper_type),
+                    'y_aper_mag_err': 'forced3.y_convolvedflux_{}_magsigma'.format(aper_type),
+                }
+            aper_dict.update(aper_flag)
+        else:
+            aper_dict = {}
+
+        # Shape of the object
+        if shape:
+            print("# SDSS Shape is not available for forced photometry in S17A release.")
+        shape_dict = {}
     else:
         raise NameError("Wrong rerun name")
 
@@ -308,11 +474,14 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
 
     # The "FROM" part of the SQL search
     tables = ['forced']
-    if 'pdr2' in rerun:
+    if 'pdr2' in rerun or 's18a' in rerun:
         if psf or shape:
             tables.append('forced2')
         if aper:
             tables.append('forced4')
+    if 's17a' in rerun:
+        if aper:
+            tables.append('forced3')
     else:
         # TODO: need to support other reruns
         raise NameError("Wrong rerun name")
