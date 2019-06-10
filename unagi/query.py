@@ -126,11 +126,11 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
                     'i_cmodel_mag': 'forced.i_cmodel_mag',
                     'z_cmodel_mag': 'forced.z_cmodel_mag',
                     'y_cmodel_mag': 'forced.y_cmodel_mag',
-                    'g_cmodel_flux_err': 'forced.g_cmodel_fluxsigma',
-                    'r_cmodel_flux_err': 'forced.r_cmodel_fluxsigma',
-                    'i_cmodel_flux_err': 'forced.i_cmodel_fluxsigma',
-                    'z_cmodel_flux_err': 'forced.z_cmodel_fluxsigma',
-                    'y_cmodel_flux_err': 'forced.y_cmodel_fluxsigma'
+                    'g_cmodel_mag_err': 'forced.g_cmodel_magsigma',
+                    'r_cmodel_mag_err': 'forced.r_cmodel_magsigma',
+                    'i_cmodel_mag_err': 'forced.i_cmodel_magsigma',
+                    'z_cmodel_mag_err': 'forced.z_cmodel_magsigma',
+                    'y_cmodel_mag_err': 'forced.y_cmodel_magsigma'
                 }
             # Put the CModel flag
             cmodel_dict.update(cmodel_flag)
@@ -309,11 +309,11 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
                     'i_cmodel_mag': 'forced.i_cmodel_mag',
                     'z_cmodel_mag': 'forced.z_cmodel_mag',
                     'y_cmodel_mag': 'forced.y_cmodel_mag',
-                    'g_cmodel_flux_err': 'forced.g_cmodel_fluxsigma',
-                    'r_cmodel_flux_err': 'forced.r_cmodel_fluxsigma',
-                    'i_cmodel_flux_err': 'forced.i_cmodel_fluxsigma',
-                    'z_cmodel_flux_err': 'forced.z_cmodel_fluxsigma',
-                    'y_cmodel_flux_err': 'forced.y_cmodel_fluxsigma'
+                    'g_cmodel_mag_err': 'forced.g_cmodel_magsigma',
+                    'r_cmodel_mag_err': 'forced.r_cmodel_magsigma',
+                    'i_cmodel_mag_err': 'forced.i_cmodel_magsigma',
+                    'z_cmodel_mag_err': 'forced.z_cmodel_magsigma',
+                    'y_cmodel_mag_err': 'forced.y_cmodel_magsigma'
                 }
             # Put the CModel flag
             cmodel_dict.update(cmodel_flag)
