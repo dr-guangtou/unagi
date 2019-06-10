@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Sky background related"""
 
-from __future__ import annotations
-
 import os
 import warnings
 
