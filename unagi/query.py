@@ -5,7 +5,7 @@
 from . import hsc
 
 __all__ = ['HELP_BASIC', 'COLUMNS_CONTAIN', 'TABLE_SCHEMA', 'PATCH_CONTAIN',
-           'PDR2_CLEAN', 'basic_meas_photometry',
+           'DR1_CLEAN', 'DR2_CLEAN', 'basic_meas_photometry',
            'basic_forced_photometry', 'column_dict_to_str', 'join_table_by_id',
            'box_search', 'cone_search']
 
@@ -28,7 +28,7 @@ PATCH_CONTAIN = """
     ;
     """
 
-PDR2_CLEAN = [
+DR2_CLEAN = [
     'g_pixelflags_edge', 'r_pixelflags_edge', 'i_pixelflags_edge',
     'z_pixelflags_edge', 'z_pixelflags_edge',
     'g_pixelflags_interpolatedcenter', 'r_pixelflags_interpolatedcenter',
@@ -41,6 +41,20 @@ PDR2_CLEAN = [
     'i_pixelflags_crcenter', 'z_pixelflags_crcenter',
     'z_pixelflags_crcenter'
     ]
+
+DR1_CLEAN = [
+    'gflags_pixel_edge', 'rflags_pixel_edge', 'iflags_pixel_edge',
+    'zflags_pixel_edge', 'yflags_pixel_edge',
+    'gflags_pixel_interpolated_center', 'rflags_pixel_interpolated_center',
+    'iflags_pixel_interpolated_center', 'zflags_pixel_interpolated_center',
+    'yflags_pixel_interpolated_center',
+    'gflags_pixel_saturated_center', 'rflags_pixel_saturated_center',
+    'iflags_pixel_saturated_center', 'zflags_pixel_saturated_center',
+    'yflags_pixel_saturated_center',
+    'gflags_pixel_cr_center', 'rflags_pixel_cr_center',
+    'iflags_pixel_cr_center', 'zflags_pixel_cr_center',
+    'yflags_pixel_cr_center'
+]
 
 def basic_meas_photometry(rerun, band):
     """
@@ -676,8 +690,10 @@ def sql_clean_objects(rerun):
     """
     Return a "WHERE" string to select "clean" objects.
     """
-    if 'pdr2' in rerun:
-        return "AND NOT " + " AND NOT ".join(PDR2_CLEAN)
+    if 'pdr2' in rerun or 's18a' in rerun or 's17a' in rerun:
+        return "AND NOT " + " AND NOT ".join(DR2_CLEAN)
+    elif 'pdr1' in rerun or 's16a' in rerun:
+        return "AND NOT " + " AND NOT ".join(DR1_CLEAN)
     else:
         # TODO: need to support other reruns
         raise NameError("Wrong rerun name")
