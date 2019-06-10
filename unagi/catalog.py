@@ -37,19 +37,40 @@ def world_to_image(catalog, wcs, ra='ra', dec='dec', update=True):
         return catalog
     return x_arr, y_arr
 
-def moments_to_shape(xx, yy, xy, axis_ratio=False, radian=False):
+def moments_to_shape(catalog, shape_type='i_sdssshape', axis_ratio=False,
+                     radian=False, update=True, to_pixel=False):
     """
     Convert the 2nd moments into elliptical shape: radius, ellipticity, position angle.
     """
+    try:
+        xx = catalog["{}_11".format(shape_type)]
+        yy = catalog["{}_22".format(shape_type)]
+        xy = catalog["{}_12".format(shape_type)]
+    except KeyError:
+        print("Wrong column name!")
+        raise
+
     e1 = (xx - yy) / (xx + yy)
     e2 = (2.0 * xy / (xx + yy))
+    # Get the r50 or determinant radius
     rad = np.sqrt(xx + yy)
+    rad = rad / 0.168 if to_pixel else rad
+    # Ellipticity or axis ratio
     ell = np.sqrt(e1 ** 2.0 + e2 ** 2.0)
-    theta = (0.5 * np.arctan2(e2, e1))
-    if not radian:
-        theta *= (180.0 / np.pi)
+    ell = 1.0 - ell if axis_ratio else ell
+    # Position angle in degree or radian
+    theta = (-0.5 * np.arctan2(e2, e1))
+    theta = (theta * 180. / np.pi) if not radian else theta
 
-    if axis_ratio:
-        return rad, 1.0 - ell, theta
-
+    if update:
+        rad_col = "{}_r".format(shape_type)
+        theta_col = "{}_theta".format(shape_type)
+        if axis_ratio:
+            ell_col = "{}_ba".format(shape_type)
+        else:
+            ell_col = "{}_e".format(shape_type)
+        catalog.add_column(Column(data=rad, name=rad_col))
+        catalog.add_column(Column(data=ell, name=ell_col))
+        catalog.add_column(Column(data=theta, name=theta_col))
+        return catalog
     return rad, ell, theta
