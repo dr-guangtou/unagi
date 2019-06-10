@@ -699,7 +699,7 @@ def sql_clean_objects(rerun):
         raise NameError("Wrong rerun name")
 
 def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun='pdr2_wide',
-               archive=None, psf=True, cmodel=True, aper=False,
+               archive=None, psf=True, cmodel=True, aper=False, meas=None,
                shape=False, flux=False, aper_type='3_20', where_list=None):
     """
     Get the SQL template for box search.
@@ -712,10 +712,13 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
         rerun = archive.rerun
 
     # The "SELECT" part of the SQL search
-    select_str = column_dict_to_str(
-        basic_forced_photometry(
-            rerun, psf=psf, cmodel=cmodel, aper=aper, shape=shape,
-            flux=flux, aper_type=aper_type))
+    column_dict = basic_forced_photometry(
+        rerun, psf=psf, cmodel=cmodel, aper=aper, shape=shape,
+        flux=flux, aper_type=aper_type)
+    # Only support wide filters for now
+    if meas and meas.strip() in 'grizy':
+        column_dict.update(basic_meas_photometry(rerun, meas.strip()))
+    select_str = column_dict_to_str(column_dict)
 
     # The "FROM" part of the SQL search
     tables = ['forced']
@@ -724,12 +727,18 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
             tables.append('forced2')
         if aper:
             tables.append('forced4')
+        if meas:
+            tables.append('meas')
+            tables.append('meas2')
     if 's17a' in rerun:
         if aper:
             tables.append('forced3')
+        if meas:
+            tables.append('meas')
     if 's16a' in rerun or 'pdr1' in rerun:
         # Only forced catalog is used
-        pass
+        if meas:
+            tables.append('meas')
     else:
         # TODO: need to support other reruns
         raise NameError("Wrong rerun name")
@@ -751,7 +760,7 @@ def box_search(ra1, ra2, dec1, dec2, primary=True, clean=False, dr='pdr2', rerun
     return ' '.join([select_str, from_str, where_str])
 
 def cone_search(ra, dec, rad, primary=True, clean=False, dr='pdr2', rerun='pdr2_wide',
-                archive=None, psf=True, cmodel=True, aper=False,
+                archive=None, psf=True, cmodel=True, aper=False, meas=None,
                 shape=False, flux=False, aper_type='3_20', where_list=None):
     """
     Get the SQL template for cone search.
@@ -764,10 +773,13 @@ def cone_search(ra, dec, rad, primary=True, clean=False, dr='pdr2', rerun='pdr2_
         rerun = archive.rerun
 
     # The "SELECT" part of the SQL search
-    select_str = column_dict_to_str(
-        basic_forced_photometry(
-            rerun, psf=psf, cmodel=cmodel, aper=aper, shape=shape,
-            flux=flux, aper_type=aper_type))
+    column_dict = basic_forced_photometry(
+        rerun, psf=psf, cmodel=cmodel, aper=aper, shape=shape,
+        flux=flux, aper_type=aper_type)
+    # Only support wide filters for now
+    if meas and meas.strip() in 'grizy':
+        column_dict.update(basic_meas_photometry(rerun, meas.strip()))
+    select_str = column_dict_to_str(column_dict)
 
     # The "FROM" part of the SQL search
     tables = ['forced']
