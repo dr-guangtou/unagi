@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib import rcParams
 from matplotlib import gridspec
+from matplotlib.patches import Ellipse
 from matplotlib.colorbar import Colorbar
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
@@ -36,7 +37,7 @@ rcParams.update({'axes.titlepad': '10.0'})
 rcParams.update({'font.size': 25})
 
 __all__ = ['FILTERS_COLOR', 'plot_skyobj_hist', 'map_skyobjs', 'random_cmap',
-           'display_single', 'display_all', 'overplot_all']
+           'display_single', 'display_all', 'overplot_all', 'shape_to_ellipse']
 
 # Default colormaps
 IMG_CMAP = plt.get_cmap('viridis')
@@ -467,3 +468,15 @@ def overplot_all(img_list, xsize=6, ysize=6, stretch='arcsinh', scale='minmax',
     # TODO: Add legend
 
     return fig
+
+def shape_to_ellipse(x, y, re, ba, theta):
+    """Convert parameters to Matplotlib Ellipse patch."""
+    a, b = (re * 2.0), (re * ba * 2.0)
+
+    ells = [Ellipse(xy=np.array([x[i], y[i]]),
+                    width=np.array(a[i]),
+                    height=np.array(b[i]),
+                    angle=np.array(theta[i]))
+            for i in range(len(x))]
+
+    return ells
