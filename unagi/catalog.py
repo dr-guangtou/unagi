@@ -7,7 +7,7 @@ import numpy as np
 import astropy.units as u
 from astropy.table import Column
 
-__all__ = ['moments_to_shape', 'abmag_to_image', 'world_to_image']
+__all__ = ['moments_to_shape', 'abmag_to_image', 'world_to_image', 'select_clean_objects']
 
 # Flux unit in HSC catalog
 FLUX_UNIT_S16A = (u.erg / u.s / u.Hz / u.cm ** 2)
@@ -74,3 +74,33 @@ def moments_to_shape(catalog, shape_type='i_sdssshape', axis_ratio=False,
         catalog.add_column(Column(data=theta, name=theta_col))
         return catalog
     return rad, ell, theta
+
+def select_clean_objects(catalog, return_catalog=False, verbose=False):
+    """
+    Select the "clean" objects.
+    """
+    clean_mask = (
+        np.isfinite(catalog['i_extendedness']) &
+        ~catalog['g_flag_edge'] &
+        ~catalog['r_flag_edge'] &
+        ~catalog['i_flag_edge'] &
+        ~catalog['z_flag_edge'] &
+        ~catalog['y_flag_edge'] &
+        ~catalog['g_flag_saturated_cen'] &
+        ~catalog['r_flag_saturated_cen'] &
+        ~catalog['i_flag_saturated_cen'] &
+        ~catalog['z_flag_saturated_cen'] &
+        ~catalog['y_flag_saturated_cen'] &
+        ~catalog['g_flag_interpolated_cen'] &
+        ~catalog['r_flag_interpolated_cen'] &
+        ~catalog['i_flag_interpolated_cen'] &
+        ~catalog['z_flag_interpolated_cen'] &
+        ~catalog['y_flag_interpolated_cen']
+    )
+
+    if verbose:
+        print("# {}/{} objects are clean.".format(clean_mask.sum(), len(catalog)))
+
+    if return_catalog:
+        return catalog[clean_mask], clean_mask
+    return clean_mask
