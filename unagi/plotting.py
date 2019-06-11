@@ -489,7 +489,8 @@ def shape_to_ellipse(x, y, re, ba, theta):
     return ells
 
 def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_clean=False,
-                        verbose=True, xsize=8, cmap='viridis', band='i', show_mag=False):
+                        verbose=True, xsize=8, cmap='viridis', band='i', 
+                        show_sdssshape=False, show_mag=False):
     """
     Show the HSC photometry of objects on the cutout image.
     """
@@ -538,7 +539,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap)
 
     # Show the stars
-    if show_mag:
+    if show_mag or not show_sdssshape:
         ax1.scatter(x_star, y_star, c='dodgerblue', s=100, marker='x', 
                     linewidth=2, zorder=10)
     else:
@@ -554,10 +555,10 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     # Use color of the ellipse to indicate the magnitude of the galaxy
     if show_mag:
         if '{}_cmodel_mag'.format(band) in objs_use.colnames:
-            mag = np.asarray(objs_use['{}_cmodel_mag'.format(band)])
+            mag = np.asarray(cutout_gal['{}_cmodel_mag'.format(band)])
         elif '{}_cmodel_flux'.format(band) in objs_use.colnames:
             mag = np.asarray(
-                -2.5 * np.log10(objs_use['{}_cmodel_flux'.format(band)]))
+                -2.5 * np.log10(cutout_gal['{}_cmodel_flux'.format(band)]))
         else:
             raise KeyError("# No useful CModel mag available")
         # Get a color array
@@ -591,7 +592,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
             to_pixel=True, update=False)
         ellip_exp = shape_to_ellipse(x_gal, y_gal, r_exp, ba_exp, pa_exp)
         ellip_dev = shape_to_ellipse(x_gal, y_gal, r_dev, ba_dev, pa_dev)
-        for e in ellip_exp:
+        for ii, e in enumerate(ellip_exp):
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
             e.set_alpha(1.0)
@@ -601,7 +602,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
                 e.set_edgecolor(ell_cmap(int(color_arr[ii])))
             e.set_facecolor('none')
             e.set_linewidth(2.0)
-        for e in ellip_dev:
+        for ii, e in enumerate(ellip_dev):
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
             e.set_alpha(0.7)
