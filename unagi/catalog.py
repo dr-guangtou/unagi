@@ -75,28 +75,51 @@ def moments_to_shape(catalog, shape_type='i_sdssshape', axis_ratio=False,
         return catalog
     return rad, ell, theta
 
-def select_clean_objects(catalog, return_catalog=False, verbose=False):
+def select_clean_objects(catalog, bands='gri', check_psf='i', check_cmodel='i',
+                         return_catalog=False, verbose=False):
     """
     Select the "clean" objects.
     """
-    clean_mask = (
-        np.isfinite(catalog['i_extendedness']) &
-        ~catalog['g_flag_edge'] &
-        ~catalog['r_flag_edge'] &
-        ~catalog['i_flag_edge'] &
-        ~catalog['z_flag_edge'] &
-        ~catalog['y_flag_edge'] &
-        ~catalog['g_flag_saturated_cen'] &
-        ~catalog['r_flag_saturated_cen'] &
-        ~catalog['i_flag_saturated_cen'] &
-        ~catalog['z_flag_saturated_cen'] &
-        ~catalog['y_flag_saturated_cen'] &
-        ~catalog['g_flag_interpolated_cen'] &
-        ~catalog['r_flag_interpolated_cen'] &
-        ~catalog['i_flag_interpolated_cen'] &
-        ~catalog['z_flag_interpolated_cen'] &
-        ~catalog['y_flag_interpolated_cen']
-    )
+    # Check data quality
+    clean_mask = np.ones(len(catalog)).astype(np.bool)
+    for f in bands:
+        mask_of_this_band = (
+            np.isfinite(catalog['{}_extendedness'.format(f)]) &
+            ~catalog['{}_flag_edge'.format(f)] &
+            ~catalog['{}_flag_saturated_cen'.format(f)] &
+            ~catalog['{}_flag_interpolated_cen'.format(f)]
+            )
+        clean_mask = clean_mask & mask_of_this_band
+
+    # Check PSF flux/magnitude
+    if check_psf is not None and check_psf in 'grizy':
+        psf_mag = '{}_psf_mag'.format(check_psf)
+        psf_flux = '{}_psf_flux'.format(check_psf)
+        if psf_mag in catalog.colnames:
+            psf_mask = (np.isfinite(catalog['{}_psf_mag'.format(check_psf)]) &
+                        (catalog['{}_psf_mag'.format(check_psf)] > 0))
+        elif psf_flux in catalog.colnames:
+            psf_mask = (np.isfinite(catalog['{}_psf_flux'.format(check_psf)]) &
+                        (catalog['{}_psf_flux'.format(check_psf)] > 0))
+        else:
+            raise KeyError("# PSF flux/mag not available!")
+        clean_mask = clean_mask & psf_mask
+
+    # Check PSF flux/magnitude
+    if check_cmodel is not None and check_cmodel in 'grizy':
+        cmodel_mag = '{}_cmodel_mag'.format(check_cmodel)
+        cmodel_flux = '{}_cmodel_flux'.format(check_cmodel)
+        if cmodel_mag in catalog.colnames:
+            cmodel_mask = (
+                np.isfinite(catalog['{}_cmodel_mag'.format(check_cmodel)]) &
+                (catalog['{}_cmodel_mag'.format(check_cmodel)] > 0))
+        elif cmodel_flux in catalog.colnames:
+            cmodel_mask = (
+                np.isfinite(catalog['{}_cmodel_flux'.format(check_cmodel)]) &
+                (catalog['{}_cmodel_flux'.format(check_cmodel)] > 0))
+        else:
+            raise KeyError("# CModel flux/mag not available!")
+        clean_mask = clean_mask & cmodel_mask
 
     if verbose:
         print("# {}/{} objects are clean.".format(clean_mask.sum(), len(catalog)))
