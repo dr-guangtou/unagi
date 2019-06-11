@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 """Making pretty plots."""
 
+import copy
+
 import numpy as np
 
 from astropy import wcs
 from astropy.visualization import ZScaleInterval, \
     AsymmetricPercentileInterval
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib import rcParams
@@ -486,7 +489,7 @@ def shape_to_ellipse(x, y, re, ba, theta):
     return ells
 
 def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_clean=False,
-                        verbose=True, xsize=8):
+                        verbose=True, xsize=8, cmap='viridis', band='i', show_mag=False):
     """
     Show the HSC photometry of objects on the cutout image.
     """
@@ -504,11 +507,11 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     x_use, y_use = catalog.world_to_image(objs_use, cutout_wcs, update=False)
 
     # Get the stars and show the SDSS shape
-    star_mask = objs_use['i_extendedness'] < 0.5
+    star_mask = objs_use['{}_extendedness'.format(band)] < 0.5
     cutout_star = objs_use[star_mask]
     x_star, y_star = x_use[star_mask], y_use[star_mask]
     r_star, ba_star, pa_star = catalog.moments_to_shape(
-        cutout_star, shape_type='i_sdssshape', axis_ratio=True,
+        cutout_star, shape_type='{}_sdssshape'.format(band), axis_ratio=True,
         to_pixel=True, update=False)
     if verbose:
         if cutout_star:
@@ -532,17 +535,36 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     ax1 = fig.add_subplot(111)
 
     # Show the image
-    ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1)
+    ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap)
 
     # Show the stars
-    ellip_star = shape_to_ellipse(x_star, y_star, r_star, ba_star, pa_star)
-    for e in ellip_star:
-        ax1.add_artist(e)
-        e.set_clip_box(ax1.bbox)
-        e.set_alpha(1.0)
-        e.set_edgecolor('red')
-        e.set_facecolor('none')
-        e.set_linewidth(2.0)
+    if show_mag:
+        ax1.scatter(x_star, y_star, c='dodgerblue', s=100, marker='x', 
+                    linewidth=2, zorder=10)
+    else:
+        ellip_star = shape_to_ellipse(x_star, y_star, r_star, ba_star, pa_star)
+        for e in ellip_star:
+            ax1.add_artist(e)
+            e.set_clip_box(ax1.bbox)
+            e.set_alpha(1.0)
+            e.set_edgecolor('red')
+            e.set_facecolor('none')
+            e.set_linewidth(2.0)
+
+    # Use color of the ellipse to indicate the magnitude of the galaxy
+    if show_mag:
+        if '{}_cmodel_mag'.format(band) in objs_use.colnames:
+            mag = np.asarray(objs_use['{}_cmodel_mag'.format(band)])
+        elif '{}_cmodel_flux'.format(band) in objs_use.colnames:
+            mag = np.asarray(
+                -2.5 * np.log10(objs_use['{}_cmodel_flux'.format(band)]))
+        else:
+            raise KeyError("# No useful CModel mag available")
+        # Get a color array
+        color_arr = to_color_arr(mag, bottom=20., top=26.0)
+        ell_cmap = plt.get_cmap('coolwarm_r')
+    else:
+        color_arr, ell_cmap = None, None
 
     # Show the galaxies
     if show_weighted:
@@ -550,11 +572,14 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
             cutout_gal, shape_type='cmodel_ellipse', axis_ratio=True,
             to_pixel=True, update=False)
         ellip_gal = shape_to_ellipse(x_gal, y_gal, r_gal, ba_gal, pa_gal)
-        for e in ellip_gal:
+        for ii, e in enumerate(ellip_gal):
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
             e.set_alpha(0.9)
-            e.set_edgecolor('peru')
+            if color_arr is None:
+                e.set_edgecolor('peru')
+            else:
+                e.set_edgecolor(ell_cmap(int(color_arr[ii])))
             e.set_facecolor('none')
             e.set_linewidth(2.0)
     else:
@@ -570,18 +595,30 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
             e.set_alpha(1.0)
-            e.set_edgecolor('peru')
+            if color_arr is None:
+                e.set_edgecolor('peru')
+            else:
+                e.set_edgecolor(ell_cmap(int(color_arr[ii])))
             e.set_facecolor('none')
             e.set_linewidth(2.0)
         for e in ellip_dev:
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
             e.set_alpha(0.7)
-            e.set_edgecolor('w')
+            if color_arr is None:
+                e.set_edgecolor('w')
+            else:
+                e.set_edgecolor(ell_cmap(int(color_arr[ii])))
             e.set_facecolor('none')
             e.set_linewidth(2.0)
             e.set_linestyle('--')
     ax1.scatter(x_gal, y_gal, c='peru', s=50, marker='+', linewidth=2.0)
+
+    if show_mag:
+        cax = fig.add_axes([0.16, 0.85, 0.24, 0.02])
+        norm = mpl.colors.Normalize(vmin=20.0, vmax=26.0)
+        _ = mpl.colorbar.ColorbarBase(
+            cax, cmap='coolwarm_r', norm=norm, orientation='horizontal')
 
     # Show the non-clean objects
     if show_bad:
@@ -595,13 +632,17 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
 
     return fig
 
-def to_color_arr(data, bottom=None, top=None):
+def to_color_arr(arr, bottom=None, top=None):
     """
     Convert a data array to "color array" (between 0 and 1).
     """
+    data = copy.deepcopy(arr)
     if top is not None:
         data[data >= top] = top
     if bottom is not None:
         data[data <= bottom] = bottom
+
+    # Fix the NaN and Inf values 
+    data[~np.isfinite(data)] = bottom
 
     return (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data)) * 255
