@@ -4,6 +4,7 @@
 
 import numpy as np
 
+from astropy import wcs
 from astropy.visualization import ZScaleInterval, \
     AsymmetricPercentileInterval
 
@@ -14,6 +15,8 @@ from matplotlib import gridspec
 from matplotlib.patches import Ellipse
 from matplotlib.colorbar import Colorbar
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
+from . import catalog
 
 plt.rc('text', usetex=True)
 rcParams.update({'axes.linewidth': 1.5})
@@ -37,7 +40,8 @@ rcParams.update({'axes.titlepad': '10.0'})
 rcParams.update({'font.size': 25})
 
 __all__ = ['FILTERS_COLOR', 'plot_skyobj_hist', 'map_skyobjs', 'random_cmap',
-           'display_single', 'display_all', 'overplot_all', 'shape_to_ellipse']
+           'display_single', 'display_all', 'overplot_all', 'shape_to_ellipse',
+           'cutout_show_objects']
 
 # Default colormaps
 IMG_CMAP = plt.get_cmap('viridis')
@@ -480,3 +484,113 @@ def shape_to_ellipse(x, y, re, ba, theta):
             for i in range(len(x))]
 
     return ells
+
+def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_clean=False,
+                        verbose=True, xsize=8):
+    """
+    Show the HSC photometry of objects on the cutout image.
+    """
+    # WCS of the image
+    cutout_wcs = wcs.WCS(cutout[1].header)
+
+    # Isolate the clean objects
+    if show_clean:
+        objs_use, clean_mask = catalog.select_clean_objects(
+            objs, return_catalog=True, verbose=True)
+    else:
+        objs_use = objs
+        clean_mask = catalog.select_clean_objects(
+            objs, return_catalog=False, verbose=True)
+    x_use, y_use = catalog.world_to_image(objs_use, cutout_wcs, update=False)
+
+    # Get the stars and show the SDSS shape
+    star_mask = objs_use['i_extendedness'] < 0.5
+    cutout_star = objs_use[star_mask]
+    x_star, y_star = x_use[star_mask], y_use[star_mask]
+    r_star, ba_star, pa_star = catalog.moments_to_shape(
+        cutout_star, shape_type='i_sdssshape', axis_ratio=True,
+        to_pixel=True, update=False)
+    if verbose:
+        if cutout_star:
+            print("# There are {} point sources on the cutout".format(len(cutout_star)))
+        else:
+            print("# No point source is found!")
+
+    # Get the extended objects
+    gal_mask = ~star_mask
+    cutout_gal = objs_use[gal_mask]
+    x_gal, y_gal = x_use[gal_mask], y_use[gal_mask]
+    if verbose:
+        if cutout_gal:
+            print("# There are {} extended sources on the cutout".format(len(cutout_gal)))
+        else:
+            print("# No point source is found!")
+
+    # Start to make figure
+    img_shape = cutout[1].data.shape
+    fig = plt.figure(figsize=(xsize, xsize * img_shape[1] / img_shape[0]))
+    ax1 = fig.add_subplot(111)
+
+    # Show the image
+    ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1)
+
+    # Show the stars
+    ellip_star = shape_to_ellipse(x_star, y_star, r_star, ba_star, pa_star)
+    for e in ellip_star:
+        ax1.add_artist(e)
+        e.set_clip_box(ax1.bbox)
+        e.set_alpha(1.0)
+        e.set_edgecolor('red')
+        e.set_facecolor('none')
+        e.set_linewidth(2.0)
+
+    # Show the galaxies
+    if show_weighted:
+        r_gal, ba_gal, pa_gal = catalog.moments_to_shape(
+            cutout_gal, shape_type='cmodel_ellipse', axis_ratio=True,
+            to_pixel=True, update=False)
+        ellip_gal = shape_to_ellipse(x_gal, y_gal, r_gal, ba_gal, pa_gal)
+        for e in ellip_gal:
+            ax1.add_artist(e)
+            e.set_clip_box(ax1.bbox)
+            e.set_alpha(0.9)
+            e.set_edgecolor('peru')
+            e.set_facecolor('none')
+            e.set_linewidth(2.0)
+    else:
+        r_exp, ba_exp, pa_exp = catalog.moments_to_shape(
+            cutout_gal, shape_type='cmodel_exp_ellipse', axis_ratio=True,
+            to_pixel=True, update=False)
+        r_dev, ba_dev, pa_dev = catalog.moments_to_shape(
+            cutout_gal, shape_type='cmodel_dev_ellipse', axis_ratio=True,
+            to_pixel=True, update=False)
+        ellip_exp = shape_to_ellipse(x_gal, y_gal, r_exp, ba_exp, pa_exp)
+        ellip_dev = shape_to_ellipse(x_gal, y_gal, r_dev, ba_dev, pa_dev)
+        for e in ellip_exp:
+            ax1.add_artist(e)
+            e.set_clip_box(ax1.bbox)
+            e.set_alpha(1.0)
+            e.set_edgecolor('peru')
+            e.set_facecolor('none')
+            e.set_linewidth(2.0)
+        for e in ellip_dev:
+            ax1.add_artist(e)
+            e.set_clip_box(ax1.bbox)
+            e.set_alpha(0.7)
+            e.set_edgecolor('w')
+            e.set_facecolor('none')
+            e.set_linewidth(2.0)
+            e.set_linestyle('--')
+    ax1.scatter(x_gal, y_gal, c='peru', s=50, marker='+', linewidth=2.0)
+
+    # Show the non-clean objects
+    if show_bad:
+        x_dirty, y_dirty = catalog.world_to_image(
+            objs_use[~clean_mask], cutout_wcs, update=False)
+        ax1.scatter(x_dirty, y_dirty, facecolor='none', edgecolor='k',
+                    s=100, marker='o', linewidth=1.5, zorder=10)
+
+    ax1.set_xlim(0, img_shape[0])
+    ax1.set_ylim(0, img_shape[1] - 1)
+
+    return fig
