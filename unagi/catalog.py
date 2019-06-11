@@ -7,7 +7,8 @@ import numpy as np
 import astropy.units as u
 from astropy.table import Column
 
-__all__ = ['moments_to_shape', 'abmag_to_image', 'world_to_image', 'select_clean_objects']
+__all__ = ['moments_to_shape', 'abmag_to_image', 'world_to_image', 'select_clean_objects',
+           'objs_to_galsim']
 
 # Flux unit in HSC catalog
 FLUX_UNIT_S16A = (u.erg / u.s / u.Hz / u.cm ** 2)
@@ -129,3 +130,13 @@ def select_clean_objects(catalog, check_flag='gri', check_psf='i', check_cmodel=
     if return_catalog:
         return catalog[clean_mask], clean_mask
     return clean_mask
+
+def objs_to_galsim(catalog):
+    """
+    Evaluate HSC PSF or CModel objects as a GalSim 2-D model.
+    """
+    try:
+        import galsim
+    except ImportError:
+        raise Exception("# Please install GalSim first!")
+    pass
