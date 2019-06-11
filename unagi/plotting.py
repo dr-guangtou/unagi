@@ -594,3 +594,14 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     ax1.set_ylim(0, img_shape[1] - 1)
 
     return fig
+
+def to_color_arr(data, bottom=None, top=None):
+    """
+    Convert a data array to "color array" (between 0 and 1).
+    """
+    if top is not None:
+        data[data >= top] = top
+    if bottom is not None:
+        data[data <= bottom] = bottom
+
+    return (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data)) * 255
