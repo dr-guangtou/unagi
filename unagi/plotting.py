@@ -490,7 +490,7 @@ def shape_to_ellipse(x, y, re, ba, theta):
 
 def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_clean=False,
                         verbose=True, xsize=8, cmap='viridis', band='i', 
-                        show_sdssshape=False, show_mag=False):
+                        show_sdssshape=False, show_mag=False, **kwargs):
     """
     Show the HSC photometry of objects on the cutout image.
     """
@@ -536,7 +536,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     ax1 = fig.add_subplot(111)
 
     # Show the image
-    ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap)
+    ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
 
     # Show the stars
     if show_mag or not show_sdssshape:
@@ -618,13 +618,14 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     if show_mag:
         cax = fig.add_axes([0.16, 0.85, 0.24, 0.02])
         norm = mpl.colors.Normalize(vmin=20.0, vmax=26.0)
-        _ = mpl.colorbar.ColorbarBase(
+        cbar = mpl.colorbar.ColorbarBase(
             cax, cmap='coolwarm_r', norm=norm, orientation='horizontal')
+        cbar.ax.tick_params(labelsize=15) 
 
     # Show the non-clean objects
     if show_bad:
         x_dirty, y_dirty = catalog.world_to_image(
-            objs_use[~clean_mask], cutout_wcs, update=False)
+            objs[~clean_mask], cutout_wcs, update=False)
         ax1.scatter(x_dirty, y_dirty, facecolor='none', edgecolor='k',
                     s=100, marker='o', linewidth=1.5, zorder=10)
 

@@ -75,21 +75,23 @@ def moments_to_shape(catalog, shape_type='i_sdssshape', axis_ratio=False,
         return catalog
     return rad, ell, theta
 
-def select_clean_objects(catalog, bands='gri', check_psf='i', check_cmodel='i',
+def select_clean_objects(catalog, check_flag='gri', check_psf='i', check_cmodel='i',
                          return_catalog=False, verbose=False):
     """
     Select the "clean" objects.
     """
-    # Check data quality
     clean_mask = np.ones(len(catalog)).astype(np.bool)
-    for f in bands:
-        mask_of_this_band = (
-            np.isfinite(catalog['{}_extendedness'.format(f)]) &
-            ~catalog['{}_flag_edge'.format(f)] &
-            ~catalog['{}_flag_saturated_cen'.format(f)] &
-            ~catalog['{}_flag_interpolated_cen'.format(f)]
-            )
-        clean_mask = clean_mask & mask_of_this_band
+
+    # Check data quality
+    if check_flag is not None:
+        for f in check_flag:
+            mask_of_this_band = (
+                np.isfinite(catalog['{}_extendedness'.format(f)]) &
+                ~catalog['{}_flag_edge'.format(f)] &
+                ~catalog['{}_flag_saturated_cen'.format(f)] &
+                ~catalog['{}_flag_interpolated_cen'.format(f)]
+                )
+            clean_mask = clean_mask & mask_of_this_band
 
     # Check PSF flux/magnitude
     if check_psf is not None and check_psf in 'grizy':
