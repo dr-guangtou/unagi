@@ -8,7 +8,7 @@ import astropy.units as u
 from astropy.table import Column
 
 __all__ = ['moments_to_shape', 'abmag_to_image', 'world_to_image', 'select_clean_objects',
-           'objects_to_galsim']
+           'objects_to_galsim', 'mag_to_flux']
 
 # Flux unit in HSC catalog
 FLUX_UNIT_S16A = (u.erg / u.s / u.Hz / u.cm ** 2)
@@ -27,7 +27,14 @@ def mag_to_flux(catalog, mag_col, zeropoint=27.0, update=True):
     """
     Convert AB magnitude into HSC image flux unit.
     """
-    return 10.0 ** ((27.0 - abmag) / 2.5)
+    flux = 10.0 ** ((zeropoint - catalog[mag_col]) / 2.5)
+    if update:
+        flux_col = mag_col.replace('mag', 'flux')
+        if flux_col in catalog.colnames:
+            catalog.remove_column(flux_col)
+        catalog.add_column(data=flux, name=flux_col)
+        return catalog
+    return flux
 
 def world_to_image(catalog, wcs, ra='ra', dec='dec', update=True):
     """
