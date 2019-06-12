@@ -8,7 +8,7 @@ import astropy.units as u
 from astropy.table import Column
 
 __all__ = ['moments_to_shape', 'abmag_to_image', 'world_to_image', 'select_clean_objects',
-           'objs_to_galsim']
+           'objects_to_galsim']
 
 # Flux unit in HSC catalog
 FLUX_UNIT_S16A = (u.erg / u.s / u.Hz / u.cm ** 2)
@@ -18,6 +18,12 @@ FLUX_UNIT_PDR1 = (u.Jansky * 1.E-9)
 FLUX_UNIT_PDR2 = (u.Jansky * 1.E-9)
 
 def abmag_to_image(abmag):
+    """
+    Convert AB magnitude into HSC image flux unit.
+    """
+    return 10.0 ** ((27.0 - abmag) / 2.5)
+
+def mag_to_flux(catalog, mag_col, zeropoint=27.0, update=True):
     """
     Convert AB magnitude into HSC image flux unit.
     """
@@ -33,6 +39,10 @@ def world_to_image(catalog, wcs, ra='ra', dec='dec', update=True):
     x_arr, y_arr = xy_arr[:, 0], xy_arr[:, 1]
 
     if update:
+        if 'x' in catalog.colnames:
+            catalog.remove_column('x')
+        if 'y' in catalog.colnames:
+            catalog.remove_column('y')
         catalog.add_column(Column(data=x_arr, name='x'))
         catalog.add_column(Column(data=y_arr, name='y'))
         return catalog
@@ -70,8 +80,14 @@ def moments_to_shape(catalog, shape_type='i_sdssshape', axis_ratio=False,
             ell_col = "{}_ba".format(shape_type)
         else:
             ell_col = "{}_e".format(shape_type)
+        if rad_col in catalog.colnames:
+            catalog.remove_column(rad_col)
         catalog.add_column(Column(data=rad, name=rad_col))
+        if ell_col in catalog.colnames:
+            catalog.remove_column(ell_col)
         catalog.add_column(Column(data=ell, name=ell_col))
+        if theta_col in catalog.colnames:
+            catalog.remove_column(theta_col)
         catalog.add_column(Column(data=theta, name=theta_col))
         return catalog
     return rad, ell, theta
