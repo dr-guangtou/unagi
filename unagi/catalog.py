@@ -183,7 +183,7 @@ def objects_to_galsim(img, objects, psf_model=None, extended='i_extendedness',
     # img_wcs = galsim.AstropyWCS(wcs=cutout_wcs)
 
     # Pass the PSF image to GalSim
-    if psf_model:
+    if psf_model is not None:
         psf_obj = galsim.InterpolatedImage(
             galsim.image.Image(psf_model), scale=1.0)
     else:
@@ -237,7 +237,7 @@ def objects_to_galsim(img, objects, psf_model=None, extended='i_extendedness',
 
                     # Combine the two component
                     cmodel = galsim.Add([comp_exp, comp_dev])
-                    if psf_obj:
+                    if psf_obj is not None:
                         # Convolution with PSF
                         cmodel = galsim.Convolve([cmodel, psf_obj])
 
