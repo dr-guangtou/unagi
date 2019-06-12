@@ -131,12 +131,101 @@ def select_clean_objects(catalog, check_flag='gri', check_psf='i', check_cmodel=
         return catalog[clean_mask], clean_mask
     return clean_mask
 
-def objs_to_galsim(catalog):
+def objects_to_galsim(img, objects, psf_model=None, extended='i_extendedness',
+                      psf_mag='psf_mag', gal_mag='cmodel_mag',
+                      exp_mag='cmodel_exp_mag', dev_mag='cmodel_dev_mag'):
     """
-    Evaluate HSC PSF or CModel objects as a GalSim 2-D model.
+    Convert the HSC objects into GalSim model image.
     """
     try:
         import galsim
     except ImportError:
         raise Exception("# Please install GalSim first!")
-    pass
+
+    # Shape of the image
+    img_shape = img.shape
+
+    # Empty image
+    img_empty = np.zeros(img_shape)
+
+    # This is the "canvas" of the model
+    img_model = galsim.ImageF(img_shape[1], img_shape[0])
+
+    # The "true" center of the image is allowed to be halfway between two pixels, as is the
+    # case for even-sized images.  full_image.center is an integer position,
+    # which would be 1/2 pixel up and to the right of the true center in this case.
+    img_center = img_model.true_center
+
+    # Pass the WCS from the header of the image to GalSim
+    # img_wcs = galsim.AstropyWCS(wcs=cutout_wcs)
+
+    # Pass the PSF image to GalSim
+    if psf_model:
+        psf_obj = galsim.InterpolatedImage(
+            galsim.image.Image(psf_model), scale=1.0)
+    else:
+        psf_obj = None
+
+    # Go through the list of objects, there appears to be no other way than a for loop
+
+    for ii, obj in enumerate(objects):
+        # Position of the image
+        img_position = galsim.PositionD(obj['x'], obj['y'])
+
+        # Get the offset of the object on the canvas
+        obj_offset = galsim.PositionD(
+            img_position.x - img_center.x + 1.,
+            img_position.y - img_center.y + 1.)
+
+        # Seperate the type of the object
+        if obj[extended] < 0.5:
+            if np.isfinite(obj[psf_mag]) & (obj[psf_mag] > 0):
+                # Generate a star
+                psf_flux = abmag_to_image(obj[psf_mag])
+                psf = psf_obj.withFlux(psf_flux)
+                # Add it to the empty image
+                img_empty += psf.drawImage(img_model, offset=obj_offset).array
+            else:
+                print("# Cannot generate star {} with magnitude {}".format(
+                    ii, obj[psf_mag]))
+        else:
+            if (np.isfinite(obj[exp_mag]) & (obj[exp_mag] > 0) &
+                    np.isfinite(obj[dev_mag]) & (obj[dev_mag] > 0) &
+                    np.isfinite(obj[gal_mag]) & (obj[gal_mag] > 0)):
+                try:
+                    # The exponential component
+                    flux_exp = abmag_to_image(obj[exp_mag])
+                    shape_exp = galsim.Shear(
+                        q=obj['cmodel_exp_ellipse_ba'],
+                        beta=obj['cmodel_exp_ellipse_theta'] * galsim.degrees)
+                    comp_exp = galsim.Exponential(
+                        half_light_radius=obj['cmodel_exp_ellipse_r'], flux=flux_exp)
+                    comp_exp = comp_exp.shear(shape_exp)
+
+                    # The De Vacouleurs component
+                    flux_dev = abmag_to_image(obj[dev_mag])
+                    shape_dev = galsim.Shear(
+                        q=obj['cmodel_dev_ellipse_ba'],
+                        beta=obj['cmodel_dev_ellipse_theta'] * galsim.degrees)
+                    comp_dev = galsim.DeVaucouleurs(
+                        half_light_radius=obj['cmodel_dev_ellipse_r'], flux=flux_dev,
+                        trunc=(6.0 * obj['cmodel_dev_ellipse_r']))
+                    comp_dev = comp_dev.shear(shape_dev)
+
+                    # Combine the two component
+                    cmodel = galsim.Add([comp_exp, comp_dev])
+                    if psf_obj:
+                        # Convolution with PSF
+                        cmodel = galsim.Convolve([cmodel, psf_obj])
+
+                    # Add it to the empty image
+                    img_empty += cmodel.drawImage(
+                        img_model, method='no_pixel', offset=obj_offset).array
+                except Exception:
+                    print("# Cannot generate galaxy {} with magnitude {}".format(
+                        ii, obj[gal_mag]))
+            else:
+                print("# Problematic galaxy {} with magnitude {}".format(
+                    ii, obj[gal_mag]))
+
+    return img_empty

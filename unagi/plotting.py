@@ -260,14 +260,26 @@ def display_single(img,
     # Stretch option
     if stretch.strip() == 'arcsinh':
         img_scale = np.arcsinh(img)
+        if zmin is not None:
+            zmin = np.arcsinh(zmin)
+        if zmax is not None:
+            zmax = np.arcsinh(zmax)
     elif stretch.strip() == 'log':
         if no_negative:
             img[img <= 0.0] = 1.0E-10
         img_scale = np.log(img)
+        if zmin is not None:
+            zmin = np.log(zmin)
+        if zmax is not None:
+            zmax = np.log(zmax)
     elif stretch.strip() == 'log10':
         if no_negative:
             img[img <= 0.0] = 1.0E-10
         img_scale = np.log10(img)
+        if zmin is not None:
+            zmin = np.log10(zmin)
+        if zmax is not None:
+            zmax = np.log10(zmax)
     elif stretch.strip() == 'linear':
         img_scale = img
     else:
