@@ -108,7 +108,7 @@ class SkyObjs():
                 raise TypeError("# Wrong file type: npy or fits!")
         elif isinstance(skyobjs, Table):
             try:
-                self.skyobjs = skyobjs.as_array().data
+                self.skyobjs = skyobjs.as_array()
             except Exception:
                 self.skyobjs = skyobjs.as_array()
         elif isinstance(skyobjs, np.ndarray) or isinstance(skyobjs, np.recarray):
