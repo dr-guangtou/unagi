@@ -69,7 +69,12 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
     if prefix is None:
         if coord_2 is None:
             ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
-            size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
+            if isinstance(cutout_size, list):
+                w_half_str = "{:8.2f}{}".format(ang_size_w.value, ang_size_w.unit).strip()
+                h_half_str = "{:8.2f}{}".format(ang_size_h.value, ang_size_h.unit).strip()
+                size_str = '{0}_{1}'.format(w_half_str, h_half_str)
+            else:
+                size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
             prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
         else:
             ra1_str, dec1_str = coord.to_string('decimal', precision=4).split(' ')
@@ -176,7 +181,12 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     if prefix is None:
         if coord_2 is None:
             ra_str, dec_str = coord.to_string('decimal', precision=4).split(' ')
-            size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
+            if isinstance(cutout_size, list):
+                w_half_str = "{:8.2f}{}".format(ang_size_w.value, ang_size_w.unit).strip()
+                h_half_str = "{:8.2f}{}".format(ang_size_h.value, ang_size_h.unit).strip()
+                size_str = '{0}_{1}'.format(w_half_str, h_half_str)
+            else:
+                size_str = "{:8.2f}{}".format(cutout_size.value, cutout_size.unit).strip()
             prefix = '{0}_{1}_{2}_{3}_{4}'.format(dr, rerun, ra_str, dec_str, size_str)
         else:
             ra1_str, dec1_str = coord.to_string('decimal', precision=4).split(' ')
