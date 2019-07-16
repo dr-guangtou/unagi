@@ -46,6 +46,11 @@ setup(
     author_email='shuang89@ucsc.edu',
     license='MIT',
     packages=find_packages(),
+    package_data={
+        'unagi': ["data/camera/*", "data/filters/*",
+                  "data/pdr1_wide/*", "data/pdr2_dud/*", "data/pdr2_wide/*",
+                  "data/solar/*", "data/sql_template/*"]
+    },
     install_requires=INSTALL_REQUIRES,
     include_package_data=True,
     zip_safe=False,
