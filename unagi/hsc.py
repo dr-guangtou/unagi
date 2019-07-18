@@ -209,7 +209,7 @@ class Hsc():
         """
         # Download FITS file for coadd image.
         
-        patch_url = self.form_patch_url(tract, patch, filt)
+        patch_url = self._form_patch_url(tract, patch, filt)
         try:
             if verbose:
                 print("# Downloading FITS image from {}".format(patch_url))
@@ -333,7 +333,7 @@ class Hsc():
         return self.archive.img_url + '&'.join(
             key + '=' + value for key, value in cutout_dict.items())
 
-    def form_patch_url(self, tract, patch, filt='HSC-I'):
+    def _form_patch_url(self, tract, patch, filt='HSC-I'):
         """ Only available for DR2-S18A.
         Form the URL to download HSC coadd image for a patch. Each `Patch` is 4200 x 4200 pixels.
 
@@ -342,8 +342,8 @@ class Hsc():
         You can also use an interface: https://hscdata.mtk.nao.ac.jp/das_console/dr2.1/
 
         """
-        prefix = '/'.join([filt, str(tract), '6,7'])
-        fitsname = '-'.join(['calexp', filt, str(tract), '6,7']) + '.fits'
+        prefix = '/'.join([filt, str(tract), str(patch)])
+        fitsname = '-'.join(['calexp', filt, str(tract), str(patch)]) + '.fits'
         return self.archive.patch_url + '/'.join([prefix, fitsname])
 
     def _form_image_url(self, coord, ):
