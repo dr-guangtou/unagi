@@ -185,9 +185,30 @@ class SkyObjs():
 
         return SkyObjs(self.skyobjs[box_mask])
 
-    def select_circle(self):
-        """Select sky objects within a circle."""
-        raise NotImplementedError("# Not yet")
+    def select_circle(self, ra, dec, radius, n_min=5, verbose=True):
+        """Select sky objects within a circle. Radius is in astropy.units."""
+        from astropy.coordinates import SkyCoord
+        import astropy.units as u
+        if str(radius).replace('.', '', 1).isdigit():
+            radius = radius * u.arcsec
+
+        c = SkyCoord(ra, dec, frame='icrs', unit='deg')
+        catalog = SkyCoord(self.skyobjs[self.ra_col], 
+                           self.skyobjs[self.dec_col], unit='deg', frame='icrs')
+        circle_mask = (catalog.separation(c) < radius)
+        
+        if circle_mask.sum() == 0:
+            if verbose:
+                warnings.warn(
+                    "# No sky object in this region: RA = {0}, DEC = {1}, r = {2} arcsec".format(
+                        ra, dec, radius))
+            return SkyObjs(self.skyobjs[self.skyobjs['tract'] < 0])
+
+        if circle_mask.sum() <= n_min:
+            if verbose:
+                warnings.warn("# Only find {0} sky object(s)".format(circle_mask.sum()))
+
+        return SkyObjs(self.skyobjs[circle_mask])
 
     def flux_stats(self, aper, band, rerun='s18a', sigma=3.5,
                    kde=False, bw=None, to_mujy=True, prefix=None):
