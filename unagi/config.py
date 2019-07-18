@@ -814,6 +814,8 @@ class Server(object):
                 self.cat_url = IDR_URL + "/datasearch/api/catalog_jobs/"
                 # Coadd image cutout server
                 self.img_url = IDR_URL + "/das_quarry/dr2.1/cgi-bin/cutout?"
+                # Coadd patch image url
+                self.patch_url = IDR_URL + "/hsc_ssp/dr2/s18a/data/s18a_wide/deepCoadd-results/"
                 # PSF picker server
                 self.psf_url = IDR_URL + "/psf/6/cgi/getpsf?"
                 # Direct file tree
