@@ -69,7 +69,7 @@ class Hsc():
                    'NB0387', 'NB0816', 'NB0921']
     FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921']
 
-    def __init__(self, dr='dr2', rerun='s18a_wide', verbose=True, config_file=None):
+    def __init__(self, dr='pdr2', rerun='pdr2_wide', verbose=True, config_file=None):
         """
         Initialize a HSC rerun object.
 
