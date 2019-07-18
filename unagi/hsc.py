@@ -197,6 +197,31 @@ class Hsc():
             return cutout_url
         else:
             raise HscException("# Wrong image type: coadd or warp !")
+    def download_patch(self, tract, patch, filt='HSC-I', output_file=None, overwrite=True, verbose=True):
+        """
+        Download coadded image for a single patch.
+
+        Parameters:
+        -----------
+        tract (int): tract number
+        patch (str): in the format of '6,7' (no spaces)
+        filt (str): filter name, such as 'HSC-I'
+        """
+        # Download FITS file for coadd image.
+        
+        patch_url = self._form_patch_url(tract, patch, filt)
+        try:
+            if verbose:
+                print("# Downloading FITS image from {}".format(patch_url))
+            cutout = fits.open(patch_url)
+        except urllib.error.HTTPError as e:
+            print("# Error message: {}".format(e))
+            raise Exception("# Can not download cutout: {}".format(patch_url))
+        
+        if output_file is None:
+            output_file = '_'.join((self.dr, self.rerun, str(tract), str(patch), filt[-1].lower() + '.fits'))
+        _ = cutout.writeto(output_file, overwrite=overwrite)
+        return cutout
 
     def get_cutout_image(self, coord, coord_2=None, w_half=None, h_half=None, filt='HSC-I',
                          img_type='coadd', image=True, variance=False, mask=False, verbose=False):
@@ -307,6 +332,19 @@ class Hsc():
 
         return self.archive.img_url + '&'.join(
             key + '=' + value for key, value in cutout_dict.items())
+
+    def _form_patch_url(self, tract, patch, filt='HSC-I'):
+        """ Only available for DR2-S18A.
+        Form the URL to download HSC coadd image for a patch. Each `Patch` is 4200 x 4200 pixels.
+
+        Please see details here:
+            https://hscdata.mtk.nao.ac.jp/das_quarry/dr2.1/manual.html
+        You can also use an interface: https://hscdata.mtk.nao.ac.jp/das_console/dr2.1/
+
+        """
+        prefix = '/'.join([filt, str(tract), str(patch)])
+        fitsname = '-'.join(['calexp', filt, str(tract), str(patch)]) + '.fits'
+        return self.archive.patch_url + '/'.join([prefix, fitsname])
 
     def _form_image_url(self, coord, ):
         """
