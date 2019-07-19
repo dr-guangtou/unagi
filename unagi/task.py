@@ -3,7 +3,6 @@
 
 import os
 import shutil
-from collections.abc import Iterable
 
 import numpy as np
 import astropy.units as u
@@ -27,8 +26,94 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
                  cosmo=None, prefix=None, use_saved=False, save_img=False,
                  verbose=True, rgb_order=False, hdu=1, archive=None, output_dir='./',
                  save_rgb=False, rgb_q=15, rgb_stretch=0.5, rgb_min=0):
-    """
-    Generate HSC 3-color picture using coadd image.
+    """Generate HSC 3-color picture using coadd image.
+
+    This task generates 3-color figure of the a HSC cutout region using the
+    `make_lupton_rgb` method from `astropy.visualization`. User can pass a
+    `hsc.HSC` instance directly to the task or decide which `dr` and `rerun` to use.
+    User can output the figure in PNG format.
+
+    Parameters
+    ----------
+    coord : astropy.skycoord.SkyCoord object
+        (RA, Dec) coordinate for the center of the cutout if `coord`,
+        `cutout_size` pairs are used (default). If `coord_2` is provided,
+        this will be the coordinate of the lower-left corner.
+    cutout_size : astropy.Quantity or a pair of Quantity objects
+        Defines the size of the cutout. For a single quantity, a square
+        cutout will be generated. If a list of two quantities are provided,
+        they will be used as the width and height of the cutout.
+    coord_2 : astropy.skycoord.SkyCoord object, optional
+        (RA, Dec) Coordinate of the top-right corner of the cutout image.
+    filters : str, optional
+        A combination of 3 filters to make the 3-color image. Default: 'gri'.
+    archive : unagi.hsc.Hsc object, optional
+        HSC archive object from unagi to be used. Default: None
+    dr : str, optional
+        Name of the data release to be used. Default: `dr2`.
+    rerun : str, optional
+        Name of the rerun (data reduction) to be used. Default: `s18a_wide`.
+    redshift : str, optional
+        Redshift of the object. Will use only when physical `cutout_size` is
+        provided. Default: None
+    cosmo : astropy.cosmology object, optional
+        Cosmology model to be used to convert a physical size into an angular one.
+        Default: None.
+    prefix : str, optional
+        Prefix of the output file. Default: None
+    used_saved : boolen, optional
+        Whether to use the saved file if available. Default: False
+    rgb_order : boolen, optional
+        Order of the filters. Assume it is in 'RGB' order if True. Default: False
+    hdu : int, optional
+        Which HDU to be used. Default: 1 (imaeg)
+    output_dir : str, optional
+        Directory for output picture. Default: './'
+    save_image : boolen, optional
+        Whether to save the image in each band in FITS file. Default: False
+    save_rgb : boolen, optional
+        Output figure as a JPEG file or not. Default: False
+    rgb_q : int, optional
+        The asinh softening parameter used in `make_rgb_lupton`. Default: 15
+    rgb_stretch : float, optional
+        The linear stretch of the image used in `make_rgb_lupton`. Default: 0.5
+    rgb_min: float, optional
+        Intensity that should be mapped to black (a scalar or array for R, G, B). Default: 0
+
+    Returns
+    -------
+    cutout_rgb : ndarray
+        RGB (integer, 8-bits per channel) color image as an NxNx3 numpy array.
+    cutout_wcs : astropy.wcs object
+        WCS information in the cutout area.
+
+    See Also
+    --------
+    hsc_cutout : task that generates cutout FITS images.
+
+    Notes
+    -----
+
+    References
+    ----------
+    Document for the `make_rgb_lupton` function is here [1]_.
+
+    .. [1] http://docs.astropy.org/en/stable/api/astropy.visualization.make_lupton_rgb.html
+
+    Examples
+    --------
+
+    >>> from unagi import hsc
+    >>> from unagi.task import hsc_tricolor
+    >>> pdr2 = hsc.Hsc(dr='pdr2', rerun='pdr2_dud')
+    >>> coord = SkyCoord(150.09134, 2.205916, frame='icrs', unit='deg')
+    >>> s_ang = 15.0 * u.arcsec
+    >>> filters = 'gri'
+    >>> cutout_rgb, cutout_wcs = hsc_tricolor(coord, cutout_size=s_ang, filters=filters, archive=pdr2)
+    # Retrieving cutout image in filter: g
+    # Retrieving cutout image in filter: r
+    # Retrieving cutout image in filter: i
+
     """
     # Login to HSC archive
     if archive is None:
@@ -208,9 +293,12 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     # Availability of each file
     file_available = [os.path.isfile(f) or os.path.islink(f) for f in output_list]
 
+    # A "datacube" mode for people who want to compile just multi-band images
+    # together in one file. This only applies to `coadd` data type, and only works
+    # when multiple filters are selected.
+
     # Get the cutout in each band
     cutout_list = []
-
     for ii, filt in enumerate(filter_list):
         if file_available[ii] and use_saved:
             if img_type == 'coadd':
