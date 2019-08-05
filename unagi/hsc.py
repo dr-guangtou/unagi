@@ -9,6 +9,8 @@ import time
 import urllib
 import shutil
 import warnings
+import tempfile
+import requests
 
 import numpy as np
 
@@ -137,6 +139,10 @@ class Hsc():
         if password is None:
             password = self.archive._password
 
+        # Creates a requests session
+        self.request_session = requests.Session()
+        self.request_session.auth = (username, password)
+
         # Create a password manager
         password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
 
@@ -169,6 +175,70 @@ class Hsc():
             self.opener = None
             self.is_login = False
 
+    def download_bulk_cutouts(self, coord, ouput_dir=None, w_half=None, h_half=None,
+                              filt=['HSC-I'], img_type='coadd',
+                              image=True, variance=False, mask=False,
+                              tmp_dir=None, nproc=None):
+        """
+        Download cutouts in bulk.
+
+        Saves all downloaded fits files into designated output_dir
+
+        Parameters
+        ----------
+        coord: astropy.table.Table
+            Astropy table with ra and dec columns
+        filt: list of str
+            List of filters to request images from
+        output_dir: str
+            Directory where to save all downloaded fits files
+
+        Returns
+        -------
+        cutouts: astropy.table.Table
+            Returns aggregated astropy table of cutouts, with image, variance,
+            and mask entries as requested.
+        """
+        if tmp_dir is None:
+            tmp_dir = mkdtemp()
+
+        # Compute the number of batches to download
+        # There is a hard limit of 1000 cutouts at a time
+        batch_size = 1000
+        n_batches = len(coord) / batch_size
+
+        def get_cutouts(i):
+            """
+            Downloads the cutouts for given filter
+            """
+            # Loop over batches
+            for f in filters:
+                # Generate a list file
+                list_table = coord[['ra', 'dec']][i*batch_size:(i+1)*batch_size]
+                list_table['sw'] = "5.5asec"
+                list_table['sh'] = "5.5asec"
+                list_table['filter'] = f
+                list_table['rerun'] = "pdr1_wide"
+                list_table['#?'] = " "
+                list_table = list_table[['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun']]
+
+                list_table.write('list_%d.txt'%i, format='ascii.tab')
+
+                process = subprocess.Popen(["./download_list.sh", '%d'%i], stdout=subprocess.PIPE)
+                output, error = process.communicate()
+
+                output = output.split()
+                if len(output) != batch_size:
+                    raise ValueError('A very specific bad thing happened')
+
+                object_id = data['object_id'][i*batch_size:(i+1)*batch_size]
+
+                # Renaming and moving all downloaded images
+                for j, o in enumerate(output):
+                    os.rename(('%d/'%i)+o, f+'/%d.fits'%object_id[j])
+
+
+
     def download_cutout(self, coord, output_file, coord_2=None, w_half=None, h_half=None,
                         filt='HSC-I', img_type='coadd', image=True, variance=False, mask=False,
                         overwrite=True):
@@ -197,6 +267,7 @@ class Hsc():
             return cutout_url
         else:
             raise HscException("# Wrong image type: coadd or warp !")
+
     def download_patch(self, tract, patch, filt='HSC-I', output_file=None, overwrite=True, verbose=True):
         """
         Download coadded image for a single patch.
@@ -208,7 +279,7 @@ class Hsc():
         filt (str): filter name, such as 'HSC-I'
         """
         # Download FITS file for coadd image.
-        
+
         patch_url = self._form_patch_url(tract, patch, filt)
         try:
             if verbose:
@@ -217,7 +288,7 @@ class Hsc():
         except urllib.error.HTTPError as e:
             print("# Error message: {}".format(e))
             raise Exception("# Can not download cutout: {}".format(patch_url))
-        
+
         if output_file is None:
             output_file = '_'.join((self.dr, self.rerun, str(tract), str(patch), filt[-1].lower() + '.fits'))
         _ = cutout.writeto(output_file, overwrite=overwrite)
