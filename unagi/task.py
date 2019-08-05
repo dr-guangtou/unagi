@@ -6,6 +6,7 @@ import shutil
 import tempfile
 from collections.abc import Iterable
 
+import requests
 import tarfile
 import numpy as np
 import astropy.units as u
@@ -314,6 +315,10 @@ def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
         if dr[0] == 'p':
             rerun = rerun.replace(dr + '_', '')
 
+    # Creates a requests session
+    session = requests.Session()
+    session.auth = (archive.archive._username, archive.archive._password)
+
     # Get temporary directory for dowloading and staging
     if tmp_dir is None:
         tmp_dir = tempfile.mkdtemp()
@@ -379,7 +384,7 @@ def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
                                url=archive.archive.img_url,
                                tmp_dir=tmp_dir,
                                output_dir=output_dir,
-                               session=archive.session)
+                               session=session)
     with Pool(nproc) as pool:
         res = pool.map(download_cutouts, batch_files)
 
