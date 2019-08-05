@@ -3,14 +3,19 @@
 
 import os
 import shutil
+import tempfile
 from collections.abc import Iterable
 
+import tarfile
 import numpy as np
 import astropy.units as u
 from astropy import wcs
 from astropy.io import fits
 from astropy.utils.data import download_file
 from astropy.visualization import make_lupton_rgb
+from multiprocessing import Pool
+from functools import partial
+import glob
 
 from . import query
 from .hsc import Hsc
@@ -250,6 +255,135 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
         return cutout_list[0]
 
     return cutout_list
+
+def _download_cutouts(args, url=None, tmp_dir=None, output_dir=None, session=None):
+    filename, ids, filter = args
+
+    # Check if the file is archive is already download, if not, download it
+    resp = session.post(url,
+                        files={'list': open(filename, 'rb')},
+                        stream=True)
+
+    # Checking that access worked
+    assert(resp.status_code == 200)
+    output_filename = resp.headers['Content-Disposition'].split('"')[-2]
+
+    # Proceed to download the data
+    with open(os.path.join(tmp_dir, output_filename), 'wb') as f:
+        for chunk in resp.iter_content(chunk_size=1024):
+            f.write(chunk)
+
+    # Untar the archive
+    with tarfile.TarFile(os.path.join(tmp_dir, output_filename), "r") as tarball:
+        tarball.extractall(tmp_dir)
+
+    # Recover path to output dir
+    output_path = os.path.join(tmp_dir, output_filename.split('.tar')[0])
+
+    # Rename files based on the object ids
+    fnames = glob.glob(output_path+'/*.fits')
+    for fname in fnames:
+        indx = int(fname.split(output_path+'/')[1].split('-')[0]) - 2
+        output_filename = os.path.join(output_dir, filter, '%d.fits'%ids[indx])
+        shutil.move(fname, output_filename)
+
+    # Remove the tar file and temporary download folder
+    os.remove(os.path.join(tmp_dir, output_filename))
+    os.rmdir(output_path)
+
+    # Return true that everything is ok
+    return True
+
+def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
+                             filters='i', dr='dr2', rerun='s18a_wide', img_type='coadd',
+                             verbose=True, archive=None, use_saved=False,
+                             image=True, variance=False, mask=False, nproc=1,
+                             tmp_dir=None, output_dir='./', **kwargs):
+    """
+    Generate HSC cutout images in bulk.
+
+    table: astropy table
+        Astropy table of with at least object_id, and (ra, dec) in deg.
+    """
+    # Login to HSC archive
+    if archive is None:
+        archive = Hsc(dr=dr, rerun=rerun)
+    else:
+        dr = archive.dr
+        rerun = archive.rerun
+        if dr[0] == 'p':
+            rerun = rerun.replace(dr + '_', '')
+
+    # Get temporary directory for dowloading and staging
+    if tmp_dir is None:
+        tmp_dir = tempfile.mkdtemp()
+
+    # List of three filters
+    filter_list = list(filters)
+
+    # Check the choices of filters
+    assert np.all(
+        [(f in archive.FILTER_SHORT) or (f in archive.FILTER_LIST)
+         for f in filter_list]), '# Wrong filter choice!'
+
+    # Parse the cutout image size.
+    # We use central coordinate and half image size as the default format.
+    if isinstance(cutout_size, list):
+        if len(cutout_size) != 2:
+            raise Exception("# Cutout size should be like: [Width, Height]")
+        ang_size_w = _get_cutout_size(
+            cutout_size[0], verbose=verbose)
+        ang_size_h = _get_cutout_size(
+            cutout_size[1], verbose=verbose)
+    else:
+        ang_size_w = ang_size_h = _get_cutout_size(cutout_size, verbose=verbose)
+
+    # Compute the number of batches to download
+    # There is a hard limit of 1000 cutouts at a time
+    batch_size = 1000
+    n_batches = len(table) // batch_size
+    if len(table) % batch_size > 0:
+        n_batches = n_batches + 1
+
+    # Step 1: Create all download files, for all filters
+    batch_files = []
+    for batch_index in range(n_batches):
+        list_table = table[['ra', 'dec', 'object_id']][batch_index*batch_size:(batch_index+1)*batch_size]
+        list_table['sw'] = str(ang_size_w.value)+'asec'
+        list_table['sh'] = str(ang_size_h.value)+'asec'
+        list_table['rerun'] = archive.rerun
+        list_table['filter'] = archive._check_filter(filters[0])
+        list_table['type'] = img_type
+        list_table['image'] = 'true' if image else 'false'
+        list_table['variance'] = 'true' if variance else 'false'
+        list_table['mask'] = 'true' if mask else 'false'
+        list_table['#?'] = ''
+        # Saving object ids corresponding to the downloaded objects
+        ids = list_table['object_id']
+        list_table = list_table[['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun', 'image', 'variance', 'mask', 'type']]
+
+        # Generate the table for requested filter
+        for f in filters:
+            list_table['filter'] = archive._check_filter(f)
+            filename = os.path.join(tmp_dir, ('batch_%s_%d')%(f, batch_index))
+            list_table.write(filename, format='ascii.tab')
+            batch_files.append((filename, ids, archive._check_filter(f)))
+
+    # Step 2: Download fits files
+    # Create output directories
+    for f in filters:
+        directory = os.path.join(output_dir, archive._check_filter(f))
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+    download_cutouts = partial(_download_cutouts,
+                               url=archive.archive.img_url,
+                               tmp_dir=tmp_dir,
+                               output_dir=output_dir,
+                               session=archive.session)
+    with Pool(nproc) as pool:
+        res = pool.map(download_cutouts, batch_files)
+
+    return res
 
 def _get_cutout_size(cutout_size, redshift=None, cosmo=None, verbose=True):
     """Parse the input for the size of the cutout."""
