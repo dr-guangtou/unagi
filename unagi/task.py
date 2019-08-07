@@ -4,6 +4,7 @@
 import os
 import shutil
 import tempfile
+import glob
 from collections.abc import Iterable
 
 import requests
@@ -16,7 +17,9 @@ from astropy.utils.data import download_file
 from astropy.visualization import make_lupton_rgb
 from multiprocessing import Pool
 from functools import partial
-import glob
+from fits2hdf.io.fitsio import read_fits
+from fits2hdf.io.hdfio import export_hdf
+import h5py
 
 from . import query
 from .hsc import Hsc
@@ -258,16 +261,16 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     return cutout_list
 
 def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
-                      output_file=None, session=None):
-    list_table, ids = args
+                      session=None):
+    list_table, ids, batch_index = args
 
     # Download batches for all bands
     output_paths = {}
-    for f in filters:
-        list_table['filter'] = f
+    for filt in filters:
+        list_table['filter'] = filt
 
         # Saving download file to folder
-        filename = os.path.join(tmp_dir, ('batch_%s_%d')%(f, batch_index))
+        filename = os.path.join(tmp_dir, ('batch_%s_%d')%(filt, batch_index))
         list_table.write(filename, format='ascii.tab')
 
         # Request download
@@ -284,30 +287,40 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
             for chunk in resp.iter_content(chunk_size=1024):
                 f.write(chunk)
 
-        # Untar the archive
+        # Untar the archive and remove file
         with tarfile.TarFile(os.path.join(tmp_dir, output_filename), "r") as tarball:
             tarball.extractall(tmp_dir)
+        os.remove(os.path.join(tmp_dir, output_filename))
 
         # Recover path to output dir
         output_path = os.path.join(tmp_dir, output_filename.split('.tar')[0])
-        output_paths[f] = output_path
+        output_paths[filt] = output_path
 
-    # Aggregate all the bands into a single hdf5 file for this batch
-
-
-        # Rename files based on the object ids
+        # Transform each file into an HDFFITS format, named based on the object ids
         fnames = glob.glob(output_path+'/*.fits')
         for fname in fnames:
             indx = int(fname.split(output_path+'/')[1].split('-')[0]) - 2
-            output_filename = os.path.join(output_dir, filter, '%d.fits'%ids[indx])
-            shutil.move(fname, output_filename)
+            output_filename = os.path.join(output_path, '%d.hdf'%ids[indx])
+            a = read_fits(fname)
+            export_hdf(a, output_filename)
+            # Removing converted file
+            os.remove(fname)
 
-        # Remove the tar file and temporary download folder
-        os.remove(os.path.join(tmp_dir, output_filename))
-        os.rmdir(output_path)
+    # At this stage all filters have been  downloaded for this batch, now
+    # aggregating all of them into a single HDF file
+    print(output_paths)
+    output_file = os.path.join(tmp_dir, 'batch_cutout_%d.hdf'%batch_index)
+    with h5py.File(output_file, mode='w') as d:
+        for id in ids:
+            for f in filters:
+                with h5py.File( os.path.join(output_paths[f], '%d.hdf'%id), mode='r+') as s:
+                    d.copy(s, '%d/%s'%(id,f))
 
-    # Return true that everything is ok
-    return True
+    # For good measure, remove all temporary directory
+    for f in filters:
+        shutil.rmtree(output_paths[f])
+
+    return output_file
 
 def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
                     filters='i', dr='dr2', rerun='s18a_wide', img_type='coadd',
@@ -337,8 +350,9 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
     if tmp_dir is None:
         tmp_dir = tempfile.mkdtemp()
 
-    # List of three filters
+    # Ensure correct filters
     filter_list = list(filters)
+    filter_list = [archive._check_filter(f) for f in filter_list]
 
     # Check the choices of filters
     assert np.all(
@@ -380,14 +394,7 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
         # Saving object ids corresponding to the downloaded objects
         ids = list_table['object_id']
         list_table = list_table[['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun', 'image', 'variance', 'mask', 'type']]
-        batches.append((list_table, ids))
-
-        # Generate the table for requested filter
-        for f in filters:
-            list_table['filter'] = archive._check_filter(f)
-            filename = os.path.join(tmp_dir, ('batch_%s_%d')%(f, batch_index))
-            list_table.write(filename, format='ascii.tab')
-            batch_files.append((filename, ids, archive._check_filter(f)))
+        batches.append((list_table, ids, batch_index))
 
     # Step 2: Download fits files
     for f in filters:
@@ -397,12 +404,11 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
     download_cutouts = partial(_download_cutouts,
                                url=archive.archive.img_url,
                                tmp_dir=tmp_dir,
-                               output_dir=output_dir,
+                               filters=filter_list,
                                session=session)
-    with Pool(nproc) as pool:
-        res = pool.map(download_cutouts, batch_files)
 
-    # Step 3: Gru
+    with Pool(nproc) as pool:
+        res = pool.map(download_cutouts, batches)
 
     return res
 
