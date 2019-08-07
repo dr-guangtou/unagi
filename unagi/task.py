@@ -257,49 +257,63 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 
     return cutout_list
 
-def _download_cutouts(args, url=None, tmp_dir=None, output_dir=None, session=None):
-    filename, ids, filter = args
+def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
+                      output_file=None, session=None):
+    list_table, ids = args
 
-    # Check if the file is archive is already download, if not, download it
-    resp = session.post(url,
-                        files={'list': open(filename, 'rb')},
-                        stream=True)
+    # Download batches for all bands
+    output_paths = {}
+    for f in filters:
+        list_table['filter'] = f
 
-    # Checking that access worked
-    assert(resp.status_code == 200)
-    output_filename = resp.headers['Content-Disposition'].split('"')[-2]
+        # Saving download file to folder
+        filename = os.path.join(tmp_dir, ('batch_%s_%d')%(f, batch_index))
+        list_table.write(filename, format='ascii.tab')
 
-    # Proceed to download the data
-    with open(os.path.join(tmp_dir, output_filename), 'wb') as f:
-        for chunk in resp.iter_content(chunk_size=1024):
-            f.write(chunk)
+        # Request download
+        resp = session.post(url,
+                            files={'list': open(filename, 'rb')},
+                            stream=True)
 
-    # Untar the archive
-    with tarfile.TarFile(os.path.join(tmp_dir, output_filename), "r") as tarball:
-        tarball.extractall(tmp_dir)
+        # Checking that access worked
+        assert(resp.status_code == 200)
+        output_filename = resp.headers['Content-Disposition'].split('"')[-2]
 
-    # Recover path to output dir
-    output_path = os.path.join(tmp_dir, output_filename.split('.tar')[0])
+        # Proceed to download the data
+        with open(os.path.join(tmp_dir, output_filename), 'wb') as f:
+            for chunk in resp.iter_content(chunk_size=1024):
+                f.write(chunk)
 
-    # Rename files based on the object ids
-    fnames = glob.glob(output_path+'/*.fits')
-    for fname in fnames:
-        indx = int(fname.split(output_path+'/')[1].split('-')[0]) - 2
-        output_filename = os.path.join(output_dir, filter, '%d.fits'%ids[indx])
-        shutil.move(fname, output_filename)
+        # Untar the archive
+        with tarfile.TarFile(os.path.join(tmp_dir, output_filename), "r") as tarball:
+            tarball.extractall(tmp_dir)
 
-    # Remove the tar file and temporary download folder
-    os.remove(os.path.join(tmp_dir, output_filename))
-    os.rmdir(output_path)
+        # Recover path to output dir
+        output_path = os.path.join(tmp_dir, output_filename.split('.tar')[0])
+        output_paths[f] = output_path
+
+    # Aggregate all the bands into a single hdf5 file for this batch
+
+
+        # Rename files based on the object ids
+        fnames = glob.glob(output_path+'/*.fits')
+        for fname in fnames:
+            indx = int(fname.split(output_path+'/')[1].split('-')[0]) - 2
+            output_filename = os.path.join(output_dir, filter, '%d.fits'%ids[indx])
+            shutil.move(fname, output_filename)
+
+        # Remove the tar file and temporary download folder
+        os.remove(os.path.join(tmp_dir, output_filename))
+        os.rmdir(output_path)
 
     # Return true that everything is ok
     return True
 
-def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
-                             filters='i', dr='dr2', rerun='s18a_wide', img_type='coadd',
-                             verbose=True, archive=None, use_saved=False,
-                             image=True, variance=False, mask=False, nproc=1,
-                             tmp_dir=None, output_dir='./', **kwargs):
+def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
+                    filters='i', dr='dr2', rerun='s18a_wide', img_type='coadd',
+                    verbose=True, archive=None, use_saved=False,
+                    image=True, variance=False, mask=False, nproc=1,
+                    tmp_dir=None, output_dir='./', **kwargs):
     """
     Generate HSC cutout images in bulk.
 
@@ -350,8 +364,8 @@ def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
     if len(table) % batch_size > 0:
         n_batches = n_batches + 1
 
-    # Step 1: Create all download files, for all filters
-    batch_files = []
+    # Step 1: Create batches of object ids and coordinates
+    batches = []
     for batch_index in range(n_batches):
         list_table = table[['ra', 'dec', 'object_id']][batch_index*batch_size:(batch_index+1)*batch_size]
         list_table['sw'] = str(ang_size_w.value)+'asec'
@@ -366,6 +380,7 @@ def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
         # Saving object ids corresponding to the downloaded objects
         ids = list_table['object_id']
         list_table = list_table[['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun', 'image', 'variance', 'mask', 'type']]
+        batches.append((list_table, ids))
 
         # Generate the table for requested filter
         for f in filters:
@@ -375,7 +390,6 @@ def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
             batch_files.append((filename, ids, archive._check_filter(f)))
 
     # Step 2: Download fits files
-    # Create output directories
     for f in filters:
         directory = os.path.join(output_dir, archive._check_filter(f))
         if not os.path.exists(directory):
@@ -387,6 +401,8 @@ def hsc_cutout_bulk_download(table, cutout_size=10.0 * u.Unit('arcsec'),
                                session=session)
     with Pool(nproc) as pool:
         res = pool.map(download_cutouts, batch_files)
+
+    # Step 3: Gru
 
     return res
 
