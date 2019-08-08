@@ -11,10 +11,10 @@ def main():
                       help='Filters to extract, (default: griz)')
     parser.add_argument('-s', '--size', dest='cutout_size', type=float, default=10.,
                       help='Size of the cutouts, in arcsec (default 10)')
-    parser.add_argument('-d','--data_release', dest='dr', type=str, default='dr2',
-                      help='Data release to query (default: dr2)')
-    parser.add_argument('-r','--rerun', dest='rerun', type=str, default='s18a_wide',
-                      help='Rerun to query (default: s18a_wide)')
+    parser.add_argument('-d','--data_release', dest='dr', type=str, default='pdr2',
+                      help='Data release to query (default: pdr2)')
+    parser.add_argument('-r','--rerun', dest='rerun', type=str, default='pdr2_dud',
+                      help='Rerun to query (default: pdr2_dud)')
     parser.add_argument('-t', '--img_type', dest='img_type', type=str, default='coadd',
                       help='Type of images to extract (default: coadd)')
     parser.add_argument('--tmp_dir', dest='tmp_dir', type=str, default=None,
@@ -31,12 +31,12 @@ def main():
     catalog = Table.read(args.catalog)
     # Downloads the data
     output_file = hsc_bulk_cutout(catalog, cutout_size=args.cutout_size,
-                    filters=list(args.filters), dr=args.data_release,
+                    filters=list(args.filters), dr=args.dr,
                     rerun=args.rerun, img_type=args.img_type,
                     tmp_dir=args.tmp_dir, nproc=args.nproc,
                     output_dir=args.output_dir, overwrite=args.overwrite)
     print("Downloaded cutouts available at: ", output_file)
 
 
-if__name__== "__main__":
+if __name__== "__main__":
     main()

@@ -266,6 +266,7 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
     # Download batches for all bands
     output_paths = {}
     for filt in filters:
+        print('Download filter %s for batch %d'%(filt, batch_index))
         list_table['filter'] = filt
 
         # Saving download file to folder
@@ -349,6 +350,9 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
     if tmp_dir is None:
         tmp_dir = tempfile.mkdtemp()
 
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     output_filename = os.path.join(output_dir, 'cutouts_%s_%s_%s.hdf'%(dr, rerun, img_type))
     if not overwrite:
         assert not os.path.isfile(output_filename), "Output file already exists: %s"%output_filename
@@ -400,10 +404,6 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
         batches.append((list_table, ids, batch_index))
 
     # Step 2: Download fits files
-    for f in filters:
-        directory = os.path.join(output_dir, archive._check_filter(f))
-        if not os.path.exists(directory):
-            os.makedirs(directory)
     download_cutouts = partial(_download_cutouts,
                                url=archive.archive.img_url,
                                tmp_dir=tmp_dir,
@@ -411,7 +411,7 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
                                session=session)
 
     #  Downloading mutliple batches of data in parallel
-    print("Downloading files...")
+    print("Starting download of %d batches ..."%n_batches)
     with Pool(nproc) as pool:
         temp_files = pool.map(download_cutouts, batches)
     print("Download finalized, aggregating cutouts.")
