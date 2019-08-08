@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+import argparse
+import unagi
+from unagi.task import hsc_bulk_cutout
+from astropy.table import Table
+
+def main():
+    # Parse options and arguments
+    parser = argparse.ArgumentParser(description='Downloads in bulk cutouts from the HSC survey.')
+    parser.add_argument('-f', '--filters', dest='filters', type=str, default='griz',
+                      help='Filters to extract, (default: griz)')
+    parser.add_argument('-s', '--size', dest='cutout_size', type=float, default=10.,
+                      help='Size of the cutouts, in arcsec (default 10)')
+    parser.add_argument('-d','--data_release', dest='dr', type=str, default='pdr2',
+                      help='Data release to query (default: pdr2)')
+    parser.add_argument('-r','--rerun', dest='rerun', type=str, default='pdr2_dud',
+                      help='Rerun to query (default: pdr2_dud)')
+    parser.add_argument('-t', '--img_type', dest='img_type', type=str, default='coadd',
+                      help='Type of images to extract (default: coadd)')
+    parser.add_argument('--tmp_dir', dest='tmp_dir', type=str, default=None,
+                      help='Temporary directory where data is downloaded and extracted.')
+    parser.add_argument('-n', '--nproc', dest='nproc', type=int, default=1,
+                       help='Number of concurrent download processes (default: 1)')
+    parser.add_argument('-o', '--overwrite', dest='overwrite', action='store_true', default=False,
+                      help='Automatically overwrite output files if already exist')
+    parser.add_argument('catalog', help='Input catalog of object_ids and ra,dec coordinates')
+    parser.add_argument('output_dir', help='output_directory')
+    args = parser.parse_args()
+
+    # Loads the table
+    catalog = Table.read(args.catalog)
+    # Downloads the data
+    output_file = hsc_bulk_cutout(catalog, cutout_size=args.cutout_size,
+                    filters=list(args.filters), dr=args.dr,
+                    rerun=args.rerun, img_type=args.img_type,
+                    tmp_dir=args.tmp_dir, nproc=args.nproc,
+                    output_dir=args.output_dir, overwrite=args.overwrite)
+    print("Downloaded cutouts available at: ", output_file)
+
+
+if __name__== "__main__":
+    main()
