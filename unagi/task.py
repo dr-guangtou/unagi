@@ -263,7 +263,6 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
                       session=None):
     list_table, ids, batch_index = args
-
     # Download batches for all bands
     output_paths = {}
     for filt in filters:
@@ -309,7 +308,6 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
 
     # At this stage all filters have been  downloaded for this batch, now
     # aggregating all of them into a single HDF file
-    print(output_paths)
     output_file = os.path.join(tmp_dir, 'batch_cutout_%d.hdf'%batch_index)
     with h5py.File(output_file, mode='w') as d:
         for id in ids:
@@ -325,9 +323,9 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
 
 def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
                     filters='i', dr='dr2', rerun='s18a_wide', img_type='coadd',
-                    verbose=True, archive=None, use_saved=False,
+                    verbose=True, archive=None,
                     image=True, variance=False, mask=False, nproc=1,
-                    tmp_dir=None, output_dir='./', **kwargs):
+                    tmp_dir=None, output_dir='./', overwrite=False, **kwargs):
     """
     Generate HSC cutout images in bulk.
 
@@ -350,6 +348,10 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
     # Get temporary directory for dowloading and staging
     if tmp_dir is None:
         tmp_dir = tempfile.mkdtemp()
+
+    output_filename = os.path.join(output_dir, 'cutouts_%s_%s_%s.hdf'%(dr, rerun, img_type))
+    if not overwrite:
+        assert not os.path.isfile(output_filename), "Output file already exists: %s"%output_filename
 
     # Ensure correct filters
     filter_list = list(filters)
@@ -409,12 +411,13 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
                                session=session)
 
     #  Downloading mutliple batches of data in parallel
+    print("Downloading files...")
     with Pool(nproc) as pool:
         temp_files = pool.map(download_cutouts, batches)
+    print("Download finalized, aggregating cutouts.")
 
     # At this point, we have a bunch of individual HDF files, we just need to
     # merge them back together
-    output_filename = os.path.join(output_dir, 'cutouts_%s_%s_%s.hdf'%(dr, rerun, img_type))
     with h5py.File(output_filename, 'w') as d:
         for f in temp_files:
             with h5py.File(f,'r') as s:

@@ -4,3 +4,4 @@ scipy
 pyparsing
 astropy>=3.0
 matplotlib>=2.0
+fits2hdf>=1.1.1
