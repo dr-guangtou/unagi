@@ -291,6 +291,7 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
         with tarfile.TarFile(os.path.join(tmp_dir, output_filename), "r") as tarball:
             tarball.extractall(tmp_dir)
         os.remove(os.path.join(tmp_dir, output_filename))
+        os.remove(filename)
 
         # Recover path to output dir
         output_path = os.path.join(tmp_dir, output_filename.split('.tar')[0])
@@ -407,10 +408,22 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
                                filters=filter_list,
                                session=session)
 
+    #  Downloading mutliple batches of data in parallel
     with Pool(nproc) as pool:
-        res = pool.map(download_cutouts, batches)
+        temp_files = pool.map(download_cutouts, batches)
 
-    return res
+    # At this point, we have a bunch of individual HDF files, we just need to
+    # merge them back together
+    output_filename = os.path.join(output_dir, 'cutouts_%s_%s_%s.hdf'%(dr, rerun, img_type))
+    with h5py.File(output_filename, 'w') as d:
+        for f in temp_files:
+            with h5py.File(f,'r') as s:
+                for k in s.keys():
+                    d.copy(s[k], '/'+k)
+            # Now that everything is done, remove temporary hdf file
+            os.remove(f)
+
+    return output_filename
 
 def _get_cutout_size(cutout_size, redshift=None, cosmo=None, verbose=True):
     """Parse the input for the size of the cutout."""
