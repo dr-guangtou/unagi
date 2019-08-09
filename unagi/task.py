@@ -261,11 +261,18 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     return cutout_list
 
 def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
-                      auth=None):
+                      auth=None, max_retry=5, retry_delay=30):
     list_table, ids, batch_index = args
 
     session = requests.Session()
     session.auth = auth
+
+    output_file = os.path.join(tmp_dir, 'batch_cutout_%d.hdf'%batch_index)
+    # Check if output cutout file exists, if it does, we are good
+    # TODO: check that file  is ok, but it most probably is
+    if os.path.isfile(output_file):
+        print('Found cutout file for batch file %d, skipping download'%batch_index)
+        return output_file
 
     # Download batches for all bands
     output_paths = {}
@@ -278,11 +285,19 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
         list_table.write(filename, format='ascii.tab')
 
         # Request download
-        resp = session.post(url,
-                            files={'list': open(filename, 'rb')},
-                            stream=True)
+        for tries in range(max_retry):
+            resp = session.post(url,
+                                files={'list': open(filename, 'rb')},
+                                stream=True)
 
-        # Checking that access worked
+            # In case of failure, print out message, and try again
+            if resp.status_code != 200:
+                print("Cutout request failed with code %d. Trying again in %d seconds"%(resp.status_code, retry_delay))
+                time.sleep(retry_delay)
+            else:
+                break
+
+        # Checking that access worked after number of retries
         assert(resp.status_code == 200)
         output_filename = resp.headers['Content-Disposition'].split('"')[-2]
 
@@ -313,7 +328,6 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
 
     # At this stage all filters have been  downloaded for this batch, now
     # aggregating all of them into a single HDF file
-    output_file = os.path.join(tmp_dir, 'batch_cutout_%d.hdf'%batch_index)
     with h5py.File(output_file, mode='w') as d:
         for id in ids:
             for f in filters:
