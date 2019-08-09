@@ -261,8 +261,12 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     return cutout_list
 
 def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
-                      session=None):
+                      auth=None):
     list_table, ids, batch_index = args
+
+    session = requests.Session()
+    session.auth = auth
+
     # Download batches for all bands
     output_paths = {}
     for filt in filters:
@@ -343,8 +347,7 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
             rerun = rerun.replace(dr + '_', '')
 
     # Creates a requests session
-    session = requests.Session()
-    session.auth = (archive.archive._username, archive.archive._password)
+    auth = (archive.archive._username, archive.archive._password)
 
     # Get temporary directory for dowloading and staging
     if tmp_dir is None:
@@ -408,7 +411,7 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
                                url=archive.archive.img_url,
                                tmp_dir=tmp_dir,
                                filters=filter_list,
-                               session=session)
+                               auth=auth)
 
     #  Downloading mutliple batches of data in parallel
     print("Starting download of %d batches ..."%n_batches)
