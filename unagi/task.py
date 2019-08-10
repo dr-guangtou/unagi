@@ -4,6 +4,7 @@
 import os
 import shutil
 import tempfile
+import time
 import glob
 from collections.abc import Iterable
 
@@ -430,7 +431,7 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
     #  Downloading mutliple batches of data in parallel
     print("Starting download of %d batches ..."%n_batches)
     with Pool(nproc) as pool:
-        temp_files = pool.map(download_cutouts, batches, chunk_size=1)
+        temp_files = pool.map(download_cutouts, batches, chunksize=1)
     print("Download finalized, aggregating cutouts.")
 
     # At this point, we have a bunch of individual HDF files, we just need to
