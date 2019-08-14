@@ -309,8 +309,6 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
         # Untar the archive and remove file
         with tarfile.TarFile(os.path.join(tmp_dir, output_filename), "r") as tarball:
             tarball.extractall(tmp_dir)
-        os.remove(os.path.join(tmp_dir, output_filename))
-        os.remove(filename)
 
         # Recover path to output dir
         output_path = os.path.join(tmp_dir, output_filename.split('.tar')[0])
@@ -325,6 +323,10 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
             export_hdf(a, output_filename)
             # Removing converted file
             os.remove(fname)
+
+        # Remove downloaded tar file and corresponding file  list
+        os.remove(os.path.join(tmp_dir, output_filename))
+        os.remove(filename)
 
     # At this stage all filters have been  downloaded for this batch, now
     # aggregating all of them into a single HDF file
