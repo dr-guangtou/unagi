@@ -21,6 +21,7 @@ from functools import partial
 from fits2hdf.io.fitsio import read_fits
 from fits2hdf.io.hdfio import export_hdf
 import h5py
+from retrying import retry
 
 from . import query
 from .hsc import Hsc
@@ -261,8 +262,8 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 
     return cutout_list
 
-def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
-                      auth=None, max_retry=5, retry_delay=30):
+@retry(stop_max_attempt_number=5, wait_fixed=2000)
+def _download_cutouts(args, url=None, filters=None, tmp_dir=None, auth=None):
     list_table, ids, batch_index = args
 
     session = requests.Session()
@@ -286,17 +287,7 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None,
         list_table.write(filename, format='ascii.tab')
 
         # Request download
-        for tries in range(max_retry):
-            resp = session.post(url,
-                                files={'list': open(filename, 'rb')},
-                                stream=True)
-
-            # In case of failure, print out message, and try again
-            if resp.status_code != 200:
-                print("Cutout request failed with code %d. Trying again in %d seconds"%(resp.status_code, retry_delay))
-                time.sleep(retry_delay)
-            else:
-                break
+        resp = session.post(url, files={'list': open(filename, 'rb')}, stream=True)
 
         # Checking that access worked after number of retries
         assert(resp.status_code == 200)
