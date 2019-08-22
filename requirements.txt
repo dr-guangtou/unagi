@@ -5,4 +5,4 @@ pyparsing
 astropy>=3.0
 matplotlib>=2.0
 fits2hdf>=1.1.1
-retrying>=1.3.3
+tenacity>=5.1.1

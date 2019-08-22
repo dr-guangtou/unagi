@@ -21,7 +21,7 @@ from functools import partial
 from fits2hdf.io.fitsio import read_fits
 from fits2hdf.io.hdfio import export_hdf
 import h5py
-from retrying import retry
+from tenacity import retry, stop_after_attempt, wait_random
 
 from . import query
 from .hsc import Hsc
@@ -262,7 +262,8 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 
     return cutout_list
 
-@retry(stop_max_attempt_number=5, wait_fixed=2000)
+# 5 Attempts at downloading the batch, waiting between 5 and 30s between attempts
+@retry(wait=wait_random(min=5, max=30), stop=stop_after_attempt(5))
 def _download_cutouts(args, url=None, filters=None, tmp_dir=None, auth=None):
     list_table, ids, batch_index = args
 
@@ -291,22 +292,23 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None, auth=None):
 
         # Checking that access worked after number of retries
         assert(resp.status_code == 200)
-        output_filename = resp.headers['Content-Disposition'].split('"')[-2]
+        tar_filename = resp.headers['Content-Disposition'].split('"')[-2]
 
         # Proceed to download the data
-        with open(os.path.join(tmp_dir, output_filename), 'wb') as f:
+        with open(os.path.join(tmp_dir, tar_filename), 'wb') as f:
             for chunk in resp.iter_content(chunk_size=1024):
                 f.write(chunk)
 
         # Untar the archive and remove file
-        with tarfile.TarFile(os.path.join(tmp_dir, output_filename), "r") as tarball:
+        with tarfile.TarFile(os.path.join(tmp_dir, tar_filename), "r") as tarball:
             tarball.extractall(tmp_dir)
 
+        # Removing tar file after extraction
         os.remove(filename)
-        os.remove(os.path.join(tmp_dir, output_filename))
+        os.remove(os.path.join(tmp_dir, tar_filename))
 
         # Recover path to output dir
-        output_path = os.path.join(tmp_dir, output_filename.split('.tar')[0])
+        output_path = os.path.join(tmp_dir, tar_filename.split('.tar')[0])
         output_paths[filt] = output_path
 
         # Transform each file into an HDFFITS format, named based on the object ids
