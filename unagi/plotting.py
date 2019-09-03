@@ -13,7 +13,6 @@ from astropy.visualization import ZScaleInterval, \
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import colors
-from matplotlib import rcParams
 from matplotlib import gridspec
 from matplotlib.patches import Ellipse
 from matplotlib.colorbar import Colorbar
@@ -21,30 +20,10 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from . import catalog
 
-plt.rc('text', usetex=True)
-rcParams.update({'axes.linewidth': 1.5})
-rcParams.update({'xtick.direction': 'in'})
-rcParams.update({'ytick.direction': 'in'})
-rcParams.update({'xtick.minor.visible': 'True'})
-rcParams.update({'ytick.minor.visible': 'True'})
-rcParams.update({'xtick.major.pad': '7.0'})
-rcParams.update({'xtick.major.size': '8.0'})
-rcParams.update({'xtick.major.width': '1.5'})
-rcParams.update({'xtick.minor.pad': '7.0'})
-rcParams.update({'xtick.minor.size': '4.0'})
-rcParams.update({'xtick.minor.width': '1.5'})
-rcParams.update({'ytick.major.pad': '7.0'})
-rcParams.update({'ytick.major.size': '8.0'})
-rcParams.update({'ytick.major.width': '1.5'})
-rcParams.update({'ytick.minor.pad': '7.0'})
-rcParams.update({'ytick.minor.size': '4.0'})
-rcParams.update({'ytick.minor.width': '1.5'})
-rcParams.update({'axes.titlepad': '10.0'})
-rcParams.update({'font.size': 25})
 
 __all__ = ['FILTERS_COLOR', 'plot_skyobj_hist', 'map_skyobjs', 'random_cmap',
            'display_single', 'display_all', 'overplot_all', 'shape_to_ellipse',
-           'cutout_show_objects']
+           'cutout_show_objects', 'setup']
 
 # Default colormaps
 IMG_CMAP = plt.get_cmap('viridis')
@@ -52,6 +31,42 @@ IMG_CMAP.set_bad(color='black')
 
 FILTERS_COLOR = ['#2ca02c', '#ff7f0e', '#d62728', '#8c564b', '#7f7f7f']
 FILTERS_SHORT = ['g', 'r', 'i', 'z', 'y']
+
+def setup(style='default', fontsize=25, linewidth=1.5, latex=False):
+    """Set aesthetic parameters in one step.
+    """
+    from matplotlib import rcParams
+    # Use LaTeX font
+    if latex:
+        plt.rc('text', usetex=True)
+
+    # General look of the plot
+    if style == 'default':
+        # The default style is just the one used by Song Huang
+        rcParams.update({'xtick.direction': 'in'})
+        rcParams.update({'ytick.direction': 'in'})
+        rcParams.update({'xtick.minor.visible': 'True'})
+        rcParams.update({'ytick.minor.visible': 'True'})
+        rcParams.update({'xtick.major.pad': '7.0'})
+        rcParams.update({'xtick.major.size': '8.0'})
+        rcParams.update({'xtick.major.width': '1.5'})
+        rcParams.update({'xtick.minor.pad': '7.0'})
+        rcParams.update({'xtick.minor.size': '4.0'})
+        rcParams.update({'xtick.minor.width': '1.5'})
+        rcParams.update({'ytick.major.pad': '7.0'})
+        rcParams.update({'ytick.major.size': '8.0'})
+        rcParams.update({'ytick.major.width': '1.5'})
+        rcParams.update({'ytick.minor.pad': '7.0'})
+        rcParams.update({'ytick.minor.size': '4.0'})
+        rcParams.update({'ytick.minor.width': '1.5'})
+        rcParams.update({'axes.titlepad': '10.0'})
+    else:
+        raise KeyError("Available style: [default]")
+
+    # Other individual parameters
+    rcParams.update({'axes.linewidth': linewidth})
+    rcParams.update({'font.size': fontsize})
+
 
 def plot_skyobj_hist(X, summary, filt, prop, region=None, aper=None, fontsize=20):
     """Making 1-D summary plot of the sky objects."""
@@ -501,7 +516,7 @@ def shape_to_ellipse(x, y, re, ba, theta):
     return ells
 
 def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_clean=False,
-                        verbose=True, xsize=8, cmap='viridis', band='i', 
+                        verbose=True, xsize=8, cmap='viridis', band='i',
                         show_sdssshape=False, show_mag=False, **kwargs):
     """
     Show the HSC photometry of objects on the cutout image.
@@ -552,7 +567,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
 
     # Show the stars
     if show_mag or not show_sdssshape:
-        ax1.scatter(x_star, y_star, c='dodgerblue', s=100, marker='x', 
+        ax1.scatter(x_star, y_star, c='dodgerblue', s=100, marker='x',
                     linewidth=2, zorder=10)
     else:
         ellip_star = shape_to_ellipse(x_star, y_star, r_star, ba_star, pa_star)
@@ -632,7 +647,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
         norm = mpl.colors.Normalize(vmin=20.0, vmax=26.0)
         cbar = mpl.colorbar.ColorbarBase(
             cax, cmap='coolwarm_r', norm=norm, orientation='horizontal')
-        cbar.ax.tick_params(labelsize=15) 
+        cbar.ax.tick_params(labelsize=15)
 
     # Show the non-clean objects
     if show_bad:
@@ -656,7 +671,7 @@ def to_color_arr(arr, bottom=None, top=None):
     if bottom is not None:
         data[data <= bottom] = bottom
 
-    # Fix the NaN and Inf values 
+    # Fix the NaN and Inf values
     data[~np.isfinite(data)] = bottom
 
     return (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data)) * 255

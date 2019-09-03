@@ -7,9 +7,8 @@ from . import mask
 from . import task
 from . import query
 from . import config
-from . import plotting
 
-__all__ = ["query", "hsc", "task", "config", "sky", "mask", "plotting"]
+__all__ = ["query", "hsc", "task", "config", "sky", "mask"]
 
 
 def unagi():
