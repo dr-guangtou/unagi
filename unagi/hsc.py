@@ -197,6 +197,7 @@ class Hsc():
             return cutout_url
         else:
             raise HscException("# Wrong image type: coadd or warp !")
+
     def download_patch(self, tract, patch, filt='HSC-I', output_file=None, overwrite=True, verbose=True):
         """
         Download coadded image for a single patch.
@@ -208,7 +209,7 @@ class Hsc():
         filt (str): filter name, such as 'HSC-I'
         """
         # Download FITS file for coadd image.
-        
+
         patch_url = self._form_patch_url(tract, patch, filt)
         try:
             if verbose:
@@ -217,7 +218,7 @@ class Hsc():
         except urllib.error.HTTPError as e:
             print("# Error message: {}".format(e))
             raise Exception("# Can not download cutout: {}".format(patch_url))
-        
+
         if output_file is None:
             output_file = '_'.join((self.dr, self.rerun, str(tract), str(patch), filt[-1].lower() + '.fits'))
         _ = cutout.writeto(output_file, overwrite=overwrite)
