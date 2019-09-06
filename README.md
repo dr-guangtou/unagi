@@ -1,6 +1,6 @@
 # Unagi (ウナギ)
 
-<img src="doc/unagi_logo.png" width="20%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_logo.png" width="20%">
 
 ----
 
@@ -27,31 +27,31 @@ Applications
 
 - [Config the access to HSC database and get basic survey information](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_config.ipynb)
 
-<img src="doc/unagi_config.png" width="70%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_config.png" width="70%">
 
 - [Access to information about HSC filters and camera](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_filters.ipynb)
 
-<img src="doc/unagi_filters_camera.png" width="70%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_filters_camera.png" width="70%">
 
 - [Generate cutout coadded or warped HSC images](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_cutout.ipynb).
 
-<img src="doc/unagi_cutout.png" width="70%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_cutout.png" width="70%">
 
 - [Generate 3-color RGB picture of a small HSC region.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_color_image.ipynb)
 
-<img src="doc/unagi_color.png" width="70%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_color.png" width="70%">
 
 - [Query and download HSC PSF model.](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_psf.ipynb)
 
-<img src="doc/unagi_psf.png" width="70%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_psf.png" width="70%">
 
 - [Dealing with the mask planes of HSC images](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_mask.ipynb)
 
-<img src="doc/unagi_mask.png" width="70%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_mask.png" width="70%">
 
 - [Basic SQL search of HSC database](https://github.com/dr-guangtou/unagi/blob/master/demo/demo_hsc_sql.ipynb)
 
-<img src="doc/unagi_sql.png" width="70%">
+<img src="https://github.com/dr-guangtou/unagi/blob/master/doc/unagi_sql.png" width="70%">
 
 - Using HSC sky object to characterize residual background
 
