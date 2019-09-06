@@ -4,7 +4,7 @@
 Stolen from http://python-packaging.readthedocs.io/en/latest/everything.html and
 modified by me.
 '''
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 from setuptools import setup, find_packages
 
