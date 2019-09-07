@@ -1,4 +1,10 @@
 language: python
+
+addons:
+  apt:
+    packages:
+      - libhdf5-serial-dev
+
 python:
   - "3.5"
   - "3.6"      # current default Python on Travis CI
