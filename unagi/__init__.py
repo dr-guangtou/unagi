@@ -10,6 +10,9 @@ from . import config
 
 __all__ = ["query", "hsc", "task", "config", "sky", "mask"]
 
+__version__ = "0.1.1"
+__name__ = 'unagi'
+
 
 def unagi():
     """Show random video about unagi on Youtube."""
