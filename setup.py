@@ -4,8 +4,6 @@
 Stolen from http://python-packaging.readthedocs.io/en/latest/everything.html and
 modified by me.
 '''
-__version__ = '0.1.1'
-
 from setuptools import setup, find_packages
 
 def readme():
@@ -25,7 +23,6 @@ with open('requirements.txt') as infd:
 
 setup(
     name='unagi',
-    version=__version__,
     description=('Delicious Data from Hyper Suprime-Cam Survey!'),
     long_description=readme(),
     long_description_content_type="text/markdown",
@@ -56,4 +53,6 @@ setup(
     zip_safe=False,
     python_requires='>=3.6',
     scripts=['bin/hsc_bulk_cutout'],
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
 )
