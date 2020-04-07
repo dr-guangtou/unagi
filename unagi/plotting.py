@@ -325,7 +325,7 @@ def display_single(img,
     if zmax is not None:
         vmax = zmax
 
-    show = ax1.imshow(img_scale, origin='lower', cmap=cmap,
+    show = ax1.imshow(img_scale, origin='lower', cmap=cmap, interpolation='none',
                       vmin=vmin, vmax=vmax, alpha=alpha)
 
     # Hide ticks and tick labels
@@ -402,7 +402,6 @@ def display_single(img,
     if ax is None:
         return fig
     return ax1
-
 
 def display_all(img_list, n_column=3, img_size=3., hdu_index=None, label_list=None,
                 cmap_list=None, label_x=0.1, label_y=0.9, fontsize=20, fontcolor='k',
