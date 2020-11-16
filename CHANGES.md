@@ -7,5 +7,9 @@
 - Fix a few Python warnings including:
     - Changes `is not` to `!=`
     - Make a copy of certain `matplotlib` colormap before modifying it.
+- Fix a small typo related to image cutout (by Christopher Bradshaw)
+- Implementing version management by `setuptools_scm` here, and adding a travis CI script 
+  to just check that all dependencies install correctly, and upload the package to `PyPi` 
+  in case of a new version (by Francois Lanusse)
 - Add a new demo notebook to compare the differences in coadd image between `DR2` and
   `DR3`.
