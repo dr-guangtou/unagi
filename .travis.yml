@@ -1,24 +1,18 @@
 language: python
-
 addons:
   apt:
     packages:
-      - libhdf5-serial-dev
-
+    - libhdf5-serial-dev
 python:
-  - "3.5"
-  - "3.6"      # current default Python on Travis CI
-  - "3.7"
-# command to install dependencies
+- '3.5'
+- '3.6'
+- '3.7'
 install:
-  - pip install -r requirements.txt
-
-# command to run tests
+- pip install -r requirements.txt
 script:
-  - pytest
-
+- pytest
 deploy:
   provider: pypi
-  user: "drguangtou"
+  user: drguangtou
   password:
-    secure: "Your encrypted password"
+    secure: KYPR9oNalq7DneqpTmaU5tQugH/T8x1rrJc+SF7pehm9l976n/UVkJ0qEeDZdm19AqcxrA/U1IlfhDEFAahyUdZI/m3wtlXjeGNLoPLPssKNhoW5x2S8DZfUJSkzwMkMKz29jOaqBm7YEHEq1XFcbG1XIinhqnjZragWvWjFnnWINP2uZ9O7c6lCwzrrb1424+jfGNMpDDQb/VPqXlAUVGQhRBwi+8TOQFFOfdBYdEZA17VncEstBwNhVekT3MygpAaTiQQFJPgsMDTkJJUhpEB0U3Gip1fYLjWN/YUksPLwZFWRH1tEg9iZo1FjaBSpBXPAOUMngr0A6fQdbOJ+Ztd3gLNK/LeJ0Jgzxvs1Umaq/tF3E521ahy4RKrqiTFuzGgxDx6VRkfw4o5HrLUDD9phMF+qOoxaIIEMnWoqa7muTEkWFpftw5hGawKCzdHcJb6IBoC7IWGA07oIbNwd8ZqvVceBGD86xB5jMRaGOaD5t5KY2S+u+vz8v98cCk6dgSLL7tmr2YF5oZ3HE2gTqQUKpP0TcQa1XgcY9sycomS/Q7tNfRbWGLwTvewg949MMvAks0y4ToamrsqZuSjBObv6l2x0nVk7y3ksi2vWA4vTDWZDtfprMT72a2uuZ26A6Y3GC/IZt7F+MDXFxrQCdAhOl8D17GhFB9oZkmxbGJE=
