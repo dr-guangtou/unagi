@@ -61,13 +61,15 @@ class Hsc():
     MAX_CUTOUT = 2116 * u.arcsec
     # Default cutout image size in unit of arcsec
     DEFAULT_IMG_SIZE = 10.0 * u.arcsec
+
     # Available HSC database
     # TODO: dr2-citus is not supported yet
-    DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2']
+    DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2', 'dr3']
+
     # List of HSC filters
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
-                   'NB0387', 'NB0816', 'NB0921']
-    FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921']
+                   'NB0387', 'NB0816', 'NB0921', 'NB1010']
+    FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921', 'nb1010']
 
     def __init__(self, dr='pdr2', rerun='pdr2_wide', verbose=True, config_file=None):
         """
@@ -198,7 +200,8 @@ class Hsc():
         else:
             raise HscException("# Wrong image type: coadd or warp !")
 
-    def download_patch(self, tract, patch, filt='HSC-I', output_file=None, overwrite=True, verbose=True):
+    def download_patch(self, tract, patch, filt='HSC-I', output_file=None, 
+                       overwrite=True, verbose=True):
         """
         Download coadded image for a single patch.
 
@@ -220,7 +223,8 @@ class Hsc():
             raise Exception("# Can not download cutout: {}".format(patch_url))
 
         if output_file is None:
-            output_file = '_'.join((self.dr, self.rerun, str(tract), str(patch), filt[-1].lower() + '.fits'))
+            output_file = '_'.join(
+                self.dr, self.rerun, str(tract), str(patch), filt[-1].lower() + '.fits')
         _ = cutout.writeto(output_file, overwrite=overwrite)
         return cutout
 

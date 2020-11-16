@@ -4,6 +4,7 @@
 
 import os
 import sys
+import getpass
 import warnings
 
 from astropy.table import Table
@@ -16,7 +17,7 @@ __all__ = ('Field', 'Server', 'Rerun', 'DrException',
 PDR_URL = "https://hsc-release.mtk.nao.ac.jp"
 IDR_URL = "https://hscdata.mtk.nao.ac.jp"
 
-AVAILABLE_DRS = ['pdr1', 'pdr2', 'dr1', 'dr2']
+AVAILABLE_DRS = ['pdr1', 'pdr2', 'dr1', 'dr2', 'dr3']
 
 
 class DrException(Exception):
@@ -70,7 +71,7 @@ class Server(object):
     config_file: str
         Name of the configuration file that contains the username and password.
     """
-    def __init__(self, dr='dr2', config_file=None):
+    def __init__(self, dr='dr3', config_file=None):
         if dr.strip()[0] == 'p':
             """Use the HSC SSP public data release at:
                 http://hsc.mtk.nao.ac.jp/ssp/
@@ -534,18 +535,10 @@ class Server(object):
 
             More information about the IDR/DAS query:
 
-                https://hscdata.mtk.nao.ac.jp/das_quarry/dr1/manual.html
                 https://hscdata.mtk.nao.ac.jp/das_quarry/dr2/manual.html
+                https://hscdata.mtk.nao.ac.jp/das_quarry/dr3/manual.html
 
-            So far, DR1 and DR2 are available
-
-            Information about the S15B data release:
-
-                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr1/s15b/doc/S15B/products_status.html
-
-            Information about the S16A data release:
-
-                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr1/s16a/doc/products_status.html
+            So far, DR2 and DR3 are available. DR1 has been removed from NAOJ to save space.
 
             Information about the S17A data release:
 
@@ -554,6 +547,15 @@ class Server(object):
             Information about the S18A data release:
 
                 https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr2/s18a/doc/products_status.html
+
+            Information about the S19A data release:
+
+                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr3/s19a/doc/products_status.html
+
+            Information about the S20A data release:
+
+                https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr3/s20a/doc/products_status.html
+
             """
             # Gather login information:
             self._get_credential(pdr=False)
@@ -565,7 +567,8 @@ class Server(object):
             self.timeout = 300
 
             if dr == 'dr1':
-                warnings.warn("# Internal data release DR2 is available!")
+                raise ValueError("# DR1 has become unavailable!")
+                # TODO: Remove later
                 self.data_release = 'dr1'
 
                 # Useful URLs
@@ -810,6 +813,9 @@ class Server(object):
                                _IDR_W_VVDS, _IDR_AEGIS]
 
             elif dr == 'dr2':
+                warnings.warn("# DR3 has become available now!")
+                self.data_release = 'dr2'
+
                 # Useful URLs
                 self.base_url = IDR_URL
                 # SQL catalog log search search server
@@ -842,15 +848,13 @@ class Server(object):
                 # Available reruns
                 """
                 2018-11: S17A and S18A releases are available
-
-                The DUD at wide depth data are not included.
                 """
                 self.rerun_list = ['any', 's17a_dud', 's17a_wide',
-                                   's17a_dud_widt_depth_best',
+                                   's17a_dud_wide_depth_best',
                                    's17a_dud_wide_depth_median',
                                    's17a_dud_wide_depth_median',
                                    's18a_wide', 's18a_dud',
-                                   's18a_dud_widt_depth_best',
+                                   's18a_dud_wide_depth_best',
                                    's18a_dud_wide_depth_median',
                                    's18a_dud_wide_depth_median',
                                    's17a_chorus', 's18a_chorus'
@@ -864,7 +868,7 @@ class Server(object):
                 """
                 Notice:
                 -------
-                    From S17A, the DEEP and UDEEP fields are released together.
+                    From S17A and S18A, the DEEP and UDEEP fields are released together.
 
                     DUD_XMM-LSS : XMM-LSS + SXDS
                     WIDE_W02 : The old XMM-LSS wide field
@@ -1026,6 +1030,178 @@ class Server(object):
                                _IDR_W_WIDE01, _IDR_W_WIDE02, _IDR_W_WIDE03,
                                _IDR_W_WIDE04, _IDR_W_WIDE05, _IDR_W_WIDE06,
                                _IDR_W_WIDE07]
+
+            elif dr == 'dr3':
+                self.data_release = 'dr2'
+
+                # Useful URLs
+                self.base_url = IDR_URL
+                # SQL catalog log search search server
+                self.cat_url = IDR_URL + "/datasearch/api/catalog_jobs/"
+                # Coadd image cutout server
+                self.img_url = IDR_URL + "/das_quarry/dr3/cgi-bin/cutout?"
+                # Coadd patch image url
+                # TODO: make this not rerun specific
+                self.patch_url = IDR_URL + "/hsc_ssp/dr3/s20a/data/s20a_wide/deepCoadd-results/"
+                # PSF picker server
+                self.psf_url = IDR_URL + "/psf/8/cgi/getpsf?"
+                # Direct file tree
+                self.file_url = IDR_URL + "/hsc_ssp/dr3/"
+                # DAS search server
+                # See: https://hscdata.mtk.nao.ac.jp/das_console/dr3.1/usage.html
+                self.das_url = IDR_URL + "/das_console/dr3.1/"
+                # Ancillary information
+                # TODO: make this not rerun specific
+                self.map_url = IDR_URL + "/hsc_ssp/dr3/s18a/doc/fig/"
+                self.txt_url = IDR_URL + "/hsc_ssp/dr3/s18a/doc/info/"
+                # Quality assesment dir: https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr3/s19a/doc/qa/
+                # Stellar sequence dir: https://hscdata.mtk.nao.ac.jp/hsc_ssp/dr3/s19a/doc/ss/
+
+                # Available filters
+                """
+                Notice:
+                -------
+                    Only UDEEP+DEEP fields have narrow-band coverage.
+                """
+                self.filter_list = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
+                                    'NB0387', 'NB0816', 'NB0921', 'NB1010']
+                self.filter_list_short = [
+                    'g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921', 'nb1010']
+
+                # Available reruns
+                """
+                2019-09: S19A releases are available
+                2020-08: S20A releases are available
+                """
+                self.rerun_list = ['any', 's19a_dud', 's19a_wide',
+                                   's20a_wide', 's20a_dud', 's19a_dud_wide_depth_worst',
+                                   's19a_dud_wide_depth_best', 's19a_dud_wide_depth_median',
+                                   's20a_dud_wide_depth_worst',
+                                   's20a_dud_wide_depth_best', 's20a_dud_wide_depth_median']
+                self.rerun_default = 's20a_wide'
+                self.wide_default = 's20a_wide'
+                self.deep_default = 's20a_dud'
+                self.udeep_default = 's20a_dud'
+
+                """
+                Notice:
+                -------
+                    From S19A and S20A, the WIDE fields are separated into Spring, Autumn, and
+                    HectoMap field, also the AEGIS region.
+
+                    Notice that the Spring and Autumn fields are not continue in every filter.
+                """
+                _IDR_DUD_COSMOS = {
+                    'name': 'DUD_COSMOS',
+                    'file': 'dud_cosmos',
+                    'abbr': 'cos',
+                    'type': 'UDEEP_DEEP',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y', 'NB0921',
+                                         'NB0816', 'NB0387', 'NB1010'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_DUD_COSMOS_HSC-I.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_DUD-COSMOS.txt')
+                    }
+
+                _IDR_DUD_DEEP2 = {
+                    'name': 'DUD_DEEP2-3',
+                    'file': 'dud_deep2',
+                    'abbr': 'dep',
+                    'type': 'UDEEP_DEEP',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y', 'NB0921',
+                                         'NB0816', 'NB0387'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_DUD_DEEP2-3_HSC-I.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_DUD-DEEP2-3.txt')
+                    }
+
+                _IDR_DUD_ELAIS = {
+                    'name': 'DUD_ELAIS-N1',
+                    'file': 'dud_elais',
+                    'abbr': 'ela',
+                    'type': 'UDEEP_DEEP',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y', 'NB0921',
+                                         'NB0816', 'NB0387'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_DUD_ELAIS-N1_HSC-I.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_DUD-ELAIS-N1.txt')
+                    }
+
+                _IDR_DUD_XMM = {
+                    'name': 'DUD_XMM-LSS',
+                    'file': 'dud_xmm',
+                    'abbr': 'xmm',
+                    'type': 'UDEEP_DEEP',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y', 'NB0921',
+                                         'NB0816', 'NB0387', 'NB1010'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_DUD_XMM-LSS_HSC-I.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_DUD-XMM-LSS.txt')
+                    }
+
+                _IDR_W_SPRING = {
+                    'name': 'WIDE_SPRING',
+                    'file': 'w_spring',
+                    'abbr': 'spring',
+                    'type': 'WIDE',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_W_spring_HSC-I.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_W-spring.txt')
+                    }
+
+                _IDR_W_AUTUMN = {
+                    'name': 'WIDE_AUTUMN',
+                    'file': 'w_autumn',
+                    'abbr': 'autumn',
+                    'type': 'WIDE',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_W_autumn_HSC-Z.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_W-autumn.txt')
+                    }
+
+                _IDR_W_HECTOMAP = {
+                    'name': 'WIDE_HECTOMAP',
+                    'file': 'w_hectomap',
+                    'abbr': 'hectomap',
+                    'type': 'WIDE',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_W_hectomap_HSC-Z.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_W-hectomap.txt')
+                    }
+
+                _IDR_W_AEGIS = {
+                    'name': 'WIDE_AEGIS',
+                    'file': 'w_aegis',
+                    'abbr': 'aegis',
+                    'type': 'WIDE',
+                    'filter_available': ['HSC-g', 'HSC-r', 'HSC-i',
+                                         'HSC-z', 'HSC-y'],
+                    'field_map': (self.map_url +
+                                  'tracts_patches_W_AEGIS_HSC-Z.png'),
+                    'patch_info': (self.txt_url +
+                                   'tracts_patches_W-AEGIS.txt')
+                    }
+
+                self.fields = [_IDR_DUD_COSMOS, _IDR_DUD_DEEP2,
+                               _IDR_DUD_ELAIS, _IDR_DUD_XMM, _IDR_W_AEGIS,
+                               _IDR_W_SPRING, _IDR_W_AUTUMN, _IDR_W_HECTOMAP,]
             else:
                 raise DrException("!! Wrong information about data release !!")
 
@@ -1048,7 +1224,6 @@ class Server(object):
                     self._username = os.environ['SSP_IDR_USR']
                     self._password = os.environ['SSP_IDR_PWD']
                 except KeyError:
-                    import getpass
                     get_input = input
                     if sys.version_info[:2] <= (2, 7):
                         get_input = input
@@ -1059,7 +1234,6 @@ class Server(object):
                     self._username = os.environ['SSP_PDR_USR']
                     self._password = os.environ['SSP_PDR_PWD']
                 except KeyError:
-                    import getpass
                     get_input = input
                     if sys.version_info[:2] <= (2, 7):
                         get_input = input
