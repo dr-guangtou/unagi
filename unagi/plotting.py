@@ -26,7 +26,7 @@ __all__ = ['FILTERS_COLOR', 'plot_skyobj_hist', 'map_skyobjs', 'random_cmap',
            'cutout_show_objects', 'setup']
 
 # Default colormaps
-IMG_CMAP = plt.get_cmap('viridis')
+IMG_CMAP = copy.copy(mpl.cm.get_cmap("viridis"))
 IMG_CMAP.set_bad(color='black')
 
 FILTERS_COLOR = ['#2ca02c', '#ff7f0e', '#d62728', '#8c564b', '#7f7f7f']

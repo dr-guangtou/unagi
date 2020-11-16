@@ -52,7 +52,7 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
 
     # List of three filters
     filter_list = list(filters)
-    if len(filter_list) is not 3:
+    if len(filter_list) != 3:
         raise ValueError("# Need and only need three filters!")
 
     # Check the choices of filters

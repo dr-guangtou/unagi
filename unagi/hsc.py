@@ -217,14 +217,14 @@ class Hsc():
         try:
             if verbose:
                 print("# Downloading FITS image from {}".format(patch_url))
-            cutout = fits.open(patch_url)
+            cutout = fits.open(urllib.request.urlopen(patch_url))
         except urllib.error.HTTPError as e:
             print("# Error message: {}".format(e))
             raise Exception("# Can not download cutout: {}".format(patch_url))
 
         if output_file is None:
             output_file = '_'.join(
-                self.dr, self.rerun, str(tract), str(patch), filt[-1].lower() + '.fits')
+                (self.dr, self.rerun, str(tract), str(patch), filt[-1].lower() + '.fits'))
         _ = cutout.writeto(output_file, overwrite=overwrite)
         return cutout
 
@@ -250,7 +250,8 @@ class Hsc():
         try:
             if verbose:
                 print("# Downloading FITS image from {}".format(cutout_url))
-            cutout = fits.open(cutout_url)
+            # TODO:Not sure this is the best way though
+            cutout = fits.open(urllib.request.urlopen(cutout_url))
         except urllib.error.HTTPError as e:
             print("# Error message: {}".format(e))
             raise Exception("# Can not download cutout: {}".format(cutout_url))
@@ -271,7 +272,7 @@ class Hsc():
         center_psf = 'on' if centered else 'off'
 
         # Image type
-        if img_type is not 'coadd' and img_type is not 'warp':
+        if img_type != 'coadd' and img_type != 'warp':
             raise HscException("# Wrong image type !")
 
         # Default dict for generating PSF
@@ -293,7 +294,7 @@ class Hsc():
         try:
             if verbose:
                 print("# Downloading FITS image from {}".format(psf_url))
-            psf_model = fits.open(psf_url)
+            psf_model = fits.open(urllib.request.urlopen(psf_url))
         except urllib.error.HTTPError as e:
             print("# Error message: {}".format(e))
             raise Exception("# Can not download cutout: {}".format(psf_url))
