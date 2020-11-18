@@ -71,7 +71,7 @@ class Server(object):
     config_file: str
         Name of the configuration file that contains the username and password.
     """
-    def __init__(self, dr='dr3', config_file=None):
+    def __init__(self, dr='dr3', config_file=None, rerun=None):
         if dr.strip()[0] == 'p':
             """Use the HSC SSP public data release at:
                 http://hsc.mtk.nao.ac.jp/ssp/
@@ -93,6 +93,7 @@ class Server(object):
                               "Please consider using PDR2 instead!")
 
                 self.data_release = 'pdr1'
+                self.deepcoadd = False
 
                 # Time limit for connecting to HSC Server
                 self.timeout = 600
@@ -316,6 +317,7 @@ class Server(object):
                                _PDR_W_VVDS, _PDR_AEGIS]
             elif dr == 'pdr2':
                 self.data_release = 'pdr2'
+                self.deepcoadd = False
 
                 # Time limit for connecting to HSC Server
                 self.timeout = 600
@@ -570,6 +572,7 @@ class Server(object):
                 raise ValueError("# DR1 has become unavailable!")
                 # TODO: Remove later
                 self.data_release = 'dr1'
+                self.deepcoadd = False
 
                 # Useful URLs
                 self.base_url = IDR_URL
@@ -815,13 +818,17 @@ class Server(object):
             elif dr == 'dr2':
                 warnings.warn("# DR3 has become available now!")
                 self.data_release = 'dr2'
+                self.deepcoadd = False
 
                 # Useful URLs
                 self.base_url = IDR_URL
                 # SQL catalog log search search server
                 self.cat_url = IDR_URL + "/datasearch/api/catalog_jobs/"
                 # Coadd image cutout server
-                self.img_url = IDR_URL + "/das_quarry/dr2.1/cgi-bin/cutout?"
+                if 's17a' in rerun.strip():
+                    self.img_url = IDR_URL + "/das_quarry/dr2/cgi-bin/quarryImage?"
+                else:
+                    self.img_url = IDR_URL + "/das_quarry/dr2.1/cgi-bin/cutout?"
                 # Coadd patch image url
                 self.patch_url = IDR_URL + "/hsc_ssp/dr2/s18a/data/s18a_wide/deepCoadd-results/"
                 # PSF picker server
@@ -1032,7 +1039,8 @@ class Server(object):
                                _IDR_W_WIDE07]
 
             elif dr == 'dr3':
-                self.data_release = 'dr2'
+                self.data_release = 'dr3'
+                self.deepcoadd = True
 
                 # Useful URLs
                 self.base_url = IDR_URL
@@ -1259,7 +1267,8 @@ class Rerun(Server):
         Name of the rerun
     """
     def __init__(self, rerun='s18a_wide', dr='dr2', config_file=None):
-        super(Rerun, self).__init__(dr=dr, config_file=config_file)
+        super(Rerun, self).__init__(
+            dr=dr, config_file=config_file, rerun=rerun)
 
         if str(rerun).strip() not in self.rerun_list:
             raise DrException("!! Wrong rerun !!")

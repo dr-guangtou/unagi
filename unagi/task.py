@@ -33,7 +33,7 @@ __all__ = ['hsc_tricolor', 'hsc_cutout', 'hsc_psf',
 ANG_UNITS = ['arcsec', 'arcsecond', 'arcmin', 'arcminute', 'deg']
 PHY_UNITS = ['pc', 'kpc', 'Mpc']
 
-def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
+def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None, img_type='coadd',
                  filters='gri', dr='dr2', rerun='s18a_wide', redshift=None,
                  cosmo=None, prefix=None, use_saved=False, save_img=False,
                  verbose=True, rgb_order=False, hdu=1, archive=None, output_dir='./',
@@ -49,6 +49,11 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
         rerun = archive.rerun
         if dr[0] == 'p':
             rerun = rerun.replace(dr + '_', '')
+
+    # The `coadd/bg` corresponds to the `deepCoadd` product with global background correction
+    # It only becomes available after S18A
+    if img_type == 'coadd/bg' and not archive.archive.deepcoadd:
+        raise ValueError("! coadd/bg type is not available!")
 
     # List of three filters
     filter_list = list(filters)
@@ -127,7 +132,8 @@ def hsc_tricolor(coord, cutout_size=10.0 * u.Unit('arcsec'), coord_2=None,
             if verbose:
                 print("# Retrieving cutout image in filter: {}".format(filt))
             cutout_hdu = archive.get_cutout_image(
-                coord, coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h, filt=filt)
+                coord, coord_2=coord_2, w_half=ang_size_w, h_half=ang_size_h, filt=filt,
+                img_type=img_type)
             if save_img:
                 _ = cutout_hdu.writeto(fits_list[ii], overwrite=True)
 
@@ -161,6 +167,11 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
         rerun = archive.rerun
         if dr[0] == 'p':
             rerun = rerun.replace(dr + '_', '')
+    
+    # The `coadd/bg` corresponds to the `deepCoadd` product with global background correction
+    # It only becomes available after S18A
+    if img_type == 'coadd/bg' and not archive.archive.deepcoadd:
+        raise ValueError("! coadd/bg type is not available!")
 
     # List of three filters
     filter_list = list(filters)
@@ -209,7 +220,7 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
     prefix = os.path.join(output_dir, prefix)
 
     # List of fits file
-    if img_type == 'coadd':
+    if img_type == 'coadd' or img_type == 'coadd/bg':
         output_list = ['_'.join([prefix, f]) + '.fits' for f in filter_list]
     elif img_type == 'warp':
         output_list = ['_'.join([prefix, f]) + '.tar' for f in filter_list]
@@ -235,7 +246,7 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
                 raise NotImplementedError("# Not yet...")
         else:
             if verbose:
-                if img_type == 'coadd':
+                if img_type == 'coadd' or img_type == 'coadd/bg':
                     print("# Retrieving cutout image in filter: {}".format(filt))
                 else:
                     print("# Retrieving warped images in filter: {}".format(filt))

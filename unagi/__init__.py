@@ -10,7 +10,7 @@ from . import config
 
 __all__ = ["query", "hsc", "task", "config", "sky", "mask"]
 
-__version__ = "0.1.1"
+__version__ = "0.1.3"
 __name__ = 'unagi'
 
 

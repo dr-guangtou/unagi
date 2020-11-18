@@ -53,6 +53,8 @@ setup(
     zip_safe=False,
     python_requires='>=3.6',
     scripts=['bin/hsc_bulk_cutout'],
-    use_scm_version=True,
+    use_scm_version = {
+        "local_scheme": "no-local-version"
+    },
     setup_requires=['setuptools_scm'],
 )
