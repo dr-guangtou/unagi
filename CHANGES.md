@@ -1,4 +1,10 @@
-### v0.1.1 (2020-11-16)
+### v0.1.3
+
+- 2020-11-17: Small bug fixed; allow users to use the `coadd/bg` product (the `deepCoadd`
+  files before the local sky subtraction applied) in `DR3` to generate cutout images and
+  color pictures.
+
+### v0.1.2 (2020-11-16)
 
 - First release after updates to support HSC internal release `DR3`, which include new
   reruns for `S19A` and `S20A` releases. `DR1` becomes unavailable now.
