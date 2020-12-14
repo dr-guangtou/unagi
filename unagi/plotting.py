@@ -515,13 +515,19 @@ def shape_to_ellipse(x, y, re, ba, theta):
     return ells
 
 def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_clean=False,
-                        verbose=True, xsize=8, cmap='viridis', band='i',
-                        show_sdssshape=False, show_mag=False, **kwargs):
+                        verbose=True, xsize=8, cmap='viridis', band='i', cutout_wcs=None,
+                        show_sdssshape=False, show_mag=False, cbar_color='k', **kwargs):
     """
     Show the HSC photometry of objects on the cutout image.
     """
-    # WCS of the image
-    cutout_wcs = wcs.WCS(cutout[1].header)
+    if cutout.ndim == 3:
+        # This is a RGB color picture
+        if cutout_wcs is None:
+            raise Exception('Need to provide WCS info for RGB picture')
+    else:
+        # WCS of the image
+        if cutout_wcs is None:
+            cutout_wcs = wcs.WCS(cutout[1].header)
 
     # Isolate the clean objects
     if show_clean:
@@ -557,12 +563,21 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
             print("# No point source is found!")
 
     # Start to make figure
-    img_shape = cutout[1].data.shape
+    if cutout.ndim == 3:
+        img_shape = cutout[:, :, 0].shape
+    else:
+        img_shape = cutout[1].data.shape
     fig = plt.figure(figsize=(xsize, xsize * img_shape[1] / img_shape[0]))
     ax1 = fig.add_subplot(111)
 
     # Show the image
-    ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
+    if cutout.ndim == 3:
+        ax1.imshow(cutout, origin='lower', interpolation='none')
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        # TODO: Add scale bar
+    else:
+        ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
 
     # Show the stars
     if show_mag or not show_sdssshape:
@@ -645,8 +660,13 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
         cax = fig.add_axes([0.16, 0.85, 0.24, 0.02])
         norm = mpl.colors.Normalize(vmin=20.0, vmax=26.0)
         cbar = mpl.colorbar.ColorbarBase(
-            cax, cmap='coolwarm_r', norm=norm, orientation='horizontal')
+            cax, cmap=plt.get_cmap('coolwarm_r'), norm=norm, 
+            orientation='horizontal')
         cbar.ax.tick_params(labelsize=15)
+        cbar.ax.xaxis.set_tick_params(color=cbar_color)
+        cbar.ax.yaxis.set_tick_params(color=cbar_color)
+        cbar.outline.set_edgecolor(cbar_color)
+        plt.setp(plt.getp(cbar.ax.axes, 'xticklabels'), color=cbar_color)
 
     # Show the non-clean objects
     if show_bad:

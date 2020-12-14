@@ -552,7 +552,7 @@ class Hsc():
         return {'account_name': self.archive._username,
                 'password': self.archive._password}
 
-    def submit_query(self, sql, nomail=True, skip_syntax=True):
+    def submit_query(self, sql, use_citus=True, nomail=True, skip_syntax=True):
         """
         Submit SQL job to HSC archive.
 
@@ -560,11 +560,16 @@ class Hsc():
         """
         url = os.path.join(self.archive.cat_url, 'submit')
 
+        if ('dr3' in self.dr or 'pdr3' in self.dr) and use_citus:
+            release = self.dr + '-citus'
+        else:
+            release = self.dr
+
         catalog_job = {
             'sql'                     : sql,
             'out_format'              : 'fits',
             'include_metainfo_to_body': True,
-            'release_version'         : self.dr,
+            'release_version'         : release,
             }
 
         post_data = {
