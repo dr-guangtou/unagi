@@ -186,6 +186,7 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
         'tract': 'forced.tract', 'patch': 'forced.patch',
         'a_g': 'forced.a_g', 'a_r': 'forced.a_r', 'a_i': 'forced.a_i',
         'a_z': 'forced.a_z', 'a_y': 'forced.a_y',
+        'is_primary': 'forced.isprimary'
     }
 
     if ('s19a' in rerun) or ('s20a' in rerun):
@@ -193,6 +194,13 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
         # Flag
         meta_dict = {
             'merge_peak_sky': 'forced.merge_peak_sky',
+            'merge_peak_g': 'forced.merge_peak_g',
+            'merge_peak_r': 'forced.merge_peak_r',
+            'merge_peak_r2': 'forced.merge_peak_r2',
+            'merge_peak_i': 'forced.merge_peak_i',
+            'merge_peak_i2': 'forced.merge_peak_i2',
+            'merge_peak_z': 'forced.merge_peak_z',
+            'merge_peak_y': 'forced.merge_peak_y',
             'g_inputcount': 'forced.g_inputcount_value',
             'r_inputcount': 'forced.r_inputcount_value',
             'i_inputcount': 'forced.i_inputcount_value',
@@ -391,6 +399,13 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
         # Flag
         meta_dict = {
             'merge_peak_sky': 'forced.merge_peak_sky',
+            'merge_peak_g': 'forced.merge_peak_g',
+            'merge_peak_r': 'forced.merge_peak_r',
+            'merge_peak_r2': 'forced.merge_peak_r2',
+            'merge_peak_i': 'forced.merge_peak_i',
+            'merge_peak_i2': 'forced.merge_peak_i2',
+            'merge_peak_z': 'forced.merge_peak_z',
+            'merge_peak_y': 'forced.merge_peak_y',
             'g_inputcount': 'forced.g_inputcount_value',
             'r_inputcount': 'forced.r_inputcount_value',
             'i_inputcount': 'forced.i_inputcount_value',
@@ -574,6 +589,13 @@ def basic_forced_photometry(rerun, psf=True, cmodel=True, aper=False,
         # Flag
         meta_dict = {
             'merge_peak_sky': 'forced.merge_peak_sky',
+            'merge_peak_g': 'forced.merge_peak_g',
+            'merge_peak_r': 'forced.merge_peak_r',
+            'merge_peak_r2': 'forced.merge_peak_r2',
+            'merge_peak_i': 'forced.merge_peak_i',
+            'merge_peak_i2': 'forced.merge_peak_i2',
+            'merge_peak_z': 'forced.merge_peak_z',
+            'merge_peak_y': 'forced.merge_peak_y',
             'g_inputcount': 'forced.g_inputcount_value',
             'r_inputcount': 'forced.r_inputcount_value',
             'i_inputcount': 'forced.i_inputcount_value',

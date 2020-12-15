@@ -67,7 +67,6 @@ def setup(style='default', fontsize=25, linewidth=1.5, latex=False):
     rcParams.update({'axes.linewidth': linewidth})
     rcParams.update({'font.size': fontsize})
 
-
 def plot_skyobj_hist(X, summary, filt, prop, region=None, aper=None, fontsize=20):
     """Making 1-D summary plot of the sky objects."""
     # Range of the X-axis
@@ -273,57 +272,61 @@ def display_single(img,
         ax1 = ax
 
     # Stretch option
-    if stretch.strip() == 'arcsinh':
-        img_scale = np.arcsinh(img)
-        if zmin is not None:
-            zmin = np.arcsinh(zmin)
-        if zmax is not None:
-            zmax = np.arcsinh(zmax)
-    elif stretch.strip() == 'log':
-        if no_negative:
-            img[img <= 0.0] = 1.0E-10
-        img_scale = np.log(img)
-        if zmin is not None:
-            zmin = np.log(zmin)
-        if zmax is not None:
-            zmax = np.log(zmax)
-    elif stretch.strip() == 'log10':
-        if no_negative:
-            img[img <= 0.0] = 1.0E-10
-        img_scale = np.log10(img)
-        if zmin is not None:
-            zmin = np.log10(zmin)
-        if zmax is not None:
-            zmax = np.log10(zmax)
-    elif stretch.strip() == 'linear':
+    if img.ndim == 3:
         img_scale = img
+        vmin, vmax = None, None
     else:
-        raise Exception("# Wrong stretch option.")
+        if stretch.strip() == 'arcsinh':
+            img_scale = np.arcsinh(img)
+            if zmin is not None:
+                zmin = np.arcsinh(zmin)
+            if zmax is not None:
+                zmax = np.arcsinh(zmax)
+        elif stretch.strip() == 'log':
+            if no_negative:
+                img[img <= 0.0] = 1.0E-10
+            img_scale = np.log(img)
+            if zmin is not None:
+                zmin = np.log(zmin)
+            if zmax is not None:
+                zmax = np.log(zmax)
+        elif stretch.strip() == 'log10':
+            if no_negative:
+                img[img <= 0.0] = 1.0E-10
+            img_scale = np.log10(img)
+            if zmin is not None:
+                zmin = np.log10(zmin)
+            if zmax is not None:
+                zmax = np.log10(zmax)
+        elif stretch.strip() == 'linear':
+            img_scale = img
+        else:
+            raise Exception("# Wrong stretch option.")
 
-    # Scale option
-    if scale.strip() == 'zscale':
-        try:
-            vmin, vmax = ZScaleInterval(contrast=contrast).get_limits(img_scale)
-        except IndexError:
-            # TODO: Deal with problematic image
-            vmin, vmax = -1.0, 1.0
-    elif scale.strip() == 'percentile':
-        try:
-            vmin, vmax = AsymmetricPercentileInterval(
-                lower_percentile=lower_percentile,
-                upper_percentile=upper_percentile).get_limits(img_scale)
-        except IndexError:
-            # TODO: Deal with problematic image
-            vmin, vmax = -1.0, 1.0
-    elif scale.strip() == 'minmax':
-        vmin, vmax = np.nanmin(img_scale), np.nanmax(img_scale)
-    else:
-        vmin, vmax = np.nanmin(img_scale), np.nanmax(img_scale)
+        # Scale option
+        if scale.strip() == 'zscale':
+            try:
+                vmin, vmax = ZScaleInterval(contrast=contrast).get_limits(img_scale)
+            except IndexError:
+                # TODO: Deal with problematic image
+                vmin, vmax = -1.0, 1.0
+        elif scale.strip() == 'percentile':
+            try:
+                vmin, vmax = AsymmetricPercentileInterval(
+                    lower_percentile=lower_percentile,
+                    upper_percentile=upper_percentile).get_limits(img_scale)
+            except IndexError:
+                # TODO: Deal with problematic image
+                vmin, vmax = -1.0, 1.0
+        elif scale.strip() == 'minmax':
+            vmin, vmax = np.nanmin(img_scale), np.nanmax(img_scale)
+        else:
+            vmin, vmax = np.nanmin(img_scale), np.nanmax(img_scale)
 
-    if zmin is not None:
-        vmin = zmin
-    if zmax is not None:
-        vmax = zmax
+        if zmin is not None:
+            vmin = zmin
+        if zmax is not None:
+            vmax = zmax
 
     show = ax1.imshow(img_scale, origin='lower', cmap=cmap, interpolation='none',
                       vmin=vmin, vmax=vmax, alpha=alpha)
@@ -337,9 +340,14 @@ def display_single(img,
         length=0)
 
     # Put scale bar on the image
-    (img_size_x, img_size_y) = img.shape
+    if img.ndim == 3:
+        img_size_x, img_size_y = img[:, :, 0].shape
+    else:
+        img_size_x, img_size_y = img.shape
+
     if physical_scale is not None:
         pixel_scale *= physical_scale
+
     if scale_bar:
         if scale_bar_loc == 'left':
             scale_bar_x_0 = int(img_size_x * 0.04)
@@ -349,7 +357,6 @@ def display_single(img,
             scale_bar_x_0 = int(img_size_x * 0.95 -
                                 (scale_bar_length / pixel_scale))
             scale_bar_x_1 = int(img_size_x * 0.95)
-
         scale_bar_y = int(img_size_y * 0.10)
         scale_bar_text_x = (scale_bar_x_0 + scale_bar_x_1) / 2
         scale_bar_text_y = (scale_bar_y * scale_bar_y_offset)
@@ -532,11 +539,12 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     # Isolate the clean objects
     if show_clean:
         objs_use, clean_mask = catalog.select_clean_objects(
-            objs, return_catalog=True, verbose=True)
+            objs, return_catalog=True, verbose=verbose)
     else:
         objs_use = objs
         clean_mask = catalog.select_clean_objects(
-            objs, return_catalog=False, verbose=True)
+            objs, return_catalog=False, verbose=verbose)
+
     x_use, y_use = catalog.world_to_image(objs_use, cutout_wcs, update=False)
 
     # Get the stars and show the SDSS shape
@@ -572,17 +580,19 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
 
     # Show the image
     if cutout.ndim == 3:
-        ax1.imshow(cutout, origin='lower', interpolation='none')
-        ax1.set_xticks([])
-        ax1.set_yticks([])
-        # TODO: Add scale bar
+        ax1 = display_single(cutout, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
     else:
         ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
 
     # Show the stars
     if show_mag or not show_sdssshape:
-        ax1.scatter(x_star, y_star, c='dodgerblue', s=100, marker='x',
-                    linewidth=2, zorder=10)
+        if '{}_psf_mag'.format(band) in objs_use.colnames:
+            mag = np.asarray(cutout_star['{}_psf_mag'.format(band)])
+        else:
+            raise KeyError("# No useful PSF mag available")
+        ax1.scatter(
+            x_star, y_star, c=plt.get_cmap('coolwarm_r')(to_color_arr(mag, bottom=20., top=26.0)), 
+            s=100, marker='x', linewidth=2, zorder=10)
     else:
         ellip_star = shape_to_ellipse(x_star, y_star, r_star, ba_star, pa_star)
         for e in ellip_star:
@@ -594,34 +604,42 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
             e.set_linewidth(2.0)
 
     # Use color of the ellipse to indicate the magnitude of the galaxy
+    if '{}_cmodel_mag'.format(band) in objs_use.colnames:
+        mag = np.asarray(cutout_gal['{}_cmodel_mag'.format(band)])
+    elif '{}_cmodel_flux'.format(band) in objs_use.colnames:
+        mag = np.asarray(
+            -2.5 * np.log10(cutout_gal['{}_cmodel_flux'.format(band)]))
+    else:
+        raise KeyError("# No useful CModel mag available")
+
     if show_mag:
-        if '{}_cmodel_mag'.format(band) in objs_use.colnames:
-            mag = np.asarray(cutout_gal['{}_cmodel_mag'.format(band)])
-        elif '{}_cmodel_flux'.format(band) in objs_use.colnames:
-            mag = np.asarray(
-                -2.5 * np.log10(cutout_gal['{}_cmodel_flux'.format(band)]))
-        else:
-            raise KeyError("# No useful CModel mag available")
         # Get a color array
         color_arr = to_color_arr(mag, bottom=20., top=26.0)
         ell_cmap = plt.get_cmap('coolwarm_r')
     else:
         color_arr, ell_cmap = None, None
 
+    ax1.scatter(
+        x_gal, y_gal, c=ell_cmap(color_arr), s=50, marker='+', linewidth=2.0)
+
     # Show the galaxies
     if show_weighted:
         r_gal, ba_gal, pa_gal = catalog.moments_to_shape(
             cutout_gal, shape_type='cmodel_ellipse', axis_ratio=True,
             to_pixel=True, update=False)
-        ellip_gal = shape_to_ellipse(x_gal, y_gal, r_gal, ba_gal, pa_gal)
-        for ii, e in enumerate(ellip_gal):
+        # TODO: Should pre-select these
+        shape_ok = (np.isfinite(r_gal) & np.isfinite(ba_gal) & np.isfinite(pa_gal))
+        ellip_gal = shape_to_ellipse(
+            x_gal[shape_ok], y_gal[shape_ok], r_gal[shape_ok],
+            ba_gal[shape_ok], pa_gal[shape_ok])
+        for ii, e in enumerate(ellip_gal[shape_ok]):
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
             e.set_alpha(0.9)
             if color_arr is None:
                 e.set_edgecolor('peru')
             else:
-                e.set_edgecolor(ell_cmap(int(color_arr[ii])))
+                e.set_edgecolor(ell_cmap(int(color_arr[shape_ok][ii])))
             e.set_facecolor('none')
             e.set_linewidth(2.0)
     else:
@@ -631,8 +649,17 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
         r_dev, ba_dev, pa_dev = catalog.moments_to_shape(
             cutout_gal, shape_type='cmodel_dev_ellipse', axis_ratio=True,
             to_pixel=True, update=False)
-        ellip_exp = shape_to_ellipse(x_gal, y_gal, r_exp, ba_exp, pa_exp)
-        ellip_dev = shape_to_ellipse(x_gal, y_gal, r_dev, ba_dev, pa_dev)
+
+        exp_ok = (np.isfinite(r_exp) & np.isfinite(ba_exp) & np.isfinite(pa_exp))
+        ellip_exp = shape_to_ellipse(
+            x_gal[exp_ok], y_gal[exp_ok], r_exp[exp_ok],
+            ba_exp[exp_ok], pa_exp[exp_ok])
+
+        dev_ok = (np.isfinite(r_dev) & np.isfinite(ba_dev) & np.isfinite(pa_dev))
+        ellip_dev = shape_to_ellipse(
+            x_gal[dev_ok], y_gal[dev_ok], r_dev[dev_ok],
+            ba_dev[dev_ok], pa_dev[dev_ok])
+
         for ii, e in enumerate(ellip_exp):
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
@@ -640,9 +667,10 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
             if color_arr is None:
                 e.set_edgecolor('peru')
             else:
-                e.set_edgecolor(ell_cmap(int(color_arr[ii])))
+                e.set_edgecolor(ell_cmap(int(color_arr[exp_ok][ii])))
             e.set_facecolor('none')
             e.set_linewidth(2.0)
+
         for ii, e in enumerate(ellip_dev):
             ax1.add_artist(e)
             e.set_clip_box(ax1.bbox)
@@ -650,17 +678,16 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
             if color_arr is None:
                 e.set_edgecolor('w')
             else:
-                e.set_edgecolor(ell_cmap(int(color_arr[ii])))
+                e.set_edgecolor(ell_cmap(int(color_arr[dev_ok][ii])))
             e.set_facecolor('none')
             e.set_linewidth(2.0)
             e.set_linestyle('--')
-    ax1.scatter(x_gal, y_gal, c='peru', s=50, marker='+', linewidth=2.0)
 
     if show_mag:
         cax = fig.add_axes([0.16, 0.85, 0.24, 0.02])
         norm = mpl.colors.Normalize(vmin=20.0, vmax=26.0)
         cbar = mpl.colorbar.ColorbarBase(
-            cax, cmap=plt.get_cmap('coolwarm_r'), norm=norm, 
+            cax, cmap=plt.get_cmap('coolwarm_r'), norm=norm,
             orientation='horizontal')
         cbar.ax.tick_params(labelsize=15)
         cbar.ax.xaxis.set_tick_params(color=cbar_color)
@@ -670,10 +697,11 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
 
     # Show the non-clean objects
     if show_bad:
-        x_dirty, y_dirty = catalog.world_to_image(
-            objs[~clean_mask], cutout_wcs, update=False)
-        ax1.scatter(x_dirty, y_dirty, facecolor='none', edgecolor='k',
-                    s=100, marker='o', linewidth=1.5, zorder=10)
+        if (~clean_mask).sum() > 0:
+            x_dirty, y_dirty = catalog.world_to_image(
+                objs[~clean_mask], cutout_wcs, update=False)
+            ax1.scatter(x_dirty, y_dirty, facecolor='none', edgecolor='lime',
+                        s=120, marker='h', linewidth=1.5, zorder=10)
 
     ax1.set_xlim(0, img_shape[0])
     ax1.set_ylim(0, img_shape[1] - 1)
