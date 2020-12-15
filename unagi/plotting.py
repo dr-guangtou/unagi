@@ -544,31 +544,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
         objs_use = objs
         clean_mask = catalog.select_clean_objects(
             objs, return_catalog=False, verbose=verbose)
-
     x_use, y_use = catalog.world_to_image(objs_use, cutout_wcs, update=False)
-
-    # Get the stars and show the SDSS shape
-    star_mask = objs_use['{}_extendedness'.format(band)] < 0.5
-    cutout_star = objs_use[star_mask]
-    x_star, y_star = x_use[star_mask], y_use[star_mask]
-    r_star, ba_star, pa_star = catalog.moments_to_shape(
-        cutout_star, shape_type='{}_sdssshape'.format(band), axis_ratio=True,
-        to_pixel=True, update=False)
-    if verbose:
-        if cutout_star:
-            print("# There are {} point sources on the cutout".format(len(cutout_star)))
-        else:
-            print("# No point source is found!")
-
-    # Get the extended objects
-    gal_mask = ~star_mask
-    cutout_gal = objs_use[gal_mask]
-    x_gal, y_gal = x_use[gal_mask], y_use[gal_mask]
-    if verbose:
-        if cutout_gal:
-            print("# There are {} extended sources on the cutout".format(len(cutout_gal)))
-        else:
-            print("# No point source is found!")
 
     # Start to make figure
     if cutout.ndim == 3:
@@ -577,6 +553,7 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
         img_shape = cutout[1].data.shape
     fig = plt.figure(figsize=(xsize, xsize * img_shape[1] / img_shape[0]))
     ax1 = fig.add_subplot(111)
+    ax1.grid(False)
 
     # Show the image
     if cutout.ndim == 3:
@@ -584,104 +561,130 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     else:
         ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
 
-    # Show the stars
-    if show_mag or not show_sdssshape:
-        if '{}_psf_mag'.format(band) in objs_use.colnames:
-            mag = np.asarray(cutout_star['{}_psf_mag'.format(band)])
+    # Get the stars and show the SDSS shape
+    star_mask = objs_use['{}_extendedness'.format(band)] < 0.5
+    cutout_star = objs_use[star_mask]
+    if cutout_star:
+        if verbose:
+            print("# There are {} point sources on the cutout".format(len(cutout_star)))
+        x_star, y_star = x_use[star_mask], y_use[star_mask]
+        r_star, ba_star, pa_star = catalog.moments_to_shape(
+            cutout_star, shape_type='{}_sdssshape'.format(band), axis_ratio=True,
+            to_pixel=True, update=False)
+
+        if show_mag or not show_sdssshape:
+            if '{}_psf_mag'.format(band) in objs_use.colnames:
+                mag = np.asarray(cutout_star['{}_psf_mag'.format(band)])
+            else:
+                raise KeyError("# No useful PSF mag available")
+            ax1.scatter(
+                x_star, y_star, c=plt.get_cmap('coolwarm_r')(
+                    to_color_arr(mag, bottom=20., top=26.0)), 
+                s=100, marker='x', linewidth=2, zorder=10)
         else:
-            raise KeyError("# No useful PSF mag available")
-        ax1.scatter(
-            x_star, y_star, c=plt.get_cmap('coolwarm_r')(to_color_arr(mag, bottom=20., top=26.0)), 
-            s=100, marker='x', linewidth=2, zorder=10)
+            ellip_star = shape_to_ellipse(x_star, y_star, r_star, ba_star, pa_star)
+            for e in ellip_star:
+                ax1.add_artist(e)
+                e.set_clip_box(ax1.bbox)
+                e.set_alpha(1.0)
+                e.set_edgecolor('red')
+                e.set_facecolor('none')
+                e.set_linewidth(2.0)
     else:
-        ellip_star = shape_to_ellipse(x_star, y_star, r_star, ba_star, pa_star)
-        for e in ellip_star:
-            ax1.add_artist(e)
-            e.set_clip_box(ax1.bbox)
-            e.set_alpha(1.0)
-            e.set_edgecolor('red')
-            e.set_facecolor('none')
-            e.set_linewidth(2.0)
+        if verbose:
+            print("# No point source is found!")
 
-    # Use color of the ellipse to indicate the magnitude of the galaxy
-    if '{}_cmodel_mag'.format(band) in objs_use.colnames:
-        mag = np.asarray(cutout_gal['{}_cmodel_mag'.format(band)])
-    elif '{}_cmodel_flux'.format(band) in objs_use.colnames:
-        mag = np.asarray(
-            -2.5 * np.log10(cutout_gal['{}_cmodel_flux'.format(band)]))
+    # Get the extended objects
+    gal_mask = ~star_mask
+    cutout_gal = objs_use[gal_mask]
+    x_gal, y_gal = x_use[gal_mask], y_use[gal_mask]
+    if cutout_gal:
+        if verbose:
+            print("# There are {} extended sources on the cutout".format(len(cutout_gal)))
+        # Use color of the ellipse to indicate the magnitude of the galaxy
+        if '{}_cmodel_mag'.format(band) in objs_use.colnames:
+            mag = np.asarray(cutout_gal['{}_cmodel_mag'.format(band)])
+        elif '{}_cmodel_flux'.format(band) in objs_use.colnames:
+            mag = np.asarray(
+                -2.5 * np.log10(cutout_gal['{}_cmodel_flux'.format(band)]))
+        else:
+            raise KeyError("# No useful CModel mag available")
+
+        if show_mag:
+            # Get a color array
+            color_arr = to_color_arr(mag, bottom=20., top=26.0)
+            ell_cmap = plt.get_cmap('coolwarm_r')
+
+            ax1.scatter(
+                x_gal, y_gal, c=ell_cmap(color_arr), s=50, marker='+', linewidth=2.0)
+        else:
+            color_arr, ell_cmap = None, None
+            ax1.scatter(
+                x_gal, y_gal, c='peru', s=50, marker='+', linewidth=2.0)
+
+        # Show the galaxies
+        if show_weighted:
+            r_gal, ba_gal, pa_gal = catalog.moments_to_shape(
+                cutout_gal, shape_type='cmodel_ellipse', axis_ratio=True,
+                to_pixel=True, update=False)
+            # TODO: Should pre-select these
+            shape_ok = (np.isfinite(r_gal) & np.isfinite(ba_gal) & np.isfinite(pa_gal))
+            ellip_gal = shape_to_ellipse(
+                x_gal[shape_ok], y_gal[shape_ok], r_gal[shape_ok],
+                ba_gal[shape_ok], pa_gal[shape_ok])
+            for ii, e in enumerate(ellip_gal):
+                ax1.add_artist(e)
+                e.set_clip_box(ax1.bbox)
+                e.set_alpha(0.9)
+                if color_arr is None:
+                    e.set_edgecolor('peru')
+                else:
+                    e.set_edgecolor(ell_cmap(int(color_arr[shape_ok][ii])))
+                e.set_facecolor('none')
+                e.set_linewidth(2.0)
+        else:
+            r_exp, ba_exp, pa_exp = catalog.moments_to_shape(
+                cutout_gal, shape_type='cmodel_exp_ellipse', axis_ratio=True,
+                to_pixel=True, update=False)
+            r_dev, ba_dev, pa_dev = catalog.moments_to_shape(
+                cutout_gal, shape_type='cmodel_dev_ellipse', axis_ratio=True,
+                to_pixel=True, update=False)
+
+            exp_ok = (np.isfinite(r_exp) & np.isfinite(ba_exp) & np.isfinite(pa_exp))
+            ellip_exp = shape_to_ellipse(
+                x_gal[exp_ok], y_gal[exp_ok], r_exp[exp_ok],
+                ba_exp[exp_ok], pa_exp[exp_ok])
+
+            dev_ok = (np.isfinite(r_dev) & np.isfinite(ba_dev) & np.isfinite(pa_dev))
+            ellip_dev = shape_to_ellipse(
+                x_gal[dev_ok], y_gal[dev_ok], r_dev[dev_ok],
+                ba_dev[dev_ok], pa_dev[dev_ok])
+
+            for ii, e in enumerate(ellip_exp):
+                ax1.add_artist(e)
+                e.set_clip_box(ax1.bbox)
+                e.set_alpha(1.0)
+                if color_arr is None:
+                    e.set_edgecolor('peru')
+                else:
+                    e.set_edgecolor(ell_cmap(int(color_arr[exp_ok][ii])))
+                e.set_facecolor('none')
+                e.set_linewidth(2.0)
+
+            for ii, e in enumerate(ellip_dev):
+                ax1.add_artist(e)
+                e.set_clip_box(ax1.bbox)
+                e.set_alpha(0.7)
+                if color_arr is None:
+                    e.set_edgecolor('w')
+                else:
+                    e.set_edgecolor(ell_cmap(int(color_arr[dev_ok][ii])))
+                e.set_facecolor('none')
+                e.set_linewidth(2.0)
+                e.set_linestyle('--')
     else:
-        raise KeyError("# No useful CModel mag available")
-
-    if show_mag:
-        # Get a color array
-        color_arr = to_color_arr(mag, bottom=20., top=26.0)
-        ell_cmap = plt.get_cmap('coolwarm_r')
-    else:
-        color_arr, ell_cmap = None, None
-
-    ax1.scatter(
-        x_gal, y_gal, c=ell_cmap(color_arr), s=50, marker='+', linewidth=2.0)
-
-    # Show the galaxies
-    if show_weighted:
-        r_gal, ba_gal, pa_gal = catalog.moments_to_shape(
-            cutout_gal, shape_type='cmodel_ellipse', axis_ratio=True,
-            to_pixel=True, update=False)
-        # TODO: Should pre-select these
-        shape_ok = (np.isfinite(r_gal) & np.isfinite(ba_gal) & np.isfinite(pa_gal))
-        ellip_gal = shape_to_ellipse(
-            x_gal[shape_ok], y_gal[shape_ok], r_gal[shape_ok],
-            ba_gal[shape_ok], pa_gal[shape_ok])
-        for ii, e in enumerate(ellip_gal[shape_ok]):
-            ax1.add_artist(e)
-            e.set_clip_box(ax1.bbox)
-            e.set_alpha(0.9)
-            if color_arr is None:
-                e.set_edgecolor('peru')
-            else:
-                e.set_edgecolor(ell_cmap(int(color_arr[shape_ok][ii])))
-            e.set_facecolor('none')
-            e.set_linewidth(2.0)
-    else:
-        r_exp, ba_exp, pa_exp = catalog.moments_to_shape(
-            cutout_gal, shape_type='cmodel_exp_ellipse', axis_ratio=True,
-            to_pixel=True, update=False)
-        r_dev, ba_dev, pa_dev = catalog.moments_to_shape(
-            cutout_gal, shape_type='cmodel_dev_ellipse', axis_ratio=True,
-            to_pixel=True, update=False)
-
-        exp_ok = (np.isfinite(r_exp) & np.isfinite(ba_exp) & np.isfinite(pa_exp))
-        ellip_exp = shape_to_ellipse(
-            x_gal[exp_ok], y_gal[exp_ok], r_exp[exp_ok],
-            ba_exp[exp_ok], pa_exp[exp_ok])
-
-        dev_ok = (np.isfinite(r_dev) & np.isfinite(ba_dev) & np.isfinite(pa_dev))
-        ellip_dev = shape_to_ellipse(
-            x_gal[dev_ok], y_gal[dev_ok], r_dev[dev_ok],
-            ba_dev[dev_ok], pa_dev[dev_ok])
-
-        for ii, e in enumerate(ellip_exp):
-            ax1.add_artist(e)
-            e.set_clip_box(ax1.bbox)
-            e.set_alpha(1.0)
-            if color_arr is None:
-                e.set_edgecolor('peru')
-            else:
-                e.set_edgecolor(ell_cmap(int(color_arr[exp_ok][ii])))
-            e.set_facecolor('none')
-            e.set_linewidth(2.0)
-
-        for ii, e in enumerate(ellip_dev):
-            ax1.add_artist(e)
-            e.set_clip_box(ax1.bbox)
-            e.set_alpha(0.7)
-            if color_arr is None:
-                e.set_edgecolor('w')
-            else:
-                e.set_edgecolor(ell_cmap(int(color_arr[dev_ok][ii])))
-            e.set_facecolor('none')
-            e.set_linewidth(2.0)
-            e.set_linestyle('--')
+        if verbose:
+            print("# No extended source is found!")
 
     if show_mag:
         cax = fig.add_axes([0.16, 0.85, 0.24, 0.02])
