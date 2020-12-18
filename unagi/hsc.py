@@ -17,6 +17,7 @@ from astropy.io import fits
 from astropy.table import Table
 from astropy.utils.console import Spinner
 from astropy.utils.data import download_file
+from tenacity import retry, stop_after_attempt, wait_random
 
 import unagi
 from . import config
@@ -228,6 +229,25 @@ class Hsc():
         _ = cutout.writeto(output_file, overwrite=overwrite)
         return cutout
 
+    @retry(wait=wait_random(min=1, max=5), stop=stop_after_attempt(5))
+    def _request(self, url):
+        """
+        Open the URL.
+        """
+        try:
+            result = urllib.request.urlopen(url)
+            return result
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                print('# Invalid id or password!')
+            elif e.code == 406:
+                print('# Something wrong with the URL', e.read())
+            elif e.code == 502:
+                print("# Proxy error, might want to retry later")
+            else:
+                print("# Error message: {}".format(e))
+            raise Exception("# Can not download: {}".format(url))
+
     def get_cutout_image(self, coord, coord_2=None, w_half=None, h_half=None, filt='HSC-I',
                          img_type='coadd', image=True, variance=False, mask=False, verbose=False):
         """
@@ -247,14 +267,10 @@ class Hsc():
                 warnings.warn("# Not a coadd cutout, will return the url")
             return cutout_url
 
-        try:
-            if verbose:
-                print("# Downloading FITS image from {}".format(cutout_url))
-            # TODO:Not sure this is the best way though
-            cutout = fits.open(urllib.request.urlopen(cutout_url))
-        except urllib.error.HTTPError as e:
-            print("# Error message: {}".format(e))
-            raise Exception("# Can not download cutout: {}".format(cutout_url))
+        if verbose:
+            print("# Downloading FITS image from {}".format(cutout_url))
+        # TODO: Not sure this is the best way though
+        cutout = fits.open(self._request(cutout_url))
 
         return cutout
 

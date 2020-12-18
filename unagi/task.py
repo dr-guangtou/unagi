@@ -2,24 +2,24 @@
 # -*- coding: utf-8 -*-
 
 import os
+import glob
+import tarfile
 import shutil
 import tempfile
-import time
-import glob
-from collections.abc import Iterable
+
+from functools import partial
+from multiprocessing import Pool
 
 import requests
-import tarfile
 import numpy as np
 import astropy.units as u
 from astropy import wcs
 from astropy.io import fits
 from astropy.utils.data import download_file
 from astropy.visualization import make_lupton_rgb
-from multiprocessing import Pool
-from functools import partial
 from fits2hdf.io.fitsio import read_fits
 from fits2hdf.io.hdfio import export_hdf
+
 import h5py
 from tenacity import retry, stop_after_attempt, wait_random
 
@@ -302,7 +302,7 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None, auth=None):
         resp = session.post(url, files={'list': open(filename, 'rb')}, stream=True)
 
         # Checking that access worked after number of retries
-        assert(resp.status_code == 200)
+        assert resp.status_code == 200
         tar_filename = resp.headers['Content-Disposition'].split('"')[-2]
 
         # Proceed to download the data
@@ -335,10 +335,10 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None, auth=None):
     # At this stage all filters have been  downloaded for this batch, now
     # aggregating all of them into a single HDF file
     with h5py.File(output_file, mode='w') as d:
-        for id in ids:
+        for ii in ids:
             for f in filters:
-                with h5py.File( os.path.join(output_paths[f], '%d.hdf'%id), mode='r+') as s:
-                    d.copy(s, '%d/%s'%(id,f))
+                with h5py.File( os.path.join(output_paths[f], '{:d}.hdf'.format(ii)), mode='r+') as s:
+                    d.copy(s, '%d/%s'%(ii,f))
 
     # For good measure, remove all temporary directory
     for f in filters:
@@ -411,7 +411,8 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
     # Step 1: Create batches of object ids and coordinates
     batches = []
     for batch_index in range(n_batches):
-        list_table = table[['ra', 'dec', 'object_id']][batch_index*batch_size:(batch_index+1)*batch_size]
+        list_table = table[['ra', 'dec', 'object_id']][
+            batch_index*batch_size:(batch_index+1)*batch_size]
         list_table['sw'] = str(ang_size_w.value)+'asec'
         list_table['sh'] = str(ang_size_h.value)+'asec'
         list_table['rerun'] = archive.rerun
@@ -423,7 +424,9 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
         list_table['#?'] = ''
         # Saving object ids corresponding to the downloaded objects
         ids = list_table['object_id']
-        list_table = list_table[['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun', 'image', 'variance', 'mask', 'type']]
+        list_table = list_table[
+            ['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun', 'image', 
+             'variance', 'mask', 'type']]
         batches.append((list_table, ids, batch_index))
 
     # Step 2: Download fits files

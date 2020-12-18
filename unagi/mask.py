@@ -15,7 +15,8 @@ from scipy.ndimage import gaussian_filter
 from . import plotting
 
 __all__ = ['Mask', 'BitMasks',
-           'MASK_CMAP', 'S18A_BITMASKS', 'PDR1_BITMASKS']
+           'MASK_CMAP', 'S18A_BITMASKS', 'S19A_BITMASKS', 'S20A_BITMASKS', 
+           'PDR1_BITMASKS', 'PDR2_BITMASKS']
 
 MASK_CMAP = plotting.random_cmap(512, background_color='white')
 
@@ -28,7 +29,15 @@ class BitMasks():
         """
         Define the bitmask plane of HSC coadd image.
         """
-        if data_release == 's18a':
+        if data_release == 's20a':
+            self._bitmasks = S19A_BITMASKS
+            self.n_bits = 32
+            self.type = np.uint32
+        elif data_release == 's19a':
+            self._bitmasks = S19A_BITMASKS
+            self.n_bits = 32
+            self.type = np.uint32
+        elif data_release == 's18a':
             self._bitmasks = S18A_BITMASKS
             self.n_bits = 32
             self.type = np.uint32
@@ -293,6 +302,10 @@ class Mask():
 
         return fig, masks
 
+
+# Bitmask has not changed in S19A and S20A compared to S18A
+S19A_BITMASKS = S18A_BITMASKS
+S20A_BITMASKS = S18A_BITMASKS
 
 S18A_BITMASKS = np.array(
     [(0, 'BAD', 'Bad pixel',
