@@ -7,6 +7,7 @@ import copy
 import numpy as np
 
 from astropy import wcs
+from astropy.io import fits
 from astropy.visualization import ZScaleInterval, \
     AsymmetricPercentileInterval
 
@@ -527,14 +528,24 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     """
     Show the HSC photometry of objects on the cutout image.
     """
-    if cutout.ndim == 3:
-        # This is a RGB color picture
-        if cutout_wcs is None:
-            raise Exception('Need to provide WCS info for RGB picture')
-    else:
-        # WCS of the image
-        if cutout_wcs is None:
-            cutout_wcs = wcs.WCS(cutout[1].header)
+    try:
+        if cutout.ndim == 3:
+            # This is a RGB color picture
+            if cutout_wcs is None:
+                raise Exception('Need to provide WCS info for RGB picture')
+            img_shape = cutout[:, :, 0].shape
+            img_show = cutout
+        else:
+            raise TypeError("cutout needs to be a HDUList or 3-D image cube.")
+    except AttributeError:
+        if isinstance(cutout, fits.HDUList):
+            # WCS of the image
+            if cutout_wcs is None:
+                cutout_wcs = wcs.WCS(cutout[1].header)
+            img_shape = cutout[1].data.shape
+            img_show = cutout[1].data
+        else:
+            raise TypeError("cutout needs to be a HDUList or 3-D image cube.")
 
     # Isolate the clean objects
     if show_clean:
@@ -547,19 +558,12 @@ def cutout_show_objects(cutout, objs, show_weighted=True, show_bad=True, show_cl
     x_use, y_use = catalog.world_to_image(objs_use, cutout_wcs, update=False)
 
     # Start to make figure
-    if cutout.ndim == 3:
-        img_shape = cutout[:, :, 0].shape
-    else:
-        img_shape = cutout[1].data.shape
     fig = plt.figure(figsize=(xsize, xsize * img_shape[1] / img_shape[0]))
     ax1 = fig.add_subplot(111)
     ax1.grid(False)
 
     # Show the image
-    if cutout.ndim == 3:
-        ax1 = display_single(cutout, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
-    else:
-        ax1 = display_single(cutout[1].data, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
+    ax1 = display_single(img_show, ax=ax1, contrast=0.1, cmap=cmap, **kwargs)
 
     # Get the stars and show the SDSS shape
     star_mask = objs_use['{}_extendedness'.format(band)] < 0.5

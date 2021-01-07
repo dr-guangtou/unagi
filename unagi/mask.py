@@ -303,10 +303,6 @@ class Mask():
         return fig, masks
 
 
-# Bitmask has not changed in S19A and S20A compared to S18A
-S19A_BITMASKS = S18A_BITMASKS
-S20A_BITMASKS = S18A_BITMASKS
-
 S18A_BITMASKS = np.array(
     [(0, 'BAD', 'Bad pixel',
       'red', 2 ** 0),
@@ -414,3 +410,7 @@ PDR2_BITMASKS = np.array(
       'gold', 2 ** 16)],
     dtype=[('bits', np.uint8), ('name', '<U18'),
            ('meaning', '<U80'), ('color', '<U12'), ('value', np.uint32)])
+
+# Bitmask has not changed in S19A and S20A compared to S18A
+S19A_BITMASKS = S18A_BITMASKS
+S20A_BITMASKS = S18A_BITMASKS
