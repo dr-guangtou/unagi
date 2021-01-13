@@ -283,7 +283,6 @@ def _download_cutouts(args, url=None, filters=None, tmp_dir=None, auth=None):
 
     output_file = os.path.join(tmp_dir, 'batch_cutout_%d.hdf'%batch_index)
     # Check if output cutout file exists, if it does, we are good
-    # TODO: check that file  is ok, but it most probably is
     if os.path.isfile(output_file):
         print('Found cutout file for batch file %d, skipping download'%batch_index)
         return output_file

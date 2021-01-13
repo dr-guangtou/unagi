@@ -9,6 +9,8 @@ import time
 import urllib
 import shutil
 import warnings
+import tempfile
+import subprocess
 
 import numpy as np
 
@@ -140,6 +142,9 @@ class Hsc():
         if password is None:
             password = self.archive._password
 
+        # Check password
+        self.check_password()
+
         # Create a password manager
         password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
 
@@ -172,6 +177,26 @@ class Hsc():
             self.opener = None
             self.is_login = False
 
+    def check_password(self):
+        """
+        Check the password for the HSC Server.
+
+        Based on : 
+        https://hsc-gitlab.mtk.nao.ac.jp/ssp-software/data-access-tools/
+        """
+        machine = self.archive.base_url.replace('https://', '')
+
+        with tempfile.NamedTemporaryFile() as netrc:
+            netrc.write(
+                'machine {} login {} password {}'.format(
+                    machine, self.archive._username, self.archive._password).encode('ascii'))
+            netrc.flush()
+            http_code = subprocess.check_output(
+                ['curl', '--netrc-file', netrc.name, '-o', os.devnull, '-w', '%{http_code}',
+                 '-s', self.archive.das_url]).strip()
+            if http_code == b'401':
+                raise RuntimeError('!!! Account or Password is not correct')
+
     def download_cutout(self, coord, output_file, coord_2=None, w_half=None, h_half=None,
                         filt='HSC-I', img_type='coadd', image=True, variance=False, mask=False,
                         overwrite=True):
@@ -201,7 +226,7 @@ class Hsc():
         else:
             raise HscException("# Wrong image type: coadd or warp !")
 
-    def download_patch(self, tract, patch, filt='HSC-I', output_file=None, 
+    def download_patch(self, tract, patch, filt='HSC-I', output_file=None,
                        overwrite=True, verbose=True):
         """
         Download coadded image for a single patch.
@@ -269,7 +294,8 @@ class Hsc():
 
         if verbose:
             print("# Downloading FITS image from {}".format(cutout_url))
-        # TODO: Not sure this is the best way though
+
+        # TODO: This doesn't work for the PDR (2021-01-12)
         cutout = fits.open(self._request(cutout_url))
 
         return cutout
@@ -310,7 +336,10 @@ class Hsc():
         try:
             if verbose:
                 print("# Downloading FITS image from {}".format(psf_url))
-            psf_model = fits.open(urllib.request.urlopen(psf_url))
+
+            # TODO: This doesn't work for the PDR (2021-01-12)
+            psf_model = fits.open(self._request(psf_url))
+            #psf_model = fits.open(urllib.request.urlopen(psf_url))
         except urllib.error.HTTPError as e:
             print("# Error message: {}".format(e))
             raise Exception("# Can not download cutout: {}".format(psf_url))
