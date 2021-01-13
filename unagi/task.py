@@ -167,7 +167,7 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
         rerun = archive.rerun
         if dr[0] == 'p':
             rerun = rerun.replace(dr + '_', '')
-    
+
     # The `coadd/bg` corresponds to the `deepCoadd` product with global background correction
     # It only becomes available after S18A
     if img_type == 'coadd/bg' and not archive.archive.deepcoadd:
@@ -262,8 +262,10 @@ def hsc_cutout(coord, coord_2=None, cutout_size=10.0 * u.Unit('arcsec'), filters
 
             if img_type == 'warp':
                 # Download the tarball for warpped images.
+                auth_header = {"Authorization": "Basic {:s}".format(archive.auth_str)}
                 _ = shutil.move(
-                    download_file(cutout_hdu, show_progress=False), output_list[ii])
+                    download_file(cutout_hdu, http_headers=auth_header,
+                    show_progress=False), output_list[ii])
 
         # Append the HDU to the list
         cutout_list.append(cutout_hdu)
@@ -424,7 +426,7 @@ def hsc_bulk_cutout(table, cutout_size=10.0 * u.Unit('arcsec'),
         # Saving object ids corresponding to the downloaded objects
         ids = list_table['object_id']
         list_table = list_table[
-            ['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun', 'image', 
+            ['#?', 'ra', 'dec', 'sw', 'sh', 'filter', 'rerun', 'image',
              'variance', 'mask', 'type']]
         batches.append((list_table, ids, batch_index))
 

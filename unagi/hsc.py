@@ -6,6 +6,7 @@ import io
 import os
 import json
 import time
+import base64
 import urllib
 import shutil
 import warnings
@@ -164,6 +165,12 @@ class Hsc():
             print("! Can not login to HSC archive: %s" % str(e))
             self.opener = None
 
+        # Basic authorization string for the request header
+        self.auth_str = base64.b64encode(
+            "{:s}:{:s}".format(
+                self.archive._username, self.archive._password).encode('utf-8')).decode('utf-8')
+
+
     def logout(self):
         """
         Log out of the HSC server.
@@ -260,7 +267,9 @@ class Hsc():
         Open the URL.
         """
         try:
-            result = urllib.request.urlopen(url)
+            req = urllib.request.Request(url)
+            req.add_header("Authorization", "Basic {:s}".format(self.auth_str))
+            result = urllib.request.urlopen(req)
             return result
         except urllib.error.HTTPError as e:
             if e.code == 401:
