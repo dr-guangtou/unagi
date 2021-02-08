@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 """Functions about using HSC catalogs."""
 
+import os
+
 import numpy as np
 
 import astropy.units as u
-from astropy.table import Column
+from astropy.table import Table, Column
 
 __all__ = ['moments_to_shape', 'abmag_to_image', 'world_to_image', 'select_clean_objects',
            'objects_to_galsim', 'mag_to_flux']
@@ -252,3 +254,54 @@ def objects_to_galsim(img, objects, psf_model=None, extended='i_extendedness',
                     ii, obj[gal_mag]))
 
     return img_empty
+
+
+def remove_is_null(table, output=None, verbose=True, string='isnull', return_data=True):
+    """
+    Remove the xxx_isnull columns from the catalog.
+    This is an annoying issue with FITS table from HSC database.
+
+    Parameters
+    ----------
+    table : str or astropy.table object
+        Name of the FITS catalog or the data itself
+    cat_hdu : int, optional
+        The HDU of the catalog data.
+        Default: 1
+    string : str, optional
+        The name of the Null columns.
+        Default: 'isnull'
+    output : str, optional
+        If output is None, will write a new FITS table with '_clean'
+        suffix.
+        Default: None
+    return_data : bool, optional
+        Whether return the cleaned data.
+        Default : True
+    verbose : bool, optional
+        Default : True
+    """
+    if isinstance(table, Table):
+        data = table
+    else:
+        if not os.path.isfile(table):
+            raise Exception("# Can not find catalog: %s" % table)
+        data = Table.read(table, format='fits')
+
+    if verbose:
+        print("Reading the data....")
+    col_names = data.colnames
+    col_remove = [col for col in col_names if string in col]
+    data.remove_columns(col_remove)
+
+    if output is None:
+        if verbose:
+            print("Saving data to %s ..." % output)
+        data.write(table, format='fits', overwrite=True)
+    else:
+        data.write(output.strip(), format='fits', overwrite=True)
+
+    if return_data:
+        return data
+    else:
+        return None
