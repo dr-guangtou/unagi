@@ -271,6 +271,7 @@ def display_single(img,
         ax1 = fig.add_subplot(111)
     else:
         ax1 = ax
+    ax1.grid(False)
 
     # Stretch option
     if img.ndim == 3:

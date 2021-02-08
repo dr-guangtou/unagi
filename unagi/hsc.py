@@ -188,7 +188,7 @@ class Hsc():
         """
         Check the password for the HSC Server.
 
-        Based on : 
+        Based on :
         https://hsc-gitlab.mtk.nao.ac.jp/ssp-software/data-access-tools/
         """
         machine = self.archive.base_url.replace('https://', '')
@@ -283,7 +283,8 @@ class Hsc():
             raise Exception("# Can not download: {}".format(url))
 
     def get_cutout_image(self, coord, coord_2=None, w_half=None, h_half=None, filt='HSC-I',
-                         img_type='coadd', image=True, variance=False, mask=False, verbose=False):
+                         img_type='coadd', image=True, variance=False, mask=False,
+                         debug=False, verbose=False):
         """
         Get HSC cutout image.
 
@@ -295,6 +296,8 @@ class Hsc():
 
         cutout_url = self.form_cutout_url(
             coord, coord_2=coord_2, w_half=w_half, h_half=h_half, **cutout_kwargs)
+        if debug:
+            print(cutout_url)
 
         if img_type == 'warp':
             if verbose:
@@ -448,7 +451,7 @@ class Hsc():
         frame: str
             Name of the coordinate frame. Default: 'icrs'
         """
-        return coord.transform_to(frame).to_string('decimal').split(' ')
+        return coord.transform_to(frame).to_string('decimal', precision=8).split(' ')
 
     def _parse_size_center(self, w_half, h_half, correct=False):
         """
