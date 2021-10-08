@@ -75,7 +75,7 @@ class Hsc():
                    'NB0387', 'NB0816', 'NB0921', 'NB1010']
     FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921', 'nb1010']
 
-    def __init__(self, dr='pdr2', rerun='pdr2_wide', verbose=True, config_file='/Users/tang/Documents/Binary_quasar/codes/unagi/unagi/config_file.txt'):
+    def __init__(self, dr='pdr2', rerun='pdr2_wide', verbose=True, config_file=None):
         """
         Initialize a HSC rerun object.
 
