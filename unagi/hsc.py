@@ -68,14 +68,14 @@ class Hsc():
 
     # Available HSC database
     # TODO: dr2-citus is not supported yet
-    DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2', 'dr3']
+    DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2', 'dr3', 'dr4']
 
     # List of HSC filters
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
                    'NB0387', 'NB0816', 'NB0921', 'NB1010']
     FILTER_SHORT = ['g', 'r', 'i', 'z', 'y', 'nb0387', 'nb816', 'nb921', 'nb1010']
 
-    def __init__(self, dr='pdr2', rerun='pdr2_wide', verbose=True, config_file=None):
+    def __init__(self, dr='pdr2', rerun='pdr2_wide', verbose=True, config_file='/Users/tang/Documents/Binary_quasar/codes/unagi/unagi/config_file.txt'):
         """
         Initialize a HSC rerun object.
 
