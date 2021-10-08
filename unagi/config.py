@@ -17,7 +17,7 @@ __all__ = ('Field', 'Server', 'Rerun', 'DrException',
 PDR_URL = "https://hsc-release.mtk.nao.ac.jp"
 IDR_URL = "https://hscdata.mtk.nao.ac.jp"
 
-AVAILABLE_DRS = ['pdr1', 'pdr2', 'pdr3', 'dr1', 'dr2', 'dr3']
+AVAILABLE_DRS = ['pdr1', 'pdr2', 'dr1', 'dr2', 'dr3', 'dr4']
 
 
 class DrException(Exception):
