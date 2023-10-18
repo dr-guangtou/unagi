@@ -68,7 +68,7 @@ class Hsc():
 
     # Available HSC database
     # TODO: dr2-citus is not supported yet
-    DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2', 'dr3', 'dr4']
+    DATABASE = ['pdr1', 'pdr2', 'pdr3','dr1', 'dr2', 'dr3', 'dr4']
 
     # List of HSC filters
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
