@@ -1581,7 +1581,8 @@ class Server(object):
                         get_input = input
                     self._username = get_input("Public Data Release Username : ")
                     self._password = getpass.getpass("Password : ")
-
+                    print("Tips: You can create a config file to store your username and password. \n Format: \n username \n password")
+        
 
 class Rerun(Server):
     """Class for rerun in HSC data release.

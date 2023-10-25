@@ -102,3 +102,6 @@ ENV/
 
 #mac file
 .DS_Store
+
+#my file
+*.fits
