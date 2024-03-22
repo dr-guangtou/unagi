@@ -9,6 +9,7 @@ __all__ = ['HELP_BASIC', 'COLUMNS_CONTAIN', 'TABLE_SCHEMA', 'PATCH_CONTAIN',
            'basic_forced_photometry', 'column_dict_to_str', 'join_table_by_id',
            'box_search', 'cone_search']
 
+# help function can no be used in the server after PDR2(include PDR2 citus)
 HELP_BASIC = "SELECT * FROM help('{0}');"
 
 TABLE_SCHEMA = "SELECT * FROM help('{0}.{1}');"

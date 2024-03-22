@@ -68,7 +68,7 @@ class Hsc():
 
     # Available HSC database
     # TODO: dr2-citus is not supported yet
-    DATABASE = ['pdr1', 'pdr2', 'dr1', 'dr2', 'dr3', 'dr4']
+    DATABASE = ['pdr1', 'pdr2', 'pdr3','dr1', 'dr2', 'dr3', 'dr4']
 
     # List of HSC filters
     FILTER_LIST = ['HSC-G', 'HSC-R', 'HSC-I', 'HSC-Z', 'HSC-Y',
@@ -116,17 +116,21 @@ class Hsc():
             self.login()
 
         # List of available tables
-        table_list = os.path.join(
-            os.path.dirname(unagi.__file__), 'data',
-            '{}'.format(self.rerun), '{}_tables.fits'.format(self.rerun))
-        if os.path.isfile(table_list):
-            if verbose:
-                print("# Get table list from {}".format(table_list))
-            self.table_list = list(Table.read(table_list)['object'])
+        # TODO: This is not available for PDR3 yet
+        if self.dr=='pdr3':
+            self.table_list = None
         else:
-            if verbose:
-                print("# Querying for the table list and save it to {}".format(table_list))
-            self.table_list = self.tables(save=True)
+            table_list = os.path.join(
+                os.path.dirname(unagi.__file__), 'data',
+                '{}'.format(self.rerun), '{}_tables.fits'.format(self.rerun))
+            if os.path.isfile(table_list):
+                if verbose:
+                    print("# Get table list from {}".format(table_list))
+                self.table_list = list(Table.read(table_list)['object'])
+            else:
+                if verbose:
+                    print("# Querying for the table list and save it to {}".format(table_list))
+                self.table_list = self.tables(save=True)
 
     def login(self, username=None, password=None):
         """

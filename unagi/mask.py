@@ -16,7 +16,7 @@ from . import plotting
 
 __all__ = ['Mask', 'BitMasks',
            'MASK_CMAP', 'S18A_BITMASKS', 'S19A_BITMASKS', 'S20A_BITMASKS', 
-           'PDR1_BITMASKS', 'PDR2_BITMASKS']
+           'PDR1_BITMASKS', 'PDR2_BITMASKS','PDR3_BITMASKS']
 
 MASK_CMAP = plotting.random_cmap(512, background_color='white')
 
@@ -47,6 +47,10 @@ class BitMasks():
             self.type = np.uint16
         elif data_release == 'pdr2':
             self._bitmasks = PDR2_BITMASKS
+            self.n_bits = 32
+            self.type = np.uint32
+        elif data_release == 'pdr3':
+            self._bitmasks = PDR3_BITMASKS
             self.n_bits = 32
             self.type = np.uint32
         else:
@@ -410,6 +414,7 @@ PDR2_BITMASKS = np.array(
       'gold', 2 ** 16)],
     dtype=[('bits', np.uint8), ('name', '<U18'),
            ('meaning', '<U80'), ('color', '<U12'), ('value', np.uint32)])
+
 
 # Bitmask has not changed in S19A and S20A compared to S18A
 S19A_BITMASKS = S18A_BITMASKS
